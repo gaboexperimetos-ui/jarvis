@@ -62,10 +62,10 @@ Se mantiene tu estilo (directo, sin relleno, español, tuteo, hechos vs estimaci
 1. **Modelo primario `:free` de OpenRouter.** Es gratis, pero tiene rate limit y calidad variable, y el fallback es un 4B local. Para trabajo serio, un modelo de pago de reserva en la cadena cambiaría más que cualquier prompt.
 2. **`display.personality: concise` + `SOUL.md`.** Son dos capas de estilo a la vez. Prueba una sesión con `/personality` cambiado; si `SOUL.md` ya manda, quita la personalidad para no duplicar reglas.
 3. **339 skills de OpenCode frente a las 11 de Hermes.** Un `skills.external_dirs` apuntando a todas inundaría el catálogo y gastaría contexto en descubrimiento. Mejor copiar 10-15 útiles.
-4. **`sessions.auto_prune` desactivado.** `state.db` crecerá sin límite. Con `retention_days: 180` se limpia solo y no pierdes lo reciente.
-5. **Memoria corta:** 2.200 caracteres de memoria + 1.375 de perfil (~800 y ~500 tokens). Si se llena, subir a 4.000/2.000.
-6. **Delegación:** los subagentes heredan el modelo caro. Fijar `delegation.model` a uno barato es donde se ahorra de verdad.
-7. **9 MCP en OpenCode:** si alguno está lento o caído, alarga el arranque. Empezaría por medir cuáles tardan con `opencode` en modo debug.
+4. **Delegación:** los subagentes heredan el modelo caro. Fijar `delegation.model` a uno barato es donde se ahorra de verdad.
+5. **9 MCP en OpenCode:** si alguno está lento o caído, alarga el arranque. Empezaría por medir cuáles tardan con `opencode` en modo debug.
+6. **Rotar las dos claves** que estuvieron publicadas (ver sección 6).
+7. **`opencode.jsonc`**: define el pool "Unlimited" en el 8090, pero `opencode.json` (el activo según `AGENTS.md`) no lo incluye. Decidir cuál manda y borrar el otro, o quedan dos configs divergentes.
 
 ---
 
@@ -94,3 +94,52 @@ grep -c "coding_instructions" ~/.hermes/config.yaml
 1. Reiniciar y **probar SOUL.md** con tres preguntas típicas (una de una línea, una de estado de la máquina, una de código) para ver si el tono y el cierre son los que quieres.
 2. Añadir un **modelo de pago de reserva** a `fallback_providers` antes del router local.
 3. Decidir lo de `personality` y el `auto_prune`. Son los dos que más ensucian el día a día sin que se note.
+
+---
+
+## 6. Segunda pasada (mismo día, después)
+
+### 6.1 Dos claves estaban en claro en el repo
+
+| Fichero | Qué era | Ahora |
+|---|---|---|
+| `opencode/opencode.json` | clave de `freellmapi` (`localhost:3001`) | `{file:/home/gabo/.config/opencode/secrets/freellmapi-api-key}` |
+| `opencode/opencode.jsonc` | clave de "Unlimited" (`127.0.0.1:8090`) | `{file:/home/gabo/.config/opencode/secrets/unlimited-api-key}` |
+
+Las dos apuntan a servicios locales, así que el riesgo real es bajo, pero el repo es público y el historial ya las tiene. **Antes de mergear el PR**, o justo después del sync, ejecuta:
+
+```bash
+cd ~/jarvis && ./scripts/seed-opencode-secrets.sh
+```
+
+Recupera los valores del commit `59100aa`, los deja en `~/.config/opencode/secrets/` con permisos `600` y no los imprime. Es idempotente: si los ficheros ya existen, no hace nada. Probado en un `HOME` temporal: crea los dos ficheros (59 y 35 bytes) y la segunda pasada los respeta.
+
+Si no lo ejecutas, esos dos proveedores fallarán al arrancar hasta que las claves estén en su sitio. El modelo principal (`local/deepseek-v4pro`) no depende de ellas.
+
+### 6.2 `jarvis-sync.sh` endurecido
+
+- **`flock`**: el timer de 5 min y una ejecución manual ya no se pisan.
+- **Guardia de secretos** antes de commitear: si una línea **añadida** contiene `sk-…32`, `ghp_…`, `github_pat_…`, `AKIA…`, `xox…` o `BEGIN … PRIVATE KEY`, no commitea y lo apunta en `sync.log`. Mira solo líneas añadidas, así que borrar una clave vieja no bloquea el sync.
+- **Exclusiones nuevas** en el `rsync`: `*.db`, `*.db-wal`, `*.db-shm`, `*.sqlite*`, `attachments/`, `node_modules/`, `.git/`, `*.log`, `*.tmp`, `__pycache__/`, `.venv/`. Antes solo las ignoraba git; ahora ni se copian.
+- Sintaxis comprobada con `bash -n`, y la regex probada contra la clave real (dispara) y contra un ejemplo `sk-proj-xxxx` (no dispara).
+
+### 6.3 OpenCode
+
+- **`small_model` corregido**: apuntaba a `opencode/minimax-m3.1-flash-free`, un proveedor que no existe en tu config; ahora `kiosapi/minimax-m3.1-flash-free`, que sí está definido. Era el modelo de títulos y tareas ligeras.
+- **12 reglas `ask` nuevas** en `permissions`: `git reset --hard`, `git clean`, `git push --force`, `pacman -R`, `pacman -S`, `docker system prune`, `docker volume rm`, `chown -R`, `truncate -s`, `npm publish`, `gh pr merge`, `> /dev/sd*`.
+- Comprobado que `provider` y `providers` **no** son un error: el propio OpenCode migra el formato viejo (`provider`) al nuevo (`providers`) y fusiona ambos. Ahí no había nada que arreglar.
+
+### 6.4 Hermes, tres ajustes más
+
+- **`sessions.auto_prune: true`**, retención 180 días, `VACUUM` tras podar. `state.db` deja de crecer sin límite; las sesiones abiertas o fijadas no se tocan.
+- **Memoria 2.200/1.375 → 3.000/1.800** caracteres (~1.100 y ~650 tokens). Cabe de sobra en 200k de contexto.
+- **`provider_routing.sort: "throughput"`**: con un modelo `:free`, ordenar por precio no aporta; que elija el proveedor más rápido de ese modelo.
+
+### 6.5 Verificación
+
+```bash
+bash -n ~/jarvis/jarvis-sync.sh
+python3 -c "import yaml;yaml.safe_load(open('$HOME/.hermes/config.yaml'));print('yaml ok')"
+python3 -c "import json;json.load(open('$HOME/.config/opencode/opencode.json'));print('json ok')"
+grep -c '"effect": "ask"' ~/.config/opencode/opencode.json   # 22
+```

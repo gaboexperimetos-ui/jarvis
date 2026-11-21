@@ -339,10 +339,12 @@ model:
 # Control how requests are routed across providers on OpenRouter.
 # See: https://openrouter.ai/docs/guides/routing/provider-selection
 #
-# provider_routing:
-#   # Sort strategy: "price" (default), "throughput", or "latency"
-#   # Append :nitro to model name for a shortcut to throughput sorting.
-#   sort: "throughput"
+# --- activado 2026-11-21: priorizar velocidad, no precio ---
+# El modelo primario es `:free`: ordenar por precio no aporta nada, y por
+# defecto OpenRouter reparte entre proveedores. Con "throughput" elige el
+# proveedor mas rapido para ese modelo en cada momento.
+provider_routing:
+  sort: "throughput"
 #
 #   # Only allow these providers (provider slugs from OpenRouter)
 #   # only: ["anthropic", "google"]
@@ -1074,8 +1076,11 @@ memory:
   prefetch_spill_enabled: false
 
   # Character limits (~2.75 chars per token, model-independent)
-  memory_char_limit: 2200   # ~800 tokens
-  user_char_limit: 1375     # ~500 tokens
+  # --- ampliado 2026-11-21: 2200/1375 -> 3000/1800 ---
+  # Con 800+500 tokens se perdian convenciones del setup. Sigue siendo barato
+  # (~1.100 y ~650 tokens) y cabe de sobra en los 200k de contexto.
+  memory_char_limit: 3000   # ~1.100 tokens
+  user_char_limit: 1800     # ~650 tokens
 
   # Periodic memory nudge: remind the agent to consider saving memories
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
@@ -1147,12 +1152,16 @@ hosted_rooms:
 # Uncomment to change the defaults shown; auto_prune: true bounds the file,
 # auto_prune: false keeps every ended session and silences the low-disk prompt.
 # sessions:
-#   auto_prune: false
-#   retention_days: 90
-#   vacuum_after_prune: true
-#   min_vacuum_interval_days: 30
-#   min_interval_hours: 24
-#   orphan_end_grace_s: 300
+# --- activado 2026-11-21: state.db no crece sin limite ---
+# Borra sesiones TERMINADAS con mas de 180 dias. Las abiertas, fijadas y en
+# curso no se tocan, y la limpieza corre como mucho una vez al dia.
+sessions:
+  auto_prune: true
+  retention_days: 180
+  vacuum_after_prune: true
+  min_vacuum_interval_days: 30
+  min_interval_hours: 24
+  orphan_end_grace_s: 300
 
 # Optional direct endpoint for autonomous Bot Mode rooms spanning gateways.
 # Leave unset for the safe default: Desktop coordinates cross-gateway rooms and

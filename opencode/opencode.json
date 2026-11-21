@@ -56,6 +56,66 @@
       "action": "shell",
       "resource": "*curl *|*sh*",
       "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*git reset --hard*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*git clean -*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*git push --force*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*pacman -R*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*pacman -S*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*docker system prune*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*docker volume rm*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*chown -R*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*truncate -s*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*npm publish*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*gh pr merge*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*> /dev/sd*",
+      "effect": "ask"
     }
   ],
   "mcp": {
@@ -153,7 +213,7 @@
   "compaction": {
     "auto": true
   },
-  "small_model": "opencode/minimax-m3.1-flash-free",
+  "small_model": "kiosapi/minimax-m3.1-flash-free",
   "providers": {
     "local": {
       "name": "Local (router llama.cpp 8004)",
@@ -192,7 +252,7 @@
       "package": "@opencode/ai/providers/openai-compatible",
       "settings": {
         "baseURL": "http://localhost:3001/v1",
-        "apiKey": "freellmapi-3967be1a01983271e31c18ce35ec29fc13f1b4a7484ca3a0"
+        "apiKey": "{file:/home/gabo/.config/opencode/secrets/freellmapi-api-key}"
       },
       "models": {
         "auto": {

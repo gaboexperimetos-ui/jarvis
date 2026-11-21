@@ -7,7 +7,7 @@
       "name": "Unlimited (WARP pool)",
       "options": {
         "baseURL": "http://127.0.0.1:8090/v1",
-        "apiKey": "sk-cf992f37a16f8d24e57397587b96a964"
+        "apiKey": "{file:/home/gabo/.config/opencode/secrets/unlimited-api-key}"
       },
       "models": {
         "deepseek-v4.1-flash-free": {},

@@ -24,6 +24,16 @@ log() {
     fi
 }
 
+# ── Cerrojo: una sola pasada a la vez ────────────────────────────────────
+# El timer de 5 min y una ejecucion manual pueden solaparse y pelearse por el
+# repo (dos pull/commit a la vez). Si ya hay una pasada en curso, esta sale.
+mkdir -p "$HOME/.jarvis"
+exec 9>"$HOME/.jarvis/sync.lock"
+if ! flock -n 9; then
+    log "otra pasada en curso; salgo sin tocar nada"
+    exit 0
+fi
+
 # ── Mapa repo -> home. Formato: <ruta-en-repo>:<destino> ──────────────────
 MAP=(
     "hermes:$HOME/.hermes"
@@ -109,6 +119,10 @@ for entry in "${MAP[@]}"; do
         --exclude='kanban/' --exclude='secrets/' --exclude='*.bak*' \
         --exclude='identity.json' --exclude='service*.json' \
         --exclude='unlimited*.json' \
+        --exclude='*.db' --exclude='*.db-wal' --exclude='*.db-shm' \
+        --exclude='*.sqlite*' --exclude='attachments/' --exclude='node_modules/' \
+        --exclude='.git/' --exclude='*.log' --exclude='*.tmp' --exclude='.cache/' \
+        --exclude='__pycache__/' --exclude='.venv/' --exclude='venv/' \
         "$dst/" "$src/" 2>/dev/null || log "AVISO: rsync fallo en $src"
 done
 
@@ -117,6 +131,18 @@ done
 # ── 4. commit + push ─────────────────────────────────────────────────────
 if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
     git add -A
+
+    # Guardia de secretos: mira solo las lineas ANADIDAS, asi borrar una clave
+    # vieja no bloquea el sync. Si pita, no se commitea nada y se avisa.
+    SECRET_RE='(sk-[A-Za-z0-9]{32,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'
+    if git diff --cached | grep -E '^\+' | grep -qE "$SECRET_RE"; then
+        log "ERROR: posible secreto en lo que se iba a commitear; no commiteo."
+        log "       revisa: git diff --cached | grep -nE '^\\+.*($SECRET_RE)'"
+        log "       cuando lo saques del fichero, la siguiente pasada sigue sola."
+        git reset -q
+        exit 3
+    fi
+
     MSG="sync $(date '+%F %T')"
     git commit -q -m "$MSG" && log "commit: $MSG"
 fi
