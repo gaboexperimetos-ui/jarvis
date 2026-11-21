@@ -64,7 +64,7 @@ Se mantiene tu estilo (directo, sin relleno, español, tuteo, hechos vs estimaci
 3. **339 skills de OpenCode frente a las 11 de Hermes.** Un `skills.external_dirs` apuntando a todas inundaría el catálogo y gastaría contexto en descubrimiento. Mejor copiar 10-15 útiles.
 4. **Delegación:** los subagentes heredan el modelo caro. Fijar `delegation.model` a uno barato es donde se ahorra de verdad.
 5. **9 MCP en OpenCode:** si alguno está lento o caído, alarga el arranque. Empezaría por medir cuáles tardan con `opencode` en modo debug.
-6. **Rotar las dos claves** que estuvieron publicadas (ver sección 6).
+6. **Rotar la clave de Unlimited** que estuvo publicada en el historial (ver sección 6).
 7. **`opencode.jsonc`**: define el pool "Unlimited" en el 8090, pero `opencode.json` (el activo según `AGENTS.md`) no lo incluye. Decidir cuál manda y borrar el otro, o quedan dos configs divergentes.
 
 ---
@@ -99,22 +99,21 @@ grep -c "coding_instructions" ~/.hermes/config.yaml
 
 ## 6. Segunda pasada (mismo día, después)
 
-### 6.1 Dos claves estaban en claro en el repo
+### 6.1 Claves en claro en el repo
 
 | Fichero | Qué era | Ahora |
 |---|---|---|
-| `opencode/opencode.json` | clave de `freellmapi` (`localhost:3001`) | `{file:/home/gabo/.config/opencode/secrets/freellmapi-api-key}` |
 | `opencode/opencode.jsonc` | clave de "Unlimited" (`127.0.0.1:8090`) | `{file:/home/gabo/.config/opencode/secrets/unlimited-api-key}` |
 
-Las dos apuntan a servicios locales, así que el riesgo real es bajo, pero el repo es público y el historial ya las tiene. **Antes de mergear el PR**, o justo después del sync, ejecuta:
+Las claves apuntaban a servicios locales (`freellmapi` en 3001 y el pool "Unlimited" en 8090), así que el riesgo real es bajo, pero el repo es público y el historial ya las tiene. El proveedor `freellmapi` se ha **eliminado** de la config activa, así que solo queda una clave que recuperar. **Antes de mergear el PR**, o justo después del sync, ejecuta:
 
 ```bash
 cd ~/jarvis && ./scripts/seed-opencode-secrets.sh
 ```
 
-Recupera los valores del commit `59100aa`, los deja en `~/.config/opencode/secrets/` con permisos `600` y no los imprime. Es idempotente: si los ficheros ya existen, no hace nada. Probado en un `HOME` temporal: crea los dos ficheros (59 y 35 bytes) y la segunda pasada los respeta.
+Recupera el valor del commit `59100aa`, lo deja en `~/.config/opencode/secrets/` con permisos `600` y no lo imprime. Es idempotente: si el fichero ya existe, no hace nada. Probado en un `HOME` temporal: crea el fichero (35 bytes) y la segunda pasada lo respeta.
 
-Si no lo ejecutas, esos dos proveedores fallarán al arrancar hasta que las claves estén en su sitio. El modelo principal (`local/deepseek-v4pro`) no depende de ellas.
+Si no lo ejecutas, el proveedor `unlimited` fallará al arrancar (solo afecta a `opencode.jsonc`). El modelo principal (`local/deepseek-v4pro`) no depende de esta clave.
 
 ### 6.2 `jarvis-sync.sh` endurecido
 
@@ -127,7 +126,9 @@ Si no lo ejecutas, esos dos proveedores fallarán al arrancar hasta que las clav
 
 - **`small_model` corregido**: apuntaba a `opencode/minimax-m3.1-flash-free`, un proveedor que no existe en tu config; ahora `kiosapi/minimax-m3.1-flash-free`, que sí está definido. Era el modelo de títulos y tareas ligeras.
 - **12 reglas `ask` nuevas** en `permissions`: `git reset --hard`, `git clean`, `git push --force`, `pacman -R`, `pacman -S`, `docker system prune`, `docker volume rm`, `chown -R`, `truncate -s`, `npm publish`, `gh pr merge`, `> /dev/sd*`.
+- **Proveedor `freellmapi` eliminado** de `opencode.json` a petición tuya (24 líneas). Quedan `local`, `kiosapi`, `kilofree` y `openrouter`. Ningún agente usaba `freellmapi/...`, así que no hay referencias rotas.
 - Comprobado que `provider` y `providers` **no** son un error: el propio OpenCode migra el formato viejo (`provider`) al nuevo (`providers`) y fusiona ambos. Ahí no había nada que arreglar.
+- `opencode/opencode.json.rea.backup` sigue mencionando `freellmapi`, pero es una copia histórica y usa `{env:FREELLMAPI_API_KEY}` (sin secreto). No la toco; si quieres, se borra.
 
 ### 6.4 Hermes, tres ajustes más
 

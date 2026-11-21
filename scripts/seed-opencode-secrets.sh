@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Rellena los secretos que se sacaron del repo el 2026-11-21.
 #
-# `opencode.json` y `opencode.jsonc` ya no llevan las claves en claro: apuntan a
-#   ~/.config/opencode/secrets/freellmapi-api-key
+# `opencode.jsonc` ya no lleva la clave en claro: apunta a
 #   ~/.config/opencode/secrets/unlimited-api-key
+# (el proveedor freellmapi se elimino, su clave ya no hace falta)
 # Este script las recupera del historial de git y las deja en su sitio.
 #
 # Uso:
@@ -46,7 +46,6 @@ sys.stdout.write(node)
     echo "creado: $out ($(wc -c < "$out") bytes)"
 }
 
-seed "opencode/opencode.json"  "providers.freellmapi.settings.apiKey" "$DEST/freellmapi-api-key"
 seed "opencode/opencode.jsonc" "provider.unlimited.options.apiKey"    "$DEST/unlimited-api-key"
 
 echo "Listo. Reinicia opencode para que lea los ficheros."

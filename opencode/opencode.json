@@ -247,30 +247,6 @@
         }
       }
     },
-    "freellmapi": {
-      "name": "FreeLLMAPI",
-      "package": "@opencode/ai/providers/openai-compatible",
-      "settings": {
-        "baseURL": "http://localhost:3001/v1",
-        "apiKey": "{file:/home/gabo/.config/opencode/secrets/freellmapi-api-key}"
-      },
-      "models": {
-        "auto": {
-          "name": "Auto (router picks the best available model)",
-          "limit": {
-            "context": 128000,
-            "output": 8192
-          }
-        },
-        "fusion": {
-          "name": "Fusion (panel of models answer in parallel, a judge synthesizes one answer)",
-          "limit": {
-            "context": 128000,
-            "output": 8192
-          }
-        }
-      }
-    },
     "kiosapi": {
       "name": "KiosAPI",
       "package": "@opencode/ai/providers/openai-compatible",
