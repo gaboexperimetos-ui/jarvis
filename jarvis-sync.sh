@@ -1,69 +1,116 @@
-#!/bin/bash
-# jarvis-sync.sh — sincroniza /home/gabo con el repo local y GitHub
-# Se ejecuta automáticamente cada 5 minutos vía systemd timer
-set -euo pipefail
+#!/usr/bin/env bash
+# jarvis-sync.sh — sincroniza /home/gabo con GitHub en los DOS sentidos.
+#
+# Orden de cada pasada (cada 5 min, timer de systemd):
+#   1. pull --rebase            GitHub -> repo local
+#   2. merge-tree               repo  -> home  (solo lo que cambio en GitHub)
+#   3. mirror                   home  -> repo  (lo que cambio aqui)
+#   4. commit + push            repo  -> GitHub
+#
+# Regla de oro: un fichero que solo se toco en GitHub se aplica al home;
+# uno que se toco en los dos sitios NO se pisa: se guarda copia del que
+# llega de GitHub en ~/.jarvis/pending/ y se avisa en el log.
+set -uo pipefail
 
 REPO="/home/gabo/jarvis"
-REMOTE="git@github.com:gaboexperimetos-ui/jarvis.git"
-LOG="/home/gabo/jarvis/sync.log"
-MAX_LOG_LINES=200
+LOG="$REPO/sync.log"
+MAX_LOG=200
+PENDING="$HOME/.jarvis/pending"
 
 log() {
-    local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $*"
-    echo "$msg" >> "$LOG"
-    # Mantener el log bajo control
-    if [ "$(wc -l < "$LOG")" -gt "$MAX_LOG_LINES" ]; then
-        tail -n "$MAX_LOG_LINES" "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+    printf '[%s] %s\n' "$(date '+%F %T')" "$*" >> "$LOG"
+    if [ "$(wc -l < "$LOG" 2>/dev/null || echo 0)" -gt "$MAX_LOG" ]; then
+        tail -n "$MAX_LOG" "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
     fi
 }
 
-cd "$REPO" || { log "ERROR: no se puede entrar a $REPO"; exit 1; }
+# ── Mapa repo -> home. Formato: <ruta-en-repo>:<destino> ──────────────────
+MAP=(
+    "hermes:$HOME/.hermes"
+    "opencode:$HOME/.config/opencode"
+    "skills/ecc-skills:$HOME/ECC/skills"
+)
 
-# ── 1. Actualizar datos espejo ────────────────────────────────────────────
-# Hermes (sin secretos)
-rsync -a --delete \
-  --exclude='.env' --exclude='*.key' --exclude='*.token' \
-  --exclude='hermes-agent/' --exclude='tools/' --exclude='installs/' \
-  --exclude='cache/' --exclude='sessions/' \
-  ~/.hermes/ hermes/ 2>/dev/null || true
+# ── Ficheros de sistema que se restauran a su sitio ──────────────────────
+SYS_MAP=(
+    "system/hyprland.conf:$HOME/.config/hypr/hyprland.conf"
+    "system/kitty.conf:$HOME/.config/kitty/kitty.conf"
+)
 
-# OpenCode (sin tokens)
-rsync -a --delete \
-  --exclude='secrets/' --exclude='*.bak*' --exclude='identity.json' \
-  --exclude='service*.json' --exclude='unlimited*.json' \
-  ~/.config/opencode/ opencode/ 2>/dev/null || true
+cd "$REPO" || { log "ERROR: no puedo entrar a $REPO"; exit 1; }
 
-# Skills
-rsync -a --delete ~/ECC/skills/ skills/ecc-skills/ 2>/dev/null || true
-ls ~/.hermes/skills/ 2>/dev/null > skills/hermes-skills.txt || true
-
-# Info del sistema (solo lo estable: no memory/disk/network, que son ruido en cada sync)
-cp /etc/pacman.conf system/ 2>/dev/null || true
-cp ~/.config/hypr/hyprland.conf system/ 2>/dev/null || true
-cp ~/.config/kitty/kitty.conf system/ 2>/dev/null || true
-systemctl list-unit-files --state=enabled --no-pager > system/enabled-services.txt 2>/dev/null || true
-uname -a > system/uname.txt 2>/dev/null || true
-lspci > system/lspci.txt 2>/dev/null || true
-lsusb > system/lsusb.txt 2>/dev/null || true
-pactl list short sinks > system/audio-sinks.txt 2>/dev/null || true
-pactl list short sources > system/audio-sources.txt 2>/dev/null || true
-
-# ── 2. Git add + commit si hay cambios ────────────────────────────────────
-if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
-    git add -A
-    MSG="sync $(date '+%Y-%m-%d %H:%M')"
-    git commit -m "$MSG" --quiet || true
-    log "commit: $MSG"
-else
-    log "sin cambios"
+# ── 1. GitHub -> repo local ───────────────────────────────────────────────
+BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
+if ! git pull --rebase --autostash origin "$BRANCH" >>"$LOG" 2>&1; then
+    log "ERROR: pull --rebase fallo; no toco el home"
+    git rebase --abort 2>/dev/null || true
+    git stash pop 2>/dev/null || true
+    exit 1
 fi
 
-# ── 3. Push a GitHub ──────────────────────────────────────────────────────
-# Rebase antes de push (por si cambió desde otro lado)
-git pull --rebase origin main --quiet 2>/dev/null || \
-git pull --rebase origin master --quiet 2>/dev/null || true
+# ── 2. repo -> home: solo lo que cambio en ESTE pull ─────────────────────
+# `git diff HEAD@{1} HEAD` = exactamente lo que trajo GitHub.
+CHANGED="$(git diff --name-only 'HEAD@{1}' HEAD 2>/dev/null || true)"
 
-git push origin main 2>>"$LOG" || \
-git push origin master 2>>"$LOG" || true
+restore_one() {
+    local src="$REPO/$1" dst="$2"
+    [ -f "$src" ] || return 0
+    if [ -f "$dst" ] && ! cmp -s "$src" "$dst"; then
+        # El home tiene otra version: no la piso, la guardo aparte.
+        mkdir -p "$PENDING"
+        cp -p "$src" "$PENDING/$(echo "$1" | tr / _).github-$(date +%s)"
+        log "CONFLICTO $1: el home tenia otra version; copia de GitHub en $PENDING"
+        return 0
+    fi
+    mkdir -p "$(dirname "$dst")"
+    cp -p "$src" "$dst"
+    log "restaurado de GitHub: $1 -> $dst"
+}
 
-log "push OK"
+while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    for entry in "${MAP[@]}"; do
+        prefix="${entry%%:*}"; base="${entry#*:}"
+        case "$f" in
+            "$prefix"/*) restore_one "$f" "$base/${f#"$prefix"/}" ;;
+        esac
+    done
+    for entry in "${SYS_MAP[@]}"; do
+        rel="${entry%%:*}"; dst="${entry#*:}"
+        [ "$f" = "$rel" ] && restore_one "$f" "$dst"
+    done
+done <<< "$CHANGED"
+
+# ── 3. home -> repo (lo que yo cambie aqui) ──────────────────────────────
+for entry in "${MAP[@]}"; do
+    src="${entry%%:*}"; dst="${entry#*:}"
+    [ -d "$dst" ] || continue
+    rsync -a --delete \
+        --exclude='.env' --exclude='*.key' --exclude='*.token' \
+        --exclude='hermes-agent/' --exclude='tools/' --exclude='installs/' \
+        --exclude='cache/' --exclude='sessions/' --exclude='logs/' \
+        --exclude='state/' --exclude='telemetry/' --exclude='locks/' \
+        --exclude='runtime/' --exclude='terminal-sessions/' \
+        --exclude='backups/' --exclude='cron/' --exclude='gateway/' \
+        --exclude='kanban/' --exclude='secrets/' --exclude='*.bak*' \
+        --exclude='identity.json' --exclude='service*.json' \
+        --exclude='unlimited*.json' \
+        "$dst/" "$src/" 2>/dev/null || log "AVISO: rsync fallo en $src"
+done
+
+# system/ no se espeja de vuelta al home: es solo lectura (info de la maquina)
+
+# ── 4. commit + push ─────────────────────────────────────────────────────
+if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+    git add -A
+    MSG="sync $(date '+%F %T')"
+    git commit -q -m "$MSG" && log "commit: $MSG"
+fi
+
+if [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo '')" ]; then
+    if git push -q origin "$BRANCH" >>"$LOG" 2>&1; then
+        log "push OK"
+    else
+        log "ERROR: push fallo (¿cambio Github a la vez?); la proxima pasada lo reintenta"
+    fi
+fi
