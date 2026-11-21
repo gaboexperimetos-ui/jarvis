@@ -371,3 +371,7 @@ hermes/logs/
 hermes/telegram_update_receipts_*.json
 hermes/telemetry/
 hermes/.skills_prompt_snapshot.json
+
+# ─── Locks de sesion de Chromium/Electron: no deben viajar ───
+opencode/skills/**/profile/Singleton*
+opencode/skills/**/offline/profile/Singleton*

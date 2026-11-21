@@ -49,17 +49,31 @@ if ! git pull --rebase --autostash origin "$BRANCH" >>"$LOG" 2>&1; then
 fi
 
 # ── 2. repo -> home: solo lo que cambio en ESTE pull ─────────────────────
-# `git diff HEAD@{1} HEAD` = exactamente lo que trajo GitHub.
-CHANGED="$(git diff --name-only 'HEAD@{1}' HEAD 2>/dev/null || true)"
+# Comparo el HEAD de antes del pull (ORIG_HEAD) con el de ahora: eso es
+# exactamente lo que trajo GitHub, sin depender de la version de git.
+CHANGED="$(git diff --name-only ORIG_HEAD HEAD 2>/dev/null || true)"
 
 restore_one() {
     local src="$REPO/$1" dst="$2"
     [ -f "$src" ] || return 0
     if [ -f "$dst" ] && ! cmp -s "$src" "$dst"; then
-        # El home tiene otra version: no la piso, la guardo aparte.
+        # Solo es conflicto de verdad si el home NO coincide con lo que habia
+        # antes del pull: si coincide, es un cambio limpio de GitHub.
+        if git cat-file -e "ORIG_HEAD:$1" 2>/dev/null; then
+            git show "ORIG_HEAD:$1" > /tmp/jarvis-prev 2>/dev/null || true
+            if [ -s /tmp/jarvis-prev ] && cmp -s /tmp/jarvis-prev "$dst"; then
+                mkdir -p "$(dirname "$dst")"
+                cp -p "$src" "$dst"
+                log "restaurado de GitHub: $1 -> $dst"
+                rm -f /tmp/jarvis-prev
+                return 0
+            fi
+            rm -f /tmp/jarvis-prev
+        fi
+        # El home tiene cambios propios: no los piso.
         mkdir -p "$PENDING"
         cp -p "$src" "$PENDING/$(echo "$1" | tr / _).github-$(date +%s)"
-        log "CONFLICTO $1: el home tenia otra version; copia de GitHub en $PENDING"
+        log "CONFLICTO $1: el home cambio por su cuenta; la version de GitHub queda en $PENDING"
         return 0
     fi
     mkdir -p "$(dirname "$dst")"
