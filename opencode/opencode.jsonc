@@ -1,0 +1,45 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "unlimited/deepseek-v4.1-flash-free",
+  "provider": {
+    "unlimited": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Unlimited (WARP pool)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8090/v1",
+        "apiKey": "sk-cf992f37a16f8d24e57397587b96a964"
+      },
+      "models": {
+        "deepseek-v4.1-flash-free": {},
+        "beam-free": {},
+        "glm-5.3-flash-free": {},
+        "big-pickle": {},
+        "mimo-v2.6-flash-free": {},
+        "nemotron-3.5-lightning-free": {},
+        "nemotron-3.5-super-vl-free": {},
+        "flint-40b-free": {}
+      }
+    }
+  },
+  "plugins": [
+    "./plugins/unlimited-shield"
+  ],
+  "commands": {
+    "opencode-unlimited": {
+      "description": "OpenCode free-tier helper - project id, egress ip, bucket",
+      "template": "!`\"/home/gabo/tools/OpenCode-Unlimited/bin/opencode-unlimited\" status`\n\nAnswer with one short line about what the output above reported. No more."
+    },
+    "opencode-unlimited:test": {
+      "description": "check the free bucket on this IP (free)",
+      "template": "!`\"/home/gabo/tools/OpenCode-Unlimited/bin/opencode-unlimited\" test`\n\nAnswer with one short line about what the output above reported. No more."
+    },
+    "opencode-unlimited:reset": {
+      "description": "rotate a project (path optional), clear stuck limit errors",
+      "template": "!`\"/home/gabo/tools/OpenCode-Unlimited/bin/opencode-unlimited\" reset \"$ARGUMENTS\"`\n\nAnswer with one short line about what the output above reported. No more."
+    },
+    "opencode-unlimited:id": {
+      "description": "rotate a project id, pass a folder to pick which",
+      "template": "!`\"/home/gabo/tools/OpenCode-Unlimited/bin/opencode-unlimited\" id \"$ARGUMENTS\"`\n\nAnswer with one short line about what the output above reported. No more."
+    }
+  }
+}

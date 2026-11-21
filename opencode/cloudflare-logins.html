@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare Zero Trust — Logins</title>
+    <style>
+        body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 2em; max-width: 800px; margin: 0 auto; }
+        h1 { color: #00d4ff; border-bottom: 2px solid #00d4ff; padding-bottom: 0.5em; }
+        .account { background: #16213e; border-left: 4px solid #0f3460; padding: 1em; margin: 1em 0; border-radius: 4px; }
+        .email { color: #00d4ff; font-size: 1.1em; font-weight: bold; }
+        a.btn { display: inline-block; background: #e94560; color: white; text-decoration: none; padding: 0.7em 1.5em; border-radius: 4px; margin-top: 0.5em; font-weight: bold; }
+        a.btn:hover { background: #ff2e63; }
+        ol li { margin: 0.5em 0; }
+        .step-note { color: #888; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<h1>🔗 Cloudflare Zero Trust — Multi-Account Setup</h1>
+<p class="step-note">Hacé clic en cada enlace arriba para abrir la pestaña de registro/login. Resolvé el captcha y seguí los pasos.</p>
+
+<!-- ACCOUNT 1 -->
+<div class="account">
+    <p class="email">1️⃣ lenninsalas@arrayaenesalamo.edu.ec</p>
+    <a class="btn" href="https://one.dash.cloudflare.com/sign-up" target="_blank">🚀 Ir al Registro</a>
+    <ol>
+        <li>Hacé clic en el botón rojo → se abre una nueva pestaña</li>
+        <li>Elegí <strong>"Start for free"</strong> o <strong>"Sign up"</strong></li>
+        <li>Ingresá <code>lenninsalas@arrayaenesalamo.edu.ec</code></li>
+        <li>Resolvé el CAPTCHA si aparece</li>
+        <li>Chequeá tu bandeja de correo y hacé clic en el link de verificación</li>
+        <li>Creá contraseña para tu equipo nuevo</li>
+        <li>Llamalo algo como <code>asus-tuf-account1</code></li>
+    </ol>
+</div>
+
+<!-- ACCOUNT 2 -->
+<div class="account">
+    <p class="email">2️⃣ gaboexperimetos@gmail.com</p>
+    <a class="btn" href="https://one.dash.cloudflare.com/sign-up" target="_blank">🚀 Ir al Registro</a>
+    <ol>
+        <li>Mismos pasos que arriba</li>
+        <li>Usá este gmail en la siguiente cuenta</li>
+    </ol>
+</div>
+
+<!-- ACCOUNT 3 -->
+<div class="account">
+    <p class="email">3️⃣ gruposalas2025@gmail.com</p>
+    <a class="btn" href="https://one.dash.cloudflare.com/sign-up" target="_blank">🚀 Ir al Registro</a>
+    <ol><li>Mismo proceso → nueva cuenta → nuevo IP de salida</li></ol>
+</div>
+
+<!-- ACCOUNT 4 -->
+<div class="account">
+    <p class="email">4️⃣ gabrieljuegos629@gmail.com</p>
+    <a class="btn" href="https://one.dash.cloudflare.com/sign-up" target="_blank">🚀 Ir al Registro</a>
+    <ol><li>Mismo proceso → nueva cuenta → nuevo IP de salida</li></ol>
+</div>
+
+<!-- ACCOUNT 5 -->
+<div class="account">
+    <p class="email">5️⃣ gabosx85@gmail.com</p>
+    <a class="btn" href="https://one.dash.cloudflare.com/sign-up" target="_blank">🚀 Ir al Registro</a>
+    <ol><li>Mismo proceso → nueva cuenta → nuevo IP de salida</li></ol>
+</div>
+
+<!-- ACCOUNT 6 -->
+<div class="account">
+    <p class="email">6️⃣ salasgrupo7@gmail.com</p>
+    <a class="btn" href="https://one.dash.cloudflare.com/sign-up" target="_blank">🚀 Ir al Registro</a>
+    <ol><li>Mismo proceso → nueva cuenta → nuevo IP de salida</li></ol>
+</div>
+
+<hr style="border-color: #333; margin: 2em 0;">
+
+<h2 style="color: #00d4ff;">✅ Después de crear las cuentas:</h2>
+<p>Volvé a esta terminal y decime cuando terminaste todas. Yo hago esto automáticamente:</p>
+<ol>
+    <li><code>warp-cli disconnect</code> + <code>warp-cli login [tu-cuenta]</code></li>
+    <li><code>warp-cli mode proxy</code> + <code>warp-cli connect</code></li>
+    <li>Verifico si la IP cambió vs anterior</li>
+    <li>Si cambió → <code>./bin/opencode-unlimited pool add socks5://127.0.0.1:40000</code></li>
+    <li>Testeo contra OpenCode gateway para ver si quedó cupo libre</li>
+</ol>
+
+<p class="step-note">Nota: Si alguna cuenta da error o repetición de captcha, usá otro email temporal tipo protonmail o tempmail.</p>
+
+</body>
+</html>

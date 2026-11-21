@@ -1,0 +1,2150 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "local/deepseek-v4pro",
+  "permissions": [
+    {
+      "action": "*",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*rm -rf*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*rm -fr*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*mkfs*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*dd if=*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*shutdown*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*reboot*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl *",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*chmod -R 777*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*git push*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*curl *|*sh*",
+      "effect": "ask"
+    }
+  ],
+  "mcp": {
+    "genoffice": {
+      "type": "local",
+      "command": [
+        "/opt/GenOffice/resources/cli/genoffice",
+        "mcp"
+      ],
+      "enabled": true
+    },
+    "mikareno": {
+      "type": "remote",
+      "url": "http://127.0.0.1:8080/mcp",
+      "enabled": true
+    },
+    "rea": {
+      "type": "local",
+      "command": [
+        "/home/gabo/.npm-global/bin/rea",
+        "mcp"
+      ],
+      "enabled": true,
+      "env": {
+        "JAVA_HOME": "/home/gabo/jdk-21",
+        "GHIDRA_INSTALL_DIR": "/home/gabo/ghidra-tmp/ghidra_12.1.4_PUBLIC",
+        "REA_JADX_MCP_JAR": "/home/gabo/.local/jadx/jadx-headless-mcp-0.7.1-all.jar",
+        "REA_APKTOOL_JAR": "/home/gabo/.local/apktool/apktool_2.9.3.jar",
+        "PATH": "/home/gabo/jdk-21/bin:/home/gabo/.local/android/platform-tools:/home/gabo/.local/bin:/home/gabo/.npm-global/bin:/usr/local/bin:/usr/bin:/bin",
+        "PYTHONPATH": "/home/gabo/.local/lib/python3.14/site-packages",
+        "REA_KUNA_COMMAND": "/home/gabo/.local/kuna/kuna-v1.992-linux-x86_64/kuna",
+        "HOPPER_LAUNCHER_PATH": "/home/gabo/.local/hopper/bin/Hopper"
+      }
+    },
+    "freecad": {
+      "type": "local",
+      "command": [
+        "/bin/bash",
+        "-c",
+        "exec /home/gabo/.local/share/freecad-mcp/.venv/bin/freecad-mcp --freecadcmd /home/gabo/.local/bin/freecadcmd 2>/dev/null"
+      ],
+      "enabled": true,
+      "env": {
+        "FREECAD_PATH": "/home/gabo/.local/opt/freecad-1.1.4/usr/bin/freecad",
+        "FREECADCMD": "/home/gabo/.local/opt/freecad-1.1.4/usr/bin/freecadcmd",
+        "PATH": "/home/gabo/.local/bin:/home/gabo/.local/share/freecad-mcp/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "blender": {
+      "type": "local",
+      "command": [
+        "/home/gabo/.local/bin/blender-mcp"
+      ],
+      "enabled": true
+    },
+    "shopify": {
+      "type": "local",
+      "command": [
+        "/usr/bin/node",
+        "/home/gabo/proyectos/shopify-mcp/src/server.js"
+      ],
+      "enabled": true,
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "facebook": {
+      "type": "local",
+      "command": [
+        "bash",
+        "/home/gabo/proyectos/facebook-mcp/run.sh"
+      ],
+      "enabled": true
+    },
+    "meta-ads": {
+      "type": "local",
+      "command": [
+        "bash",
+        "/home/gabo/meta-ads-mcp-server/run.sh"
+      ],
+      "enabled": true
+    },
+    "servers": {
+      "meta-official": {
+        "type": "remote",
+        "url": "https://mcp.facebook.com/ads",
+        "headers": {
+          "Authorization": "Bearer {file:/home/gabo/.config/opencode/secrets/meta-mcp-token}"
+        },
+        "oauth": false
+      },
+      "enabled": true
+    }
+  },
+  "compaction": {
+    "auto": true
+  },
+  "small_model": "opencode/minimax-m3.1-flash-free",
+  "providers": {
+    "local": {
+      "name": "Local (router llama.cpp 8004)",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "http://127.0.0.1:8004/v1",
+        "apiKey": "sk-local",
+        "headerTimeout": 300000,
+        "chunkTimeout": 600000
+      },
+      "models": {
+        "deepseek-v4pro": {
+          "name": "deepseek-v4pro",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 204800,
+            "output": 8192
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      }
+    },
+    "freellmapi": {
+      "name": "FreeLLMAPI",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "http://localhost:3001/v1",
+        "apiKey": "freellmapi-3967be1a01983271e31c18ce35ec29fc13f1b4a7484ca3a0"
+      },
+      "models": {
+        "auto": {
+          "name": "Auto (router picks the best available model)",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          }
+        },
+        "fusion": {
+          "name": "Fusion (panel of models answer in parallel, a judge synthesizes one answer)",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          }
+        }
+      }
+    },
+    "kiosapi": {
+      "name": "KiosAPI",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://kiosapi.com/v1",
+        "apiKey": "{file:/home/gabo/.config/opencode/secrets/kiosapi-api-key}"
+      },
+      "models": {
+        "nemotron-3-nano-omni-30b-a3b-reasoning": {
+          "name": "nemotron-3-nano-omni-30b-a3b-reasoning (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "step-5-preview": {
+          "name": "step-5-preview (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "deepseek-v4-flash-free": {
+          "name": "deepseek-v4-flash-free (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "intern-s2": {
+          "name": "intern-s2 (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "minimax-m3.1-flash-free": {
+          "name": "minimax-m3.1-flash-free (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "glyph-cluster": {
+          "name": "glyph-cluster (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nemotron-3-ultra-550b-a55b": {
+          "name": "nemotron-3-ultra-550b-a55b (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nemotron-3.5-bolt-e4b": {
+          "name": "nemotron-3.5-bolt-e4b (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nemotron-3.5-lightning": {
+          "name": "nemotron-3.5-lightning (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "mistral-large-4": {
+          "name": "mistral-large-4 (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "flint-v1.0": {
+          "name": "flint-v1.0 (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "agnes-2.5-flash": {
+          "name": "agnes-2.5-flash (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "agnes-3.0-flash": {
+          "name": "agnes-3.0-flash (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nemotron-3.5-super-vl": {
+          "name": "nemotron-3.5-super-vl (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "glm-5.3-flash-free": {
+          "name": "glm-5.3-flash-free (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "laguna-xs-2.1": {
+          "name": "laguna-xs-2.1 (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "ernie-5.5-flash-preview": {
+          "name": "ernie-5.5-flash-preview (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "beam-free": {
+          "name": "beam-free (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      }
+    },
+    "kilofree": {
+      "name": "Kilo Gateway (free)",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://ai-gateway.kilo.ai/api/v1"
+      },
+      "models": {
+        "kilo-auto/free": {
+          "name": "Auto Free",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 256000,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "openrouter/free": {
+          "name": "OpenRouter Free Models Router",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 200000,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "inclusionai/ling-3.2-flash:free": {
+          "name": "inclusionAI: Ling 3.2 Flash (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 262144
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "baidu/ernie-5.5-flash-preview:free": {
+          "name": "Baidu: ERNIE-5.5-Flash-Preview (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1024000,
+            "output": 921600
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "particle-ai/particle-1:free": {
+          "name": "Particle AI: Particle-1 (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 131072
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "recursive/flint-v1.0:free": {
+          "name": "Recursive: Flint (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 235929
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nvidia/nemotron-3.5-super-vl:free": {
+          "name": "NVIDIA: Nemotron 3.5 Super VL (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 131072
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "dots-studio/dots-3-note-preview:free": {
+          "name": "Dots Studio: Dots3-Note Preview (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 512000,
+            "output": 460800
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nvidia/nemotron-3.5-lightning:free": {
+          "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 65536
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nvidia/nemotron-3-ultra-550b-a55b:free": {
+          "name": "NVIDIA: Nemotron 3 Ultra (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 65536
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+          "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "audio",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 256000,
+            "output": 65536
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "reflection/beam-free": {
+          "name": "Reflection: Beam 1.0 (Free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 131072
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        },
+        "stealth/glyph-cluster": {
+          "name": "Glyph Cluster",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 256000,
+            "output": 256000
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      }
+    },
+    "openrouter": {
+      "models": {
+        "baidu/ernie-5.5-flash-preview:free": {
+          "name": "Baidu: ERNIE-5.5-Flash-Preview (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1024000,
+            "output": 921600
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-11-10"
+        },
+        "google/gemma-4-26b-a4b-it:free": {
+          "name": "Google: Gemma 4 26B A4B  (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "image",
+              "text",
+              "video"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-04-03"
+        },
+        "google/gemma-4-31b-it:free": {
+          "name": "Google: Gemma 4 31B (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "image",
+              "text",
+              "video"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-04-02"
+        },
+        "inclusionai/ling-3.2-flash:free": {
+          "name": "inclusionAI: Ling 3.2 Flash (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 262144
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-11-13"
+        },
+        "liquid/lfm-3-1.7b:free": {
+          "name": "LiquidAI: LFM3-1.7B (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 8192
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-11-06"
+        },
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+          "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "audio",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 256000,
+            "output": 65536
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-04-28"
+        },
+        "nvidia/nemotron-3-ultra-550b-a55b:free": {
+          "name": "NVIDIA: Nemotron 3 Ultra (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 65536
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-06-04"
+        },
+        "nvidia/nemotron-3.5-lightning:free": {
+          "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 65536
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-08-11"
+        },
+        "nvidia/nemotron-3.5-super-vl:free": {
+          "name": "NVIDIA: Nemotron 3.5 Super VL (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image",
+              "video"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1000000,
+            "output": 131072
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-10-15"
+        },
+        "particle-ai/particle-1:free": {
+          "name": "Particle AI: Particle-1 (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 131072
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-10-28"
+        },
+        "recursive/flint-v1.0:free": {
+          "name": "Recursive: Flint (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 262144,
+            "output": 235929
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-10-21"
+        },
+        "openrouter/free": {
+          "name": "Free Models Router",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 200000,
+            "output": 200000
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-02-01"
+        }
+      }
+    }
+  },
+  "agents": {
+    "egm-codebase-details": {
+      "description": "EGM Goldfish de solo lectura: Pedantic Technical Quality Auditor verifying that documentation accurately and exhaustively matches actual codebase implementation and existing library reuse opportunities.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/codebase_details.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-comprehension": {
+      "description": "EGM Goldfish de solo lectura: Naive Reader persona auditing documents with zero assumed institutional knowledge, flagging undefined terms, acronyms, and comprehension gaps.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/comprehension.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-design": {
+      "description": "EGM Goldfish de solo lectura: Hostile Design Critic persona focused on system architecture, scalability, infrastructure economics, and unmitigated risks.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/design_critic.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-implementation-readiness": {
+      "description": "EGM Goldfish de solo lectura: Pragmatic Tech Lead persona verifying that implementation plans contain unambiguous, fully actionable execution instructions without leaving design decisions to the implementer.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/implementation_readiness.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-inventive-catalyst": {
+      "description": "EGM Goldfish de solo lectura: Inventive problem-solving Goldfish persona applying TRIZ principles to identify and eliminate system-level contradictions without compromise.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/inventive_catalyst.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-structural": {
+      "description": "EGM Goldfish de solo lectura: Structural Layout Validator and Document Architect persona focused on symmetry, heading hierarchy, formatting, and template compliance.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/structural.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-style": {
+      "description": "EGM Goldfish de solo lectura: Technical Copy Editor persona focused on clarity, precision, brevity, objective framing, and stripping fluff.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/style.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-zoom-out": {
+      "description": "EGM Goldfish de solo lectura: Skeptical Architect persona focused on high-altitude simplicity, minimalism, YAGNI, and codebase reuse.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/zoom_out.md primero y sigue ese prompt al pie de la letra. Eres un revisor de solo lectura: no puedes escribir, editar ni ejecutar comandos. No tienes historial de conversacion: no pidas ni recuperes contexto previo. Devuelve tus hallazgos al agente que te delego. Si un archivo requerido no es accesible, reporta la revision como incompleta.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-synthesizer": {
+      "description": "EGM: agrega y deduplica hallazgos de varios Goldfish y compila un informe. Solo se usa cuando la skill canonica lo pide explicitamente.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/synthesizer.md primero y sigue ese prompt. Compila, deduplica y normaliza los hallazgos de los revisores Goldfish. No escribas codigo ni edites archivos del proyecto.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-codebase-details",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-comprehension",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-design",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-implementation-readiness",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-inventive-catalyst",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-structural",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-style",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-zoom-out",
+          "effect": "allow"
+        }
+      ]
+    },
+    "egm-bootstrap-orchestrator": {
+      "description": "EGM: orquesta el bootstrap de documentacion README en un subarbol. Puede delegar en Goldfish. La delegacion anidada en OpenCode V2 no esta verificada.",
+      "mode": "subagent",
+      "system": "Lee /home/gabo/.config/opencode/egm/bundle/agents/bootstrap_orchestrator.md primero y sigue ese prompt. Puedes delegar lecturas en los revisores Goldfish registrados. Si la delegacion anidada no esta disponible, ejecuta los pasos de scouting en linea.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "*.env",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.*",
+          "effect": "deny"
+        },
+        {
+          "action": "read",
+          "resource": "*.env.example",
+          "effect": "allow"
+        },
+        {
+          "action": "glob",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/tmp/opencode/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/*",
+          "effect": "allow"
+        },
+        {
+          "action": "external_directory",
+          "resource": "/home/gabo/.config/opencode/egm/bundle",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/tmp/opencode/**",
+          "effect": "allow"
+        },
+        {
+          "action": "read",
+          "resource": "/home/gabo/.config/opencode/egm/bundle/**",
+          "effect": "allow"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-codebase-details",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-comprehension",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-design",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-implementation-readiness",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-inventive-catalyst",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-structural",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-style",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "egm-zoom-out",
+          "effect": "allow"
+        }
+      ]
+    },
+    "rapido": {
+      "description": "Agente local rapido (LFM3 1.7B) con acceso completo a herramientas. Tareas cortas.",
+      "mode": "primary",
+      "model": "local/deepseek-v4pro",
+      "steps": 12,
+      "system": "Eres un agente de terminal. Trabajas en Linux, en el PC del usuario. Reglas: 1) Responde en espanol, breve. 2) No inventes: si el dato no lo has leido con una herramienta en esta conversacion, usa la herramienta o di que no lo sabes. 3) Antes de afirmar algo sobre el sistema, verificalo (ls, cat, systemctl, curl). 4) Si una herramienta falla, corrige la llamada y reintenta una vez; no culpes a la herramienta. 5) No cambies archivos de configuracion ni borres nada sin que el usuario lo pida explicitamente. 6) Contesta lo que se pregunta, sin menus de opciones ni preguntas de vuelta si ya tienes la informacion.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "allow"
+        }
+      ]
+    },
+    "local": {
+      "description": "Agente local con criterio (DeepSeek-V4-Pro 4B heretic, 192k). Acceso completo a herramientas.",
+      "mode": "primary",
+      "model": "local/deepseek-v4pro",
+      "steps": 25,
+      "system": "Eres un agente de terminal. Trabajas en Linux, en el PC del usuario. Reglas: 1) Responde en espanol, breve. 2) No inventes: si el dato no lo has leido con una herramienta en esta conversacion, usa la herramienta o di que no lo sabes. 3) Antes de afirmar algo sobre el sistema, verificalo (ls, cat, systemctl, curl). 4) Si una herramienta falla, corrige la llamada y reintenta una vez; no culpes a la herramienta. 5) No cambies archivos de configuracion ni borres nada sin que el usuario lo pida explicitamente. 6) Contesta lo que se pregunta, sin menus de opciones ni preguntas de vuelta si ya tienes la informacion.",
+      "permissions": [
+        {
+          "action": "*",
+          "resource": "*",
+          "effect": "allow"
+        }
+      ]
+    }
+  },
+  "skills": [],
+  "plugins": [],
+  "commands": {},
+  "provider": {
+    "groq": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Groq",
+      "options": {
+        "baseURL": "https://api.groq.com/openai/v1",
+        "apiKey": "{env:GROQ_API_KEY}"
+      },
+      "models": {
+        "openai/gpt-oss-120b": {
+          "name": "GPT-OSS 120B (Groq)"
+        },
+        "openai/gpt-oss-20b": {
+          "name": "GPT-OSS 20B (Groq)"
+        },
+        "qwen/qwen3.8-27b": {
+          "name": "Qwen3.8 27B (Groq)"
+        }
+      }
+    },
+    "openrouter": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "OpenRouter",
+      "options": {
+        "baseURL": "https://openrouter.ai/api/v1",
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      },
+      "models": {
+        "nvidia/nemotron-3-ultra-550b-a55b:free": {
+          "name": "Nemotron 3 Ultra 550B (free)"
+        },
+        "baidu/ernie-5.5-flash-preview:free": {
+          "name": "Baidu ERNIE 5.5 Flash (free)"
+        },
+        "nvidia/nemotron-3.5-super-vl:free": {
+          "name": "Nemotron 3.5 Super VL (free)"
+        },
+        "cohere/north-mini-code:free": {
+          "name": "Cohere North Mini Code (free)"
+        },
+        "recursive/flint-v1.0:free": {
+          "name": "Recursive Flint v1 (free)"
+        },
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+          "name": "Nemotron 3 Nano Omni (free)"
+        }
+      }
+    }
+  }
+}

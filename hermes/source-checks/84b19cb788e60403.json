@@ -1,0 +1,32 @@
+{
+  "identity": {
+    "root": "/home/gabo/.hermes/hermes-agent",
+    "home": "/home/gabo/.hermes",
+    "head": "caafe5389ae585ef77387a962aee05b1bcf17029",
+    "origin": "https://github.com/NousResearch/hermes-agent.git",
+    "branch": "main",
+    "channel": "stable",
+    "embedded": null,
+    "branchOverride": false,
+    "channelProtocol": 3,
+    "forwardOnly": true
+  },
+  "ts": 1795269662.7326443,
+  "status": {
+    "supported": true,
+    "hermesRoot": "/home/gabo/.hermes/hermes-agent",
+    "behind": 0,
+    "commits": [],
+    "currentSha": "caafe5389ae585ef77387a962aee05b1bcf17029",
+    "currentBranch": "HEAD",
+    "dirty": false,
+    "channel": "stable",
+    "fetchedAt": 1795269662732,
+    "targetSha": "caafe5389ae585ef77387a962aee05b1bcf17029",
+    "updateAvailable": false,
+    "sourceVersion": "0.23.3",
+    "buildId": null,
+    "aheadOfRelease": false,
+    "rollback": false
+  }
+}

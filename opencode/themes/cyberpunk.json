@@ -1,0 +1,289 @@
+{
+  "$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "cyberpunkFg": "#dcdccc",
+    "cyberpunkBg-1": "#2b2b2b",
+    "cyberpunkBg-05": "#383838",
+    "cyberpunkBg": "#000000",
+    "cyberpunkBg+1": "#4f4f4f",
+    "cyberpunkBg+2": "#5f5f5f",
+    "cyberpunkBg+3": "#6f6f6f",
+    "cyberpunkRed+1": "#dca3a3",
+    "cyberpunkRed": "#ff0000",
+    "cyberpunkRed-1": "#8b0000",
+    "cyberpunkRed-2": "#8b0000",
+    "cyberpunkRed-3": "#9c6363",
+    "cyberpunkRed-4": "#8c5353",
+    "cyberpunkRed-5": "#7f073f",
+    "cyberpunkPink": "#ff69b4",
+    "cyberpunkPink-1": "#ff1493",
+    "cyberpunkPink-2": "#cd1076",
+    "cyberpunkOrange-2": "#ff6400",
+    "cyberpunkOrange-1": "#ff8c00",
+    "cyberpunkOrange": "#ffa500",
+    "cyberpunkYellow": "#ffff00",
+    "cyberpunkYellow-1": "#fbde2d",
+    "cyberpunkYellow-2": "#d0bf8f",
+    "cyberpunkYellow-3": "#d8fa3c",
+    "cyberpunkYellow-4": "#e9c062",
+    "cyberpunkYellow-5": "#ffd700",
+    "cyberpunkGreen-2": "#006400",
+    "cyberpunkGreen-1": "#2e8b57",
+    "cyberpunkGreen": "#00ff00",
+    "cyberpunkGreen+1": "#61ce3c",
+    "cyberpunkGreen+2": "#9fc59f",
+    "cyberpunkGreen+3": "#afd8af",
+    "cyberpunkGreen+4": "#bfebbf",
+    "cyberpunkCyan": "#93e0e3",
+    "cyberpunkBlue+1": "#94bff3",
+    "cyberpunkBlue": "#0000ff",
+    "cyberpunkBlue-1": "#7b68ee",
+    "cyberpunkBlue-2": "#6a5acd",
+    "cyberpunkBlue-3": "#add8e6",
+    "cyberpunkBlue-4": "#b2dfee",
+    "cyberpunkBlue-5": "#4c83ff",
+    "cyberpunkBlue-6": "#96cbfe",
+    "cyberpunkBlue-7": "#00ffff",
+    "cyberpunkBlue-8": "#4f94cd",
+    "cyberpunkMagenta": "#dc8cc3",
+    "cyberpunkBlack-2": "#0c1021",
+    "cyberpunkBlack-3": "#0a0a0a",
+    "cyberpunkGray": "#d3d3d3",
+    "cyberpunkGray-2": "#8b8989",
+    "cyberpunkGray-3": "#919191",
+    "cyberpunkGray-4": "#999999",
+    "cyberpunkGray-5": "#333333",
+    "cyberpunkGray-6": "#1a1a1a",
+    "cyberpunkGray-7": "#4d4d4d",
+    "cyberpunkGray-8": "#262626",
+    "cyberpunkWhite": "#ffffff",
+    "cyberpunkWhite-2": "#f8f8f8",
+    "cyberpunkWhite-3": "#fffafa"
+  },
+   "theme": {
+     "primary": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "secondary": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "accent": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "error": {
+       "dark": "cyberpunkRed",
+       "light": "cyberpunkRed"
+     },
+     "warning": {
+       "dark": "cyberpunkYellow",
+       "light": "cyberpunkYellow"
+     },
+     "success": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "info": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "text": {
+       "dark": "cyberpunkFg",
+       "light": "cyberpunkWhite"
+     },
+     "textMuted": {
+       "dark": "cyberpunkGray-3",
+       "light": "cyberpunkGray-4"
+     },
+     "background": {
+       "dark": "cyberpunkBg",
+       "light": "cyberpunkBg-1"
+     },
+     "backgroundPanel": {
+       "dark": "cyberpunkBg-05",
+       "light": "cyberpunkBg-1"
+     },
+     "backgroundElement": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "border": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg+2"
+     },
+     "borderActive": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkMagenta"
+     },
+     "borderSubtle": {
+       "dark": "cyberpunkBg+2",
+       "light": "cyberpunkBg+3"
+     },
+     "diffAdded": {
+       "dark": "cyberpunkGreen+1",
+       "light": "cyberpunkGreen+1"
+     },
+     "diffRemoved": {
+       "dark": "cyberpunkPink-1",
+       "light": "cyberpunkPink-1"
+     },
+     "diffContext": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "diffHunkHeader": {
+       "dark": "cyberpunkBg+2",
+       "light": "cyberpunkBg+1"
+     },
+     "diffHighlightAdded": {
+       "dark": "cyberpunkGreen",
+       "light": "cyberpunkGreen+1"
+     },
+     "diffHighlightRemoved": {
+       "dark": "cyberpunkPink",
+       "light": "cyberpunkPink-1"
+     },
+     "diffAddedBg": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "diffRemovedBg": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "diffContextBg": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "diffLineNumber": {
+       "dark": "cyberpunkGray-3",
+       "light": "cyberpunkGray-4"
+     },
+     "diffAddedLineNumberBg": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "diffRemovedLineNumberBg": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg-1"
+     },
+     "markdownText": {
+       "dark": "cyberpunkFg",
+       "light": "cyberpunkWhite"
+     },
+     "markdownHeading": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "markdownLink": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "markdownLinkText": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "markdownCode": {
+       "dark": "cyberpunkYellow-1",
+       "light": "cyberpunkYellow-1"
+     },
+     "markdownBlockQuote": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "markdownEmph": {
+       "dark": "cyberpunkPink",
+       "light": "cyberpunkPink"
+     },
+     "markdownStrong": {
+       "dark": "cyberpunkYellow",
+       "light": "cyberpunkYellow"
+     },
+     "markdownHorizontalRule": {
+       "dark": "cyberpunkBg+1",
+       "light": "cyberpunkBg+1"
+     },
+     "markdownListItem": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "markdownListEnumeration": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "markdownImage": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "markdownImageText": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "markdownCodeBlock": {
+       "dark": "cyberpunkFg",
+       "light": "cyberpunkWhite"
+     },
+     "syntaxComment": {
+       "dark": "cyberpunkGray-3",
+       "light": "cyberpunkGray-4"
+     },
+     "syntaxKeyword": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "syntaxFunction": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "syntaxVariable": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "syntaxString": {
+       "dark": "cyberpunkYellow-1",
+       "light": "cyberpunkYellow-1"
+     },
+     "syntaxNumber": {
+       "dark": "cyberpunkPink",
+       "light": "cyberpunkPink"
+     },
+     "syntaxType": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "syntaxOperator": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "syntaxPunctuation": {
+       "dark": "cyberpunkFg",
+       "light": "cyberpunkWhite"
+     },
+     "inputBackground": {
+       "dark": "cyberpunkBg",
+       "light": "cyberpunkBg-1"
+     },
+     "InputBorder": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "InputBorderActive": {
+       "dark": "cyberpunkMagenta",
+       "light": "cyberpunkMagenta"
+     },
+     "inputPrompt": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "inputCursor": {
+       "dark": "cyberpunkCyan",
+       "light": "cyberpunkCyan"
+     },
+     "inputText": {
+       "dark": "cyberpunkFg",
+       "light": "cyberpunkWhite"
+     }
+   }
+}

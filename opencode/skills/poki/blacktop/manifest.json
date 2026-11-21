@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Poki Blacktop Launcher",
+  "version": "1.0",
+  "description": "Blacktop Police Chase: bypass rewarded ads + unlock all cars, fullscreen offline.",
+  "permissions": ["storage", "unlimitedStorage", "cookies", "clipboardRead"],
+  "host_permissions": [
+    "*://*.poki.com/*",
+    "*://*.poki-gdn.com/*",
+    "*://*.poki-cdn.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.poki.com/*",
+        "*://*.poki-gdn.com/*",
+        "*://*.poki-cdn.com/*"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "48": "icon.png"
+  }
+}

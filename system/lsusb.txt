@@ -1,0 +1,13 @@
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 322e:202c Sonix Technology Co., Ltd. USB2.0 HD UVC WebCam
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 002: ID 1ea7:0064 SHARKOON Technologies GmbH 2.4GHz Wireless rechargeable vertical mouse [More&Better]
+Bus 003 Device 003: ID 13d3:3563 IMC Networks Wireless_Device
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 005 Device 002: ID 0b05:6208 ASUSTek Computer, Inc. C-Media(R) Audio
+Bus 006 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 007 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 008 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 009 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub

@@ -1,0 +1,33 @@
+UNIT FILE                         STATE   PRESET
+cachyos-iw-set-regdomain.path     enabled disabled
+ananicy-cpp.service               enabled disabled
+bluetooth.service                 enabled disabled
+coolercontrold.service            enabled disabled
+dmemcg-booster-system.service     enabled disabled
+docker.service                    enabled disabled
+getty@.service                    enabled enabled
+NetworkManager-dispatcher.service enabled disabled
+NetworkManager.service            enabled disabled
+nvidia-hibernate.service          enabled disabled
+nvidia-resume.service             enabled disabled
+nvidia-suspend.service            enabled disabled
+scx_loader.service                enabled disabled
+sddm.service                      enabled disabled
+sshd.service                      enabled disabled
+supergfxd.service                 enabled disabled
+switcheroo-control.service        enabled disabled
+systemd-resolved.service          enabled enabled
+systemd-timesyncd.service         enabled enabled
+tailscaled.service                enabled disabled
+tuf-perfil.service                enabled disabled
+ufw.service                       enabled disabled
+warp-svc.service                  enabled disabled
+systemd-resolved-monitor.socket   enabled disabled
+systemd-resolved-varlink.socket   enabled disabled
+systemd-userdbd.socket            enabled enabled
+remote-fs.target                  enabled enabled
+cachyos-rate-mirrors.timer        enabled disabled
+fstrim.timer                      enabled disabled
+zram-recomp.timer                 enabled disabled
+
+30 unit files listed.
