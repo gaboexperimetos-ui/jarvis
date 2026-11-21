@@ -350,3 +350,24 @@ hermes/plugin-update-checks/
 hermes/backups/
 system/audio-sinks.txt
 system/audio-sources.txt
+
+# ─── Resto de ruido de Hermes (locks, caches, estado vivo) ───
+hermes/.*.lock
+hermes/.restart_pending.json
+hermes/.clean_shutdown
+hermes/channel_directory.json
+hermes/gateway_state.json
+hermes/log_hash_salt
+hermes/models_dev_cache.*
+hermes/provider_models_cache.json
+hermes/plugin-update-checks/
+hermes/source-checks/
+hermes/spawn-ledger.json
+hermes/state/
+hermes/kanban/
+hermes/cron/
+hermes/logs/
+hermes/logs/
+hermes/telegram_update_receipts_*.json
+hermes/telemetry/
+hermes/.skills_prompt_snapshot.json
