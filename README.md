@@ -1,41 +1,74 @@
-# jarvis — copia de seguridad de `asus-tuf`
+# jarvis — copia de seguridad viva de `asus-tuf`
 
-Espejo automático de la configuración y el estado del home de `gabo`.
-Se sincroniza con GitHub cada 5 minutos.
+Espejo automático **bidireccional** del home de `gabo` contra GitHub.
+Cada 5 minutos baja lo que cambió en GitHub, lo aplica al PC, sube lo que cambió en el PC,
+y deja constancia de cualquier choque.
 
-## Qué contiene
+**Repo:** `git@github.com:gaboexperimetos-ui/jarvis.git` · rama `main`
 
-| Ruta | Qué es |
+---
+
+## Estado verificado (2026-11-21)
+
+| Cosa | Valor |
 |---|---|
-| `hermes/` | Config del agente Hermes (sin `.env`, sin tokens, sin estado volátil) |
-| `opencode/` | Config de OpenCode: agentes, skills, comandos, plugins (sin credenciales) |
-| `system/` | `hyprland.conf`, `kitty.conf`, servicios systemd, lspci/lsusb, red, discos |
-| `skills/` | Lista de skills de Hermes y ECC |
-| `jarvis-sync.sh` | Script de sincronización |
-| `sync.log` | Últimas líneas del sync (se trunca a 200) |
+| Repo local | `/home/gabo/jarvis` |
+| Ficheros versionados | 2150 |
+| Tamaño del espejo | 460 KB |
+| Temporizador | `jarvis-sync.timer` (systemd `--user`), activo, cada 5 min |
+| Última pasada | ver `jarvis/sync.log` |
+| Secretos versionados | **0** (verificado por búsqueda) |
+| Cambios pendientes | ninguno |
 
-## Qué NO se sube (a propósito)
+---
 
-- **Secretos**: `.ssh/`, `.env`, tokens, `auth.json`, `gateway-connections.json`
-- **Pesado**: `Descargas/`, `Vídeos/`, `.local/`, `.cache/`, `.npm/`, `android-sdk/`
-- **Proyectos**: cada uno es su propio repo (`proyectos/`, `dev/`, `ECC/`)
-- **Estado volátil**: bases de datos de sesión, locks, cachés, logs
+## Documentación
 
-## Sincronización
+| Documento | Qué cuenta |
+|---|---|
+| [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) | Las dos máquinas, la red, qué corre dónde y por qué |
+| [`docs/HERMES.md`](docs/HERMES.md) | El agente Hermes: modelo, gateway, crons, memoria, plugins |
+| [`docs/VOZ-IMAGENES.md`](docs/VOZ-IMAGENES.md) | TTS, STT e imágenes, con la configuración real y los límites |
+| [`docs/MCP.md`](docs/MCP.md) | Todos los servidores MCP, los que funcionan y los que piden credenciales |
+| [`docs/SINCRONIZACION.md`](docs/SINCRONIZACION.md) | Cómo funciona el sync, qué se restaura, cómo resuelve conflictos |
+| [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md) | Qué se excluye y por qué; cómo se revisó |
+| [`docs/RESTAURAR.md`](docs/RESTAURAR.md) | Cómo reconstruir el portátil desde cero con este repo |
+| [`docs/PENDIENTES.md`](docs/PENDIENTES.md) | Lo que falta y qué necesita de cada servicio |
+| [`docs/HANDOFF-AGENTE.md`](docs/HANDOFF-AGENTE.md) | Encargo para el otro agente que revisa y propone cambios |
+
+Y en la raíz, [`AGENTS.md`](AGENTS.md): las reglas que debe seguir cualquier agente que trabaje aquí.
+
+---
+
+## Qué hay dentro
+
+| Ruta | Contenido |
+|---|---|
+| `hermes/` | Config del agente Hermes: `config.yaml`, `SOUL.md`, `ui-preferences.json` |
+| `opencode/` | Agentes, skills, comandos, plugins y `opencode.json` de OpenCode |
+| `system/` | `hyprland.conf`, `kitty.conf`, `pacman.conf`, servicios systemd, lspci/lsusb |
+| `skills/` | Inventario de skills de Hermes |
+| `jarvis-sync.sh` | El script de sincronización |
+| `sync.log` | Últimas 200 líneas del sync |
+
+## Qué NO está, a propósito
+
+- **Secretos**: `.ssh/`, `.env`, tokens, `auth.json`, `gateway-connections.json`. Ni una clave.
+- **Pesado regenerable**: `Descargas/` (31 GB), `.local/` (22 GB), `olliecode-sandbox/` (16 GB),
+  `Vídeos/`, `.cache/`, `.npm/`, `android-sdk/`.
+- **Proyectos**: `proyectos/`, `dev/`, `ECC/`, `freellmapi/` y los 21 repos con `.git` propio.
+  Cada uno es su repo; meterlos aquí los rompería.
+- **Volátil**: locks, caches, logs, bases de datos de sesión, `Singleton*` de Chromium.
+
+---
+
+## Uso diario
 
 ```bash
-./jarvis-sync.sh          # manual
-systemctl --user status jarvis-sync.timer   # temporizador
+./jarvis-sync.sh                  # forzar una pasada
+tail -f sync.log                  # ver qué hizo
+systemctl --user list-timers jarvis-sync.timer
 ```
 
-El sync hace `rsync` del home → copia local, `git commit` si hay cambios, y
-`git pull --rebase` + `git push` a GitHub.
-
-## Restaurar
-
-```bash
-git clone git@github.com:gaboexperimetos-ui/jarvis.git
-cp -r jarvis/hermes/* ~/.hermes/
-cp -r jarvis/opencode/* ~/.config/opencode/
-cp jarvis/system/hyprland.conf ~/.config/hypr/
-```
+Si dos sitios tocan el mismo fichero, el del PC manda y el de GitHub queda en
+`~/.jarvis/pending/` con marca de tiempo. Se avisa en el log como `CONFLICTO`.
