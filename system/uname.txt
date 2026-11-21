@@ -1,1 +1,2 @@
 Linux asus-tuf 7.3.5-1-cachyos-bore-lto #1 SMP PREEMPT_DYNAMIC Wed, 18 Nov 2026 19:36:25 +0000 x86_64 GNU/Linux
+cambio desde github1795276405
