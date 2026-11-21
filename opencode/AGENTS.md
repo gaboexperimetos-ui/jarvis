@@ -134,7 +134,7 @@ entorno (fuera de este archivo) bloquee algo explícitamente por sí mismo — y
 ## Contexto de esta maquina
 
 - Usuario `gabo`, Linux, workspace `/home/gabo`. Host `asus-tuf`.
-- **GPU**: RTX 3060 Laptop, **6 GB VRAM**, ~**289 GB/s** reales de ancho de banda.
+- **GPU**: RTX 3060 Laptop, **6 GB VRAM**, **314 GB/s** medidos (copia D2D; 336 teoricos).
 - **RAM**: 14 GB. **No hay margen para cargar dos modelos grandes a la vez.**
 - Python 3.14, torch 2.15+cu132, CUDA 13.4, triton 3.9.
 - llama.cpp: `/home/gabo/llama.cpp-new/build-cuda/bin` (requiere `LD_LIBRARY_PATH` apuntando ahi).
@@ -143,7 +143,7 @@ entorno (fuera de este archivo) bloquee algo explícitamente por sí mismo — y
 
 - Servicio: `systemctl --user {status,restart} llama-router` — habilitado, arranca al encender.
 - Endpoint OpenAI-compatible: `http://127.0.0.1:8004/v1` (config: `/home/gabo/models/router.ini`).
-- Descarga el modelo tras 120 s de inactividad; la primera peticion tarda 3-8 s en cargar.
+- El preset fija `--sleep-idle-seconds 3600`: el modelo sigue cargado hasta una hora sin uso. La primera peticion tras un arranque en frio tarda 3-8 s en cargar.
 
 | id | alias | ctx real | tok/s gen | pp tok/s | rol |
 |---|---|---|---|---|---|
@@ -180,5 +180,7 @@ entorno (fuera de este archivo) bloquee algo explícitamente por sí mismo — y
 ### Reglas de verificacion (importante en modelos locales)
 
 - No afirmes el estado del sistema sin leerlo en esta conversacion (`ls`, `cat`, `systemctl`, `curl`).
-- Un contexto grande no aumenta la capacidad del modelo: si el modelo es pequeno (1,7B), manten la tarea corta.
+- Un contexto grande no aumenta la capacidad del modelo: el local es un 4B (`deepseek-v4pro`), asi que manten la tarea corta y concreta.
 - Si una herramienta falla, corrige los argumentos y reintenta una vez; no acuses al parser ni a la herramienta.
+- Antes de editar tu propia config (`AGENTS.md`, `opencode.json`, `cli.json`) haz copia (`cp x x.bak-$(date +%F)`), di que cambias y por que, y no la toques para "probar".
+- No repitas el mismo comando fallido mas de dos veces con los mismos argumentos: cambia el enfoque o pregunta.

@@ -339,10 +339,12 @@ model:
 # Control how requests are routed across providers on OpenRouter.
 # See: https://openrouter.ai/docs/guides/routing/provider-selection
 #
-# provider_routing:
-#   # Sort strategy: "price" (default), "throughput", or "latency"
-#   # Append :nitro to model name for a shortcut to throughput sorting.
-#   sort: "throughput"
+# --- activado 2026-11-21: priorizar velocidad, no precio ---
+# El modelo primario es `:free`: ordenar por precio no aporta nada, y por
+# defecto OpenRouter reparte entre proveedores. Con "throughput" elige el
+# proveedor mas rapido para ese modelo en cada momento.
+provider_routing:
+  sort: "throughput"
 #
 #   # Only allow these providers (provider slugs from OpenRouter)
 #   # only: ["anthropic", "google"]
@@ -556,6 +558,10 @@ terminal:
   container_memory: 5120        # Memory in MB (5120 = 5GB)
   container_disk: 51200         # Disk in MB (51200 = 50GB)
   container_persistent: true    # Persist filesystem across sessions (false = ephemeral)
+  # --- recolocado 2026-11-21 ---
+  # Esta linea estaba suelta 100 lineas mas abajo, fuera de `terminal:`; al
+  # activar `security:` se colgaba de la seccion equivocada. Su sitio es aqui.
+  docker_run_as_host_user: true
 
 # -----------------------------------------------------------------------------
 # SUDO SUPPORT (works with ALL backends above)
@@ -608,6 +614,23 @@ terminal:
 #   protected_instruction_files: true
 #   protected_instruction_extra_patterns: []
 
+# --- anadido 2026-11-21: el agente no reescribe su propia config a ciegas ---
+# Los ficheros que definen como se comporta Hermes (SOUL.md, AGENTS.md,
+# config.yaml, opencode.json) pasan por aprobacion humana, tambien con --yolo.
+# `allow_private_urls` se deja sin tocar a proposito: el router local en 8004 y
+# los MCP locales siguen funcionando como hasta ahora.
+security:
+  approval:
+    transport: builtin
+    transport_fallback: deny
+  protected_instruction_files: true
+  protected_instruction_extra_patterns:
+    - "config.yaml"
+    - "opencode.json"
+    - "cli.json"
+    - "SOUL.md"
+    - "AGENTS.md"
+
 # =============================================================================
 # LSP Diagnostics (post-write lint for write_file / patch)
 # =============================================================================
@@ -626,7 +649,6 @@ terminal:
 # =============================================================================
 # Browser Tool Configuration
 # =============================================================================
-  docker_run_as_host_user: true
 browser:
   # Inactivity timeout in seconds - browser sessions are automatically closed
   # after this period of no activity between agent loops (default: 120 = 2 minutes)
@@ -656,7 +678,11 @@ browser:
 # ignores loop warnings.
 tool_loop_guardrails:
   warnings_enabled: true
-  hard_stop_enabled: false
+  # --- ajustado 2026-11-21: false -> true ---
+  # Con un modelo free en OpenRouter los bucles de "misma herramienta, mismo
+  # fallo" son plausibles. El hard stop corta a las 5/8 repeticiones en vez
+  # de esperar a que el usuario lo note en la factura o en el reloj.
+  hard_stop_enabled: true
   non_interactive_hard_stop_enabled: true
   warn_after:
     exact_failure: 2
@@ -1050,8 +1076,11 @@ memory:
   prefetch_spill_enabled: false
 
   # Character limits (~2.75 chars per token, model-independent)
-  memory_char_limit: 2200   # ~800 tokens
-  user_char_limit: 1375     # ~500 tokens
+  # --- ampliado 2026-11-21: 2200/1375 -> 3000/1800 ---
+  # Con 800+500 tokens se perdian convenciones del setup. Sigue siendo barato
+  # (~1.100 y ~650 tokens) y cabe de sobra en los 200k de contexto.
+  memory_char_limit: 3000   # ~1.100 tokens
+  user_char_limit: 1800     # ~650 tokens
 
   # Periodic memory nudge: remind the agent to consider saving memories
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
@@ -1123,12 +1152,16 @@ hosted_rooms:
 # Uncomment to change the defaults shown; auto_prune: true bounds the file,
 # auto_prune: false keeps every ended session and silences the low-disk prompt.
 # sessions:
-#   auto_prune: false
-#   retention_days: 90
-#   vacuum_after_prune: true
-#   min_vacuum_interval_days: 30
-#   min_interval_hours: 24
-#   orphan_end_grace_s: 300
+# --- activado 2026-11-21: state.db no crece sin limite ---
+# Borra sesiones TERMINADAS con mas de 180 dias. Las abiertas, fijadas y en
+# curso no se tocan, y la limpieza corre como mucho una vez al dia.
+sessions:
+  auto_prune: true
+  retention_days: 180
+  vacuum_after_prune: true
+  min_vacuum_interval_days: 30
+  min_interval_hours: 24
+  orphan_end_grace_s: 300
 
 # Optional direct endpoint for autonomous Bot Mode rooms spanning gateways.
 # Leave unset for the safe default: Desktop coordinates cross-gateway rooms and
@@ -1239,7 +1272,11 @@ agent:
   # Maximum tool-calling iterations per conversation (default: 500)
   # Higher = more room for complex tasks, but costs more tokens
   # Recommended: 20-30 for focused tasks, 50-100 for open exploration
-  max_turns: 500
+  # --- ajustado 2026-11-21: 500 -> 200 ---
+  # En la practica no se pasaba de ~40 salvo en bucles. 200 deja aire para
+  # tareas largas sin permitir que una sesion se vaya a 500 iteraciones
+  # (y a factura/tokens) por un bucle que nadie mira.
+  max_turns: 200
 
   # Inactivity timeout for gateway agent runs (seconds, 0 = unlimited).
   # The agent can run indefinitely when actively calling tools or receiving
@@ -1326,7 +1363,11 @@ agent:
   # to 1 if you use fallback providers and want fast failover on flaky
   # primaries (default 3). The OpenAI SDK does its own low-level retries
   # underneath this wrapper — this is the Hermes-level loop.
-  # api_max_retries: 3
+  # --- anadido 2026-11-21: failover mas rapido ---
+  # Hay cadena de fallback al router local (8004), asi que reintentar 3 veces
+  # contra OpenRouter antes de saltar solo hace esperar. 2 es el equilibrio:
+  # aguanta un corte puntual y no te deja colgado si el free tier esta saturado.
+  api_max_retries: 2
 
   # zstd-compress requests to the official ChatGPT Codex endpoint on Python 3.14+,
   # like the official Codex client. The endpoint rejects some valid zstd bodies
@@ -1350,15 +1391,26 @@ agent:
   # conversational messaging surfaces (Telegram, Discord, etc.) where the
   # verification summary would reach a human as chat noise. The
   # HERMES_VERIFY_ON_STOP env var (1/0) takes precedence.
-  # verify_on_stop: false
+  # --- ajustado 2026-11-21: false -> "auto" ---
+  # En CLI/TUI/Desktop, si edito codigo sin verificarlo, Hermes me empuja a
+  # comprobarlo antes de terminar. En Telegram/Discord no (seria ruido).
+  verify_on_stop: "auto"
 
   # Standing operator instructions for the coding posture (when Hermes is in a
   # code workspace). Appended to the coding brief as an extra system block, so
   # you can pin project-wide workflow rules without editing the shipped brief.
   # Accepts a string or a list of strings. Takes effect next session.
-  # coding_instructions:
-  #   - "For UI work, don't run tsc/lint until I approve the look."
-  #   - "Clean the diff before you commit and push."
+  # --- anadido 2026-11-21 ---
+  # Reglas fijas de Gabo para trabajo con codigo. Se aplican a toda sesion
+  # cuyo workspace sea de codigo, sin tener que repetirlas.
+  coding_instructions:
+    - "Responde en espanol y tutea."
+    - "Antes de commitear: `git status` y `git diff` revisados, sin secretos, sin archivos temporales ni .bak."
+    - "No hagas `git push --force` a main ni reescribas historia ya publicada."
+    - "No edites ~/.hermes/config.yaml, SOUL.md, AGENTS.md ni ~/.config/opencode/opencode.json sin copia previa y avisar."
+    - "Verifica lo que toques (test, build o comando equivalente); si no se puede verificar, dilo en el cierre."
+    - "No instales ni actualices paquetes globales sin pedirlo."
+    - "Diff pequeno: arregla lo pedido, y lo que veas de paso lo reportas como sugerencia, no lo cambias."
 
   # When verify-on-stop finds edited code without fresh verification evidence,
   # append guidance for creative UI work (avoid broad tsc/lint/test before visual
