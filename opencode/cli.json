@@ -24,8 +24,12 @@
           "providerID": "local",
           "id": "deepseek-v4pro"
         },
-        "maxTurns": 40,
-        "stallTurns": 3
+        "maxTurns": 500,
+        "stallTurns": 8,
+        "maxStallNudges": 10,
+        "maxRetries": 200,
+        "retryBaseMs": 20000,
+        "retryMaxMs": 600000
       }
     }
   ],

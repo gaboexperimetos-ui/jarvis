@@ -16,13 +16,21 @@ type Goal = {
   reason: string
   /** assistant messages counted when the goal was set, for stall detection */
   baseline: number
+  /** consecutive failed turns retried without pausing */
+  retries: number
+  /** consecutive stalls nudged without pausing */
+  stallNudges: number
 }
 
 type ModelRef = { providerID: string; id: string }
 
 const DEFAULT_JUDGE: ModelRef = { providerID: "local", id: "qwen3.5-8b-abliterated:latest-gpu" }
-const DEFAULT_MAX_TURNS = 40
-const DEFAULT_STALL_TURNS = 3
+const DEFAULT_MAX_TURNS = 500
+const DEFAULT_STALL_TURNS = 8
+const DEFAULT_MAX_RETRIES = 200
+const DEFAULT_RETRY_BASE_MS = 20_000
+const DEFAULT_RETRY_MAX_MS = 600_000
+const DEFAULT_MAX_STALL_NUDGES = 10
 const DEFAULT_TRANSCRIPT_MESSAGES = 12
 const DEFAULT_TRANSCRIPT_CHARS = 24_000
 
@@ -92,6 +100,10 @@ export default Plugin.define({
 
     const maxTurns = numeric(options.maxTurns, DEFAULT_MAX_TURNS)
     const stallTurns = numeric(options.stallTurns, DEFAULT_STALL_TURNS)
+    const maxRetries = numeric(options.maxRetries, DEFAULT_MAX_RETRIES)
+    const retryBaseMs = numeric(options.retryBaseMs, DEFAULT_RETRY_BASE_MS)
+    const retryMaxMs = numeric(options.retryMaxMs, DEFAULT_RETRY_MAX_MS)
+    const maxStallNudges = numeric(options.maxStallNudges, DEFAULT_MAX_STALL_NUDGES)
     const transcriptMessages = numeric(options.transcriptMessages, DEFAULT_TRANSCRIPT_MESSAGES)
     const transcriptChars = numeric(options.transcriptChars, DEFAULT_TRANSCRIPT_CHARS)
 
@@ -99,8 +111,15 @@ export default Plugin.define({
       options.judge?.providerID && options.judge?.id ? { ...options.judge } : { ...DEFAULT_JUDGE }
 
     const goals = new Map<string, Goal>()
+    const retryTimers = new Map<string, any>()
     const [revision, setRevision] = createSignal(0)
     const touch = () => setRevision((value) => value + 1)
+
+    function cancelRetry(sessionID: string) {
+      const timer = retryTimers.get(sessionID)
+      if (timer) clearTimeout(timer)
+      retryTimers.delete(sessionID)
+    }
 
     function toast(message: string, variant: "info" | "success" | "warning" | "error" = "info") {
       context.ui.toast.show({ title: "loop", message, variant })
@@ -187,19 +206,70 @@ export default Plugin.define({
       const list = await messages(goal.sessionID)
       const recent = assistantCount(list) - goal.baseline
       if (recent < stallTurns) return false
-      const assistants = list.filter((message) => message?.type === "assistant").slice(goal.baseline)
-      return assistants.every((message) => !(message.content ?? []).some((item: any) => item?.type === "tool"))
+      const assistants = list.filter((message) => message?.type === "assistant").slice(-stallTurns)
+      return (
+        assistants.length >= stallTurns &&
+        assistants.every((message) => !(message.content ?? []).some((item: any) => item?.type === "tool"))
+      )
     }
 
     function pause(goal: Goal, reason: string) {
+      cancelRetry(goal.sessionID)
       goal.status = "paused"
       goal.reason = reason
       touch()
       toast(`Pausado: ${reason}. La meta sigue activa; escribe lo que quieras para seguir.`, "warning")
     }
 
+    function isQuotaError(error: unknown): boolean {
+      const text = describeError(error).toLowerCase()
+      return /quota|rate.?limit|usage limit|too many requests|429|free usage|sign up for free/.test(text)
+    }
+
+    function isPermanentError(error: unknown): boolean {
+      const text = describeError(error).toLowerCase()
+      return /unauthorized|forbidden|invalid api key|authentication|401|403|model not found|does not exist|not supported/.test(text)
+    }
+
+    function retryAfterFailure(goal: Goal, error: unknown) {
+      if (retryTimers.has(goal.sessionID)) return
+      if (isPermanentError(error)) {
+        pause(goal, `error permanente: ${describeError(error)}`)
+        return
+      }
+      goal.retries += 1
+      if (goal.retries > maxRetries) {
+        pause(goal, `demasiados errores seguidos (${maxRetries}): ${describeError(error)}`)
+        return
+      }
+      const quota = isQuotaError(error)
+      const exponent = Math.min(goal.retries - 1, 6)
+      const base = quota ? Math.max(retryBaseMs, 120_000) : retryBaseMs
+      const delay = Math.min(retryMaxMs, base * Math.pow(2, exponent))
+      goal.status = "active"
+      goal.reason = `error: ${describeError(error)}`
+      touch()
+      toast(
+        `${quota ? "Cuota/rate-limit" : "Error del turno"}: reintento ${goal.retries}/${maxRetries} en ${Math.round(delay / 1000)}s`,
+        "warning",
+      )
+      retryTimers.set(
+        goal.sessionID,
+        setTimeout(() => {
+          retryTimers.delete(goal.sessionID)
+          const current = goals.get(goal.sessionID)
+          if (current !== goal || goal.status === "achieved" || goal.status === "failed") return
+          void context.client.session.prompt({
+            sessionID: goal.sessionID,
+            text: `[loop] El turno anterior falló (${describeError(error)}). Retoma desde el último paso verificado y continúa hasta cumplir la condición:\n${goal.condition}`,
+          })
+        }, delay),
+      )
+    }
+
     async function evaluate(goal: Goal) {
       goal.turns += 1
+      goal.retries = 0
       goal.status = "active"
       touch()
 
@@ -210,9 +280,21 @@ export default Plugin.define({
       }
       try {
         if (await stalled(goal)) {
-          pause(goal, `${stallTurns} turnos seguidos sin usar herramientas`)
+          goal.stallNudges += 1
+          if (goal.stallNudges > maxStallNudges) {
+            pause(goal, `${stallTurns} turnos seguidos sin usar herramientas`)
+            return
+          }
+          goal.reason = `sin herramientas en ${stallTurns} turnos`
+          touch()
+          toast(`Sin herramientas en ${stallTurns} turnos; empujo el siguiente paso (${goal.stallNudges}/${maxStallNudges})`, "warning")
+          await context.client.session.prompt({
+            sessionID: goal.sessionID,
+            text: `[loop] Sigues sin usar herramientas. La condición no está cumplida:\n${goal.condition}\n\nDa el siguiente paso concreto AHORA usando una herramienta y verifica el resultado. No expliques el plan.`,
+          })
           return
         }
+        goal.stallNudges = 0
       } catch {
         // transcript unavailable: keep going, the judge still sees the session
       }
@@ -221,8 +303,11 @@ export default Plugin.define({
       try {
         result = await judge(goal)
       } catch (error) {
-        pause(goal, `el judge falló: ${describeError(error)}`)
-        return
+        result = {
+          verdict: "NOTMET",
+          reason: `el judge falló (${describeError(error)}); continúa con el siguiente paso concreto`,
+        }
+        toast(`Judge no disponible; sigo sin pausar: ${describeError(error)}`, "warning")
       }
 
       goal.reason = result.reason
@@ -262,6 +347,7 @@ export default Plugin.define({
     async function setGoal(sessionID: string, condition: string) {
       const previous = goals.get(sessionID)
       if (previous && previous.status === "active") toast("Reemplazo la meta activa anterior", "warning")
+      cancelRetry(sessionID)
       let baseline = 0
       try {
         baseline = assistantCount(await messages(sessionID))
@@ -274,6 +360,8 @@ export default Plugin.define({
         status: "active",
         reason: "",
         baseline,
+        retries: 0,
+        stallNudges: 0,
       })
       touch()
       toast(`Meta activa: ${condition}`, "info")
@@ -286,6 +374,7 @@ export default Plugin.define({
         toast("No hay ninguna meta activa", "warning")
         return
       }
+      cancelRetry(sessionID)
       goals.delete(sessionID)
       touch()
       toast(`Meta limpiada: ${goal.condition}`, "info")
@@ -324,19 +413,25 @@ export default Plugin.define({
     const offSucceeded = context.data.on("session.execution.succeeded", (event: any) => {
       const goal = goals.get(event.data.sessionID)
       if (!goal || goal.status === "achieved" || goal.status === "failed") return
+      cancelRetry(event.data.sessionID)
       void evaluate(goal)
     })
 
     const offFailed = context.data.on("session.execution.failed", (event: any) => {
       const goal = goals.get(event.data.sessionID)
       if (!goal || goal.status === "achieved" || goal.status === "failed") return
-      pause(goal, `error del turno: ${describeError(event.data.error)}`)
+      retryAfterFailure(goal, event.data.error)
     })
 
     const offInterrupted = context.data.on("session.execution.interrupted", (event: any) => {
       const goal = goals.get(event.data.sessionID)
       if (!goal || goal.status === "achieved" || goal.status === "failed") return
-      pause(goal, `turno interrumpido (${event.data.reason ?? "user"})`)
+      const reason = String(event.data.reason ?? "user")
+      if (reason === "user") {
+        pause(goal, "turno interrumpido por el usuario")
+        return
+      }
+      retryAfterFailure(goal, `interrumpido: ${reason}`)
     })
 
     const unregisterSlot = context.ui.slot({
