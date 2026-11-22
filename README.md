@@ -49,6 +49,7 @@ Y en la raíz, [`AGENTS.md`](AGENTS.md): las reglas que debe seguir cualquier ag
 | `system/` | `hyprland.conf`, `kitty.conf`, `pacman.conf`, servicios systemd, lspci/lsusb |
 | `skills/` | Inventario de skills de Hermes |
 | `jarvis-sync.sh` | El script de sincronización |
+| `healthcheck.sh` | Revisión de salud del sistema, solo lectura |
 | `sync.log` | Últimas 200 líneas del sync |
 
 ## Qué NO está, a propósito
@@ -66,9 +67,14 @@ Y en la raíz, [`AGENTS.md`](AGENTS.md): las reglas que debe seguir cualquier ag
 
 ```bash
 ./jarvis-sync.sh                  # forzar una pasada
+./healthcheck.sh                  # revisión de salud, solo lectura
 tail -f sync.log                  # ver qué hizo
 systemctl --user list-timers jarvis-sync.timer
 ```
+
+`healthcheck.sh` no cambia nada: comprueba sync, temporizador, secretos, disco, servicios
+fallidos, y en el inspiron el gateway, los límites de memoria y los MCP activos. Termina con
+un recuento (`16 OK · 0 avisos · 0 fallos`).
 
 Si dos sitios tocan el mismo fichero, el del PC manda y el de GitHub queda en
 `~/.jarvis/pending/` con marca de tiempo. Se avisa en el log como `CONFLICTO`.
