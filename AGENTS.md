@@ -67,7 +67,9 @@ git ls-files | wc -l        # ¿el tamaño se disparó?
 
 - El agente Hermes vive en el **inspiron** (`~/.hermes`), no en este portátil.
 - El `hermes/config.yaml` de este repo es el del portátil, casi todo plantilla. El bueno está
-  en el inspiron y **tiene contraseñas**: no se versiona.
+  en el inspiron y **tiene contraseñas**: no se versiona. Su copia local está en
+  `~/backups/hermes/` del inspiron y `~/backups/hermes-inspiron/` del portátil (ver
+  [`docs/COPIAS.md`](docs/COPIAS.md)).
 - Presupuesto: **0 €**. Todo lo que hay es gratis (OpenRouter free, llama.cpp local, Edge TTS,
   faster-whisper, Pollinations). No proponer nada de pago sin avisar.
 - El sync es bidireccional de verdad: un cambio en GitHub se aplica al home en ≤5 minutos.

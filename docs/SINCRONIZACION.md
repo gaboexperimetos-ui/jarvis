@@ -2,6 +2,9 @@
 
 El repo es **bidireccional**. Esto es la mecánica exacta, para que nadie la "mejore" a ciegas.
 
+> Esto es solo la copia **remota** (GitHub). Las copias locales del PC y del homelab, con
+> `backup-local.sh`, están en [COPIAS.md](COPIAS.md).
+
 ---
 
 ## El temporizador

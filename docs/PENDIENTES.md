@@ -107,6 +107,7 @@ porque mezclan configuración con datos del usuario.
 | `USER.md` | tenía caracteres chinos colados (`最短`) | corregido |
 | MCPs de Hermes | 4 | 7 (más `cloudflare-docs`, `laraplugins` y `study-platform`) |
 | Dashboard "Bisa" | aislado en `127.0.0.1:3100` | conectado al agente por MCP vía tailnet, 9 herramientas |
+| Copias locales | solo GitHub y el home original | PC + homelab, diarias, 7 días (incluye `~/.hermes` del inspiron) |
 | `/tmp` lleno | 7,4 de 7,5 GB, al 100 % | 619 MB, 9 % |
 | Unidades systemd fallidas | 1 (bug del script de sync) | 0 |
 

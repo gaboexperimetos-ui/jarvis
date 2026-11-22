@@ -98,6 +98,37 @@ fi
 mcp401="$(curl -s -o /dev/null -w '%{http_code}' -m 8 -X POST http://127.0.0.1:3100/mcp -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' 2>/dev/null)"
 [ "$mcp401" = "401" ] && ok "MCP local exige X-API-Key (401 sin clave)" || warn "MCP local sin clave dio ${mcp401:-000} (¿auth desactivada?)"
 
+# ── 5c. Copias locales (PC + homelab) ─────────────────────────────────────
+echo
+echo "Copias locales"
+now="$(date +%s)"
+check_backup() {
+    local label="$1" dir="$2" ts age
+    ts="$(find "$dir" -name '*.tar.gz' -printf '%T@\n' 2>/dev/null | sort -rn | head -1)"
+    if [ -z "$ts" ]; then
+        bad "$label: sin copia"
+        return
+    fi
+    age=$(((now - ${ts%.*}) / 3600))
+    [ "$age" -le 48 ] && ok "$label: copia de hace ${age} h" || warn "$label: copia de hace ${age} h"
+}
+check_backup "PC jarvis" "$HOME/backups/jarvis"
+check_backup "PC dashboard" "$HOME/backups/styp"
+check_backup "inspiron ~/.hermes" "$HOME/backups/hermes-inspiron"
+
+if ssh -o ConnectTimeout=5 -o BatchMode=yes homelab 'true' 2>/dev/null; then
+    rts="$(ssh homelab 'find ~/backups -name "*.tar.gz" -printf "%T@\n" 2>/dev/null | sort -rn | head -1' 2>/dev/null)"
+    if [ -n "$rts" ]; then
+        rage=$(((now - ${rts%.*}) / 3600))
+        [ "$rage" -le 48 ] && ok "homelab: copias de hace ${rage} h" || warn "homelab: copias de hace ${rage} h"
+    else
+        bad "homelab: sin copias"
+    fi
+    ssh homelab 'ls ~/backups/laptop/jarvis/*.tar.gz >/dev/null 2>&1' && ok "homelab tiene copia del PC" || warn "el homelab no tiene copia del PC"
+else
+    warn "sin SSH al homelab: no puedo comprobar sus copias"
+fi
+
 # ── 6. El agente (inspiron) ───────────────────────────────────────────────
 echo
 echo "Agente (inspiron)"
