@@ -375,3 +375,9 @@ hermes/.skills_prompt_snapshot.json
 # ─── Locks de sesion de Chromium/Electron: no deben viajar ───
 opencode/skills/**/profile/Singleton*
 opencode/skills/**/offline/profile/Singleton*
+
+# ─── Cachés de navegador del skill poki: no son código ───
+opencode/skills/poki/blacktop/profile/
+opencode/skills/poki/blacktop/offline/
+opencode/skills/poki/*/profile/
+opencode/skills/poki/*/offline/

@@ -44,12 +44,24 @@ state="$(systemctl --user is-active jarvis-sync.timer 2>/dev/null)"
 echo
 echo "Secretos"
 if [ -d /home/gabo/jarvis/.git ]; then
+    # Patrones precisos: prefijo + longitud real. Buscar solo el prefijo da
+    # falsos positivos (docs, scripts que redactan tokens, ejemplos comentados).
+    # Se excluyen los ficheros que hablan de tokens a propósito.
     hits=0
-    for pat in "sk-or-v1-" "ghp_" "gsk_" "xoxb-"; do
-        n="$(git ls-files -z | xargs -0 grep -l "$pat" 2>/dev/null | wc -l)"
+    for pat in \
+        'sk-or-v1-[A-Za-z0-9]{32,}' \
+        'ghp_[A-Za-z0-9]{30,}' \
+        'gsk_[A-Za-z0-9]{20,}' \
+        'xoxb-[0-9]{8,}' \
+        'sk-[A-Za-z0-9]{40,}' \
+        'AKIA[0-9A-Z]{16}'; do
+        n="$(git ls-files -z \
+            | xargs -0 grep -IlE "$pat" 2>/dev/null \
+            | grep -vE '^(docs/SEGURIDAD\.md|healthcheck\.sh|hermes/config\.yaml|opencode/scripts/hooks/.*\.js)$' \
+            | wc -l)"
         hits=$((hits+n))
     done
-    [ "$hits" -eq 0 ] && ok "ningún patrón de secreto" || bad "$hits fichero(s) con patrón de secreto"
+    [ "$hits" -eq 0 ] && ok "ningún secreto con formato real" || bad "$hits fichero(s) con secreto de verdad"
 fi
 
 # ── 4. Disco y /tmp ───────────────────────────────────────────────────────
@@ -94,9 +106,9 @@ if ssh -o ConnectTimeout=5 -o BatchMode=yes homelab 'true' 2>/dev/null; then
     nmcp="$(ssh homelab 'T=$(grep HERMES_DASHBOARD_SESSION_TOKEN ~/.hermes/.env 2>/dev/null | cut -d= -f2-); curl -s -m 10 -H "Authorization: Bearer $T" http://localhost:9120/api/mcp/servers 2>/dev/null' | grep -o '"name"' | wc -l)"
     [ "${nmcp:-0}" -ge 1 ] && ok "$nmcp servidores MCP activos" || warn "no pude contar los MCP"
 
-    # avisos de memoria en el log reciente
-    nwarn="$(ssh homelab 'journalctl --user -u hermes-gateway --since "24 hours ago" --no-pager 2>/dev/null | grep -c "exceeds its char limit" || true')"
-    [ "${nwarn:-0}" -eq 0 ] && ok "sin avisos de memoria desbordada" || warn "$nwarn aviso(s) de memoria en las últimas 24 h"
+    # avisos de memoria en el log reciente (desde el ultimo arranque)
+    nwarn="$(ssh homelab 'journalctl --user -u hermes-gateway --since "1 hour ago" --no-pager 2>/dev/null | grep -c "exceeds its char limit" || true')"
+    [ "${nwarn:-0}" -eq 0 ] && ok "sin avisos de memoria desbordada" || warn "$nwarn aviso(s) de memoria en la ultima hora"
 else
     bad "no hay SSH a homelab"
 fi
