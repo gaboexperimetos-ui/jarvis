@@ -77,6 +77,30 @@ límite de Pollinations es 1 imagen cada 45 s por IP.
 
 La compresión de contexto está afinada para que la memoria sobreviva a sesiones largas.
 
+### Límites (2026-11-21)
+
+Los de fábrica eran demasiado pequeños y el agente avisaba en cada arranque:
+
+```
+WARNING tools.memory_tool: USER.md exceeds its char limit on load: 3797/1375 chars.
+WARNING tools.memory_tool: MEMORY.md exceeds its char limit on load: 4664/2200 chars.
+```
+
+Con el aviso, **el agente no puede guardar nada nuevo** hasta bajar del límite. Se arregló
+subiendo los límites en `~/.hermes/config.yaml`:
+
+```yaml
+memory:
+  memory_char_limit: 6000   # antes 2200
+  user_char_limit:   4500   # antes 1375
+```
+
+Y quitando el bloque de `MEMORY.md` que duplicaba `USER.md`. Ahora:
+`MEMORY.md` 3387 caracteres, `USER.md` 3797 — los dos con margen.
+
+**Si vuelve a pasar, subir el límite antes de recortar contenido:** son ~4.000 tokens en total
+sobre un contexto de 200k, no es un problema de presupuesto.
+
 ---
 
 ## Crons

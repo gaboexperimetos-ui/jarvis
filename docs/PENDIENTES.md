@@ -99,6 +99,18 @@ porque mezclan configuración con datos del usuario.
 
 ---
 
+## Resuelto el 2026-11-21
+
+| Cosa | Antes | Ahora |
+|---|---|---|
+| Límites de memoria | 2200 / 1375 caracteres, desbordados | 6000 / 4500, con margen |
+| `USER.md` | tenía caracteres chinos colados (`最短`) | corregido |
+| MCPs de Hermes | 4 | 6 (más `cloudflare-docs` y `laraplugins`) |
+| `/tmp` lleno | 7,4 de 7,5 GB, al 100 % | 619 MB, 9 % |
+| Unidades systemd fallidas | 1 (bug del script de sync) | 0 |
+
+---
+
 ## 8. Constantes que conviene recordar
 
 - El gateway tarda **~35 s** en quedar listo tras reiniciar. No tocarlo antes.
