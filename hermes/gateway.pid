@@ -1,0 +1,1 @@
+{"pid": 1415206, "kind": "hermes-gateway", "argv": ["/home/gabo/.hermes/hermes-agent/hermes_cli/main.py", "gateway", "run"], "start_time": 4808876, "hermes_home": "/home/gabo/.hermes", "pidns": "4026531836"}
