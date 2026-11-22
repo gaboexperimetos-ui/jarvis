@@ -92,13 +92,31 @@ Y en el inspiron, la entrada `study-platform` de `~/.hermes/config.yaml` apunta 
 
 ## 5. El agente
 
+Hay **dos gateways** y se turnan Telegram (ver
+[HERMES.md](HERMES.md#dos-nodos-pc-principal-inspiron-de-relevo)). Para dejarlo como está:
+
 ```bash
-# en el inspiron, que es donde vive de verdad
-ssh homelab 'systemctl --user status hermes-gateway'
+# PC: principal, dueño del bot mientras esté encendido
+systemctl --user enable --now hermes-gateway
+
+# inspiron: agente 24/7 + relevo del bot
+ssh homelab 'systemctl --user enable --now hermes-gateway telegram-failover.timer'
 ```
 
-Si el inspiron está vivo, **el portátil no necesita nada más**: la app de escritorio apunta
-allí por Tailscale.
+El relevo es `~/.local/bin/telegram-failover.sh` en el inspiron. Si se pierde, se copia del
+repo y se recrean las dos unidades:
+
+```bash
+scp scripts/telegram-failover.sh homelab:~/.local/bin/telegram-failover.sh
+ssh homelab 'chmod +x ~/.local/bin/telegram-failover.sh'
+
+# ~/.config/systemd/user/telegram-failover.service  (oneshot, ExecStart=.../telegram-failover.sh)
+# ~/.config/systemd/user/telegram-failover.timer    (OnUnitActiveSec=15)
+ssh homelab 'systemctl --user daemon-reload && systemctl --user enable --now telegram-failover.timer'
+```
+
+Regla: **un solo dueño del bot**. Si los dos gateways piden `getUpdates` a la vez, Telegram
+tira a uno y el bot parpadea con `Conflict: terminated by other getUpdates request`.
 
 ---
 
