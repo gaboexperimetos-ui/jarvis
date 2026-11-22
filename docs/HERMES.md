@@ -3,6 +3,9 @@
 Hermes es el agente 24/7. Vive en el inspiron (`~/.hermes`), se controla por Telegram,
 habla, oye, genera imágenes y tiene MCPs. Esta es su ficha completa.
 
+Hay **dos nodos**: el portátil es el principal mientras está encendido y el inspiron es el
+24/7 que hace de relevo. Ver [Dos nodos](#dos-nodos-pc-principal-inspiron-de-relevo).
+
 - **Versión:** v0.23.3 (commit `caafe5389a` de `NousResearch/hermes-agent`)
 - **Instalación oficial:** `install.sh` + `hermes desktop`. No hay `.deb`, `.rpm` ni AppImage.
 - **Directorio de trabajo:** `/home/gabo`
@@ -260,38 +263,77 @@ ffmpeg. Probado y funciona.
 
 ---
 
-## Dos nodos, un solo bot
+## Dos nodos: PC principal, inspiron de relevo
 
-Hermes está instalado en **dos lugares** (la base; a futuro se pueden añadir más):
+Hermes está instalado en **dos lugares** (la base; a futuro se pueden añadir más). Los dos
+comparten el **mismo bot** de Telegram, así que se turnan: Telegram solo admite un
+`getUpdates` a la vez.
 
-| Nodo | Rol | Messaging |
+| Nodo | Papel | Telegram |
 |---|---|---|
-| `gabo-Inspiron-5720` (homelab) | el agente 24/7: memoria, crons, `study-platform` | **Telegram** |
-| `asus-tuf` (portátil) | Desktop/CLI local, para trabajar desde el PC | ninguno |
+| `asus-tuf` (portátil) | **principal**: atiende todo mientras está encendido | dueño |
+| `gabo-Inspiron-5720` (homelab) | **24/7**: crons, automatizaciones y **relevo** si el PC cae | solo si el PC está caído |
 
-El problema real (2026-11-21): **los dos gateways tenían el mismo `TELEGRAM_BOT_TOKEN`** y
-ambos hacían `getUpdates`. Telegram solo permite uno, así que se tiraban el bot entre sí:
+Es un *failover*, no dos agentes a la vez. El PC manda; el inspiron cubre su ausencia.
+
+### El problema que había (2026-11-21)
+
+Los dos gateways tenían el mismo `TELEGRAM_BOT_TOKEN` y ambos hacían `getUpdates`. Telegram
+tiraba al que llegaba segundo:
 
 ```
 Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
 ```
 
-El bot caía cada pocos minutos y, cuando el PC ganaba, contestaba con **otro modelo y otra
-memoria**. Se arregló dejando el bot con **un solo dueño**, el inspiron:
+El bot caía cada pocos minutos y, cuando ganaba el PC, contestaba con **otro modelo y otra
+memoria** (nemotron en el PC, ernie en el inspiron). De ahí respuestas incoherentes.
 
-```bash
-# en el portátil: comentar TELEGRAM_* en ~/.hermes/.env (copia .bak antes)
-# y reiniciar el gateway. El Desktop sigue funcionando en local.
-systemctl --user restart hermes-gateway
-# en el inspiron: reiniciar para que recupere el bot
-systemctl --user restart hermes-gateway
+### Cómo funciona el relevo
+
+`~/.local/bin/telegram-failover.sh` corre **en el inspiron** por
+`telegram-failover.timer` cada **15 s**:
+
+1. Pregunta por SSH si el gateway del PC está `active`.
+2. Si el PC está activo y el inspiron tiene el token, lo **suelta** (lo desactiva y reinicia).
+3. Si el PC no responde en **2 comprobaciones seguidas** (~30 s), **toma** el bot y reinicia.
+
+Al volver el PC, el PC conecta en su primer intento o en el reintento automático (hasta 8), y
+el inspiron suelta el bot como mucho 15 s después. Puede haber un conflicto transitorio de
+segundos: es normal y se resuelve solo.
+
+### El marcador `#FAILOVER#`
+
+Desactivar Telegram **no** comenta las líneas con `#`, porque el `.env` tiene líneas de
+plantilla (`# TELEGRAM_WEBHOOK_URL=https://my-app.fly.dev/telegram`) que, al descomentarse,
+romperían el polling. El script antepone `#FAILOVER#` solo a las líneas reales:
+
+```
+#FAILOVER#TELEGRAM_BOT_TOKEN=...
+#FAILOVER#TELEGRAM_ALLOWED_USERS=...
 ```
 
-Comprobación: `journalctl --user -u hermes-gateway | grep -i conflict` sin líneas nuevas, y
-el estado del inspiron con `"telegram": {"state": "connected"}`.
+Reactivar quita exactamente ese prefijo. Las de plantilla no se tocan nunca.
 
-Si algún día el PC también debe atender Telegram, **no compartir el token**: crear un bot
-distinto en BotFather y ponerlo en el `.env` del PC.
+### Comprobar
+
+```bash
+# en el inspiron
+tail -5 ~/.hermes/telegram-failover.log
+systemctl --user list-timers telegram-failover.timer
+grep -c '^TELEGRAM_BOT_TOKEN=' ~/.hermes/.env     # 0 si el PC manda, 1 si hay relevo
+
+# en el PC
+systemctl --user is-active hermes-gateway
+journalctl --user -u hermes-gateway --since "10 min ago" | grep -iE "connected to telegram|conflict"
+```
+
+`healthcheck.sh` lo resume: avisa si los dos nodos tienen el bot a la vez, si el relevo no
+está armado, o si nadie lo atiende.
+
+### Si algún día se quieren dos bots
+
+**No compartir el token.** Crear un bot distinto en BotFather para el segundo nodo. Dos
+`getUpdates` con el mismo token siempre acaban en conflicto.
 
 ---
 

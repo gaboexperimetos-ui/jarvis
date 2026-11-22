@@ -159,14 +159,22 @@ if ssh -o ConnectTimeout=5 -o BatchMode=yes homelab 'true' 2>/dev/null; then
     [ "${nmcp:-0}" -ge 1 ] && ok "$nmcp servidores MCP activos" || warn "no pude contar los MCP"
     printf '%s' "$servers" | grep -q '"study-platform"' && ok "study-platform entre los MCP del agente" || bad "study-platform no aparece en los MCP"
 
-    # Telegram: un solo dueño del bot
-    if grep -q '^TELEGRAM_BOT_TOKEN=' "$HOME/.hermes/.env" 2>/dev/null; then
-        bad "el PC también hace polling de Telegram (choque de bot)"
+    # Telegram: PC principal; inspiron 24/7 como relevo (nunca los dos a la vez)
+    pc_tg=no
+    grep -q '^TELEGRAM_BOT_TOKEN=' "$HOME/.hermes/.env" 2>/dev/null && pc_tg=si
+    pc_gw="$(systemctl --user is-active hermes-gateway 2>/dev/null)"
+    ins_tg="$(ssh homelab 'grep -q "^TELEGRAM_BOT_TOKEN=" ~/.hermes/.env && echo si || echo no' 2>/dev/null)"
+    if [ "$pc_tg" = si ] && [ "$pc_gw" = active ] && [ "$ins_tg" = si ]; then
+        bad "los dos nodos tienen el bot (choque de getUpdates)"
+    elif [ "$pc_tg" = si ] && [ "$pc_gw" = active ]; then
+        ok "Telegram lo atiende el PC (principal)"
+        ssh homelab 'systemctl --user is-active telegram-failover.timer' 2>/dev/null | grep -qx active \
+            && ok "relevo del inspiron armado" || bad "el relevo del inspiron no está activo"
+    elif [ "$ins_tg" = si ]; then
+        ok "PC sin gateway: Telegram en el inspiron (relevo)"
     else
-        ok "el PC no hace polling de Telegram"
+        bad "nadie atiende Telegram (PC sin gateway y relevo sin token)"
     fi
-    ssh homelab 'grep -q "^TELEGRAM_BOT_TOKEN=" ~/.hermes/.env' 2>/dev/null \
-        && ok "el inspiron es el dueño del bot" || warn "el inspiron no tiene token de Telegram"
 
     # avisos de memoria en el log reciente (desde el ultimo arranque)
     nwarn="$(ssh homelab 'journalctl --user -u hermes-gateway --since "1 hour ago" --no-pager 2>/dev/null | grep -c "exceeds its char limit" || true')"

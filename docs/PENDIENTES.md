@@ -108,7 +108,7 @@ porque mezclan configuración con datos del usuario.
 | MCPs de Hermes | 4 | 7 (más `cloudflare-docs`, `laraplugins` y `study-platform`) |
 | Dashboard "Bisa" | aislado en `127.0.0.1:3100` | conectado al agente por MCP vía tailnet, 9 herramientas |
 | Copias locales | solo GitHub y el home original | PC + homelab, diarias, 7 días (incluye `~/.hermes` del inspiron) |
-| Telegram | dos gateways con el mismo bot, en conflicto | un solo dueño: el inspiron |
+| Telegram | dos gateways con el mismo bot, en conflicto | PC principal; inspiron de relevo con `telegram-failover.sh` |
 | `/tmp` lleno | 7,4 de 7,5 GB, al 100 % | 619 MB, 9 % |
 | Unidades systemd fallidas | 1 (bug del script de sync) | 0 |
 

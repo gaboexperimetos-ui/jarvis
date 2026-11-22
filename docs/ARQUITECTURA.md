@@ -12,7 +12,7 @@ Es la que **nunca se apaga**. Corre el agente 24/7.
 
 | Servicio | Dónde | Qué hace |
 |---|---|---|
-| `hermes-gateway` | systemd `--user` | El agente Hermes: Telegram, voz, MCP, crons, webapp |
+| `hermes-gateway` | systemd `--user` | El agente Hermes 24/7: crons, voz, MCP, webapp; **Telegram como relevo** |
 | `llama-router` | systemd `--user` | Servidor de modelos local en `127.0.0.1:8004/v1` |
 | `kilo-serve` | systemd `--user` | Puerto 44002, el agente de código |
 | `ocshepherd`, `ocshepherd-kilo` | systemd `--user` | Escoltas de OpenCode |
@@ -22,6 +22,9 @@ Es la que **nunca se apaga**. Corre el agente 24/7.
 - Público por Tailscale: `https://gabo-inspiron-5720.tail7deabb.ts.net:9443`
 - Login del dashboard: usuario `gabo`, contraseña **en el `.env` del inspiron** (no está aquí)
 - `sudo` del inspiron: la clave la tiene el usuario, no se guarda en el repo
+- Telegram: **no lo atiende mientras el PC esté encendido**. El PC es el dueño y el inspiron
+  toma el bot en ~30 s si el PC cae, por `telegram-failover.timer`. Ver
+  [HERMES.md](HERMES.md#dos-nodos-pc-principal-inspiron-de-relevo)
 
 **El gateway arranca con `enabled` + `Linger=yes`**, así sobrevive a reinicios y a logout.
 Directorio de trabajo: `/home/gabo`.
@@ -33,9 +36,11 @@ Es donde está el usuario. Corre la interfaz.
 | Servicio | Qué hace |
 |---|---|
 | Hyprland 0.57 | Compositor Wayland |
+| `hermes-gateway` | El agente Hermes local: **dueño principal de Telegram** y del MCP del dashboard |
+| `backup-local.timer` | Copia diaria a `~/backups/` (PC + homelab) |
 | `jarvis-sync.timer` | Este repo, cada 5 minutos |
 | `study-platform` | Dashboard académico "Bisa" en `127.0.0.1:3100` (Zig + SQLite) |
-| Hermes Desktop (oficial) | La ventana de la app, apuntando al gateway del inspiron |
+| Hermes Desktop (oficial) | La ventana de la app, contra el gateway local |
 | llama.cpp local | `/home/gabo/llama.cpp-new/build-cuda/bin` |
 
 GPU: **RTX 3060 Laptop, 6 GB VRAM**, ~289 GB/s reales de ancho de banda.
@@ -51,7 +56,10 @@ portátil (asus-tuf)  ──SSH──►  inspiron  (clave ~/.ssh/id_ed25519_ope
 ```
 
 - `ssh homelab` funciona sin contraseña desde el portátil (clave + `~/.ssh/config`).
-- El portátil es **cliente remoto**: no ejecuta el agente, solo lo mira y le habla.
+- `ssh asus-tuf` también funciona desde el inspiron (`BatchMode`), y es lo que consulta el
+  relevo de Telegram.
+- Los dos ejecutan el agente. Solo uno atiende Telegram a la vez: el PC manda y el inspiron
+  espera; `telegram-failover.sh` (en el inspiron, cada 15 s) hace el relevo.
 - El gateway del inspiron escucha en `0.0.0.0`, así que el portátil lo alcanza por Tailscale.
 
 ### El dashboard del portátil visto desde el inspiron
