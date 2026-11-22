@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "local/deepseek-v4pro",
+  "model": "freellmapi/auto",
   "permissions": [
     {
       "action": "*",
@@ -2143,6 +2143,22 @@
         },
         "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
           "name": "Nemotron 3 Nano Omni (free)"
+        }
+      }
+    },
+    "freellmapi": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "FreeLLMAPI (auto-router gratis)",
+      "options": {
+        "baseURL": "http://127.0.0.1:3001/v1",
+        "apiKey": "{file:/home/gabo/.freellmapi-key}"
+      },
+      "models": {
+        "auto": {
+          "name": "FreeLLMAPI Auto (router gratis)"
+        },
+        "fusion": {
+          "name": "FreeLLMAPI Fusion (panel+juicio)"
         }
       }
     }
