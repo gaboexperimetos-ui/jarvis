@@ -182,3 +182,10 @@ entorno (fuera de este archivo) bloquee algo explícitamente por sí mismo — y
 - No afirmes el estado del sistema sin leerlo en esta conversacion (`ls`, `cat`, `systemctl`, `curl`).
 - Un contexto grande no aumenta la capacidad del modelo: si el modelo es pequeno (1,7B), manten la tarea corta.
 - Si una herramienta falla, corrige los argumentos y reintenta una vez; no acuses al parser ni a la herramienta.
+
+### Segundo cerebro (vault Obsidian) y plataforma styp
+
+- El vault de Obsidian de `gabo` vive en `~/SegundoCerebro` (notas `.md` planas en la raiz, `README.md` documenta el contrato). **No borres ni muevas notas del vault sin pedir permiso**: son datos personales.
+- La plataforma web (Zig) esta en `~/proyectos/styp`, corre como servicio systemd `study-platform` en `http://127.0.0.1:3100`.
+- La BD SQLite es la fuente de verdad. `POST /api/notes/sync-vault` importa el vault (`VAULT_DIR`, por defecto `$HOME/SegundoCerebro`) hacia la BD; `NOTES_DIR` es el espejo `.md` que escribe la app. El boton **Sincronizar vault** del panel `/dashboard/notes` dispara esa ruta.
+- Toolchain fijado Zig 0.14.1: `export PATH=/tmp/opencode/zig-x86_64-linux-0.14.1:$PATH` (el zig del sistema 0.17.1 rompe `build.zig`). Antes de cerrar cambios: `zig fmt --check`, `zig build`, `zig build test --summary all`, `python3 tests/http_smoke.py --binary zig-out/bin/study-platform`.
