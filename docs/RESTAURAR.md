@@ -118,6 +118,32 @@ ssh homelab 'systemctl --user daemon-reload && systemctl --user enable --now tel
 Regla: **un solo dueño del bot**. Si los dos gateways piden `getUpdates` a la vez, Telegram
 tira a uno y el bot parpadea con `Conflict: terminated by other getUpdates request`.
 
+### Entrega de los crons y Mikareno
+
+Con el PC dueño del bot, el inspiron no hace polling: los crons usan `--deliver local` y envían
+con `~/.local/bin/tg-notify.sh`. Al restaurar el inspiron hay que reponer el emisor y sus dos
+ficheros (600):
+
+```bash
+scp scripts/tg-notify.sh homelab:~/.local/bin/tg-notify.sh
+ssh homelab 'chmod 755 ~/.local/bin/tg-notify.sh'
+# ~/.hermes/telegram-send.token  <- TELEGRAM_BOT_TOKEN
+# ~/.hermes/telegram-send.chat   <- TELEGRAM_HOME_CHANNEL
+ssh homelab 'chmod 600 ~/.hermes/telegram-send.token ~/.hermes/telegram-send.chat'
+```
+
+El cron `seguimiento-mikareno` necesita el MCP `mikareno` en el `config.yaml` del inspiron,
+apuntando al PC por la tailnet (`http://100.115.62.97:8080/mcp`, sin clave):
+
+```bash
+ssh homelab 'hermes config set mcp_servers.mikareno.url http://100.115.62.97:8080/mcp
+             hermes config set mcp_servers.mikareno.connect_timeout 30
+             hermes mcp test mikareno'   # 17 herramientas
+```
+
+Ver [HERMES.md](HERMES.md#entrega-de-los-crons-cuando-el-pc-manda) y
+[MCP.md](MCP.md#mikareno--seguimiento-académico).
+
 ---
 
 ## 6. La app de escritorio

@@ -10,7 +10,7 @@ credenciales.** Todo lo demás es ruido hasta que el usuario dé la clave.
 
 ## Hermes (el agente 24/7, en el inspiron)
 
-`~/.hermes/config.yaml`, sección `mcp_servers`. Siete activos, verificados respondiendo a
+`~/.hermes/config.yaml`, sección `mcp_servers`. Ocho activos, verificados respondiendo a
 `initialize` y `tools/list`:
 
 | Servidor | URL | Estado |
@@ -22,8 +22,9 @@ credenciales.** Todo lo demás es ruido hasta que el usuario dé la clave.
 | `cloudflare-docs` | `https://docs.mcp.cloudflare.com/mcp` | activo (2 herramientas) |
 | `laraplugins` | `https://laraplugins.io/mcp/plugins` | activo (12 herramientas) |
 | `study-platform` | `http://100.115.62.97:3101/mcp` | activo (9 herramientas) |
+| `mikareno` | `http://100.115.62.97:8080/mcp` | activo (17 herramientas) |
 
-Los siete llevan `connect_timeout: 30`.
+Los ocho llevan `connect_timeout: 30`.
 
 ### `study-platform` — el dashboard "Bisa"
 
@@ -92,6 +93,25 @@ curl -s -H "Authorization: Bearer $TOKEN" http://localhost:9120/api/mcp/catalog
 
 `_save_mcp_server` escribe en `config.yaml` + `mcp_servers`. **El gateway tarda ~35 s en
 quedar listo** después de reiniciar: no lo toques antes.
+
+### `mikareno` — seguimiento académico
+
+El MCP de Mikareno corre en el **portátil** (`0.0.0.0:8080`) y el inspiron lo alcanza directo
+por la tailnet en `http://100.115.62.97:8080/mcp`, sin cabecera ni clave. Es el que usa el cron
+`seguimiento-mikareno`; antes no estaba en el inspiron y ese cron corría a ciegas.
+
+```yaml
+  mikareno:
+    url: "http://100.115.62.97:8080/mcp"
+    connect_timeout: 30
+```
+
+```bash
+hermes mcp test mikareno     # ✓ Connected, 17 tools discovered
+```
+
+Limitación: si el PC está apagado, el inspiron no alcanza Mikareno (el MCP vive en el PC). El
+cron falla entonces con un error claro, sin inventar datos.
 
 ### Los que NO se añadieron, y por qué
 

@@ -115,7 +115,8 @@ sobre un contexto de 200k, no es un problema de presupuesto.
 | `cab0d39e08f0` | `0 9 * * *` | `resumen-diario` | Resumen a las 9:00 |
 | `607bbfcfd5b5` | `0 15 * * 1-5` | `seguimiento-mikareno` | Seguimiento de Mikareno, L-V a las 15:00 |
 
-Estado: los dos en `ok`.
+Estado: los dos en `ok`. La entrega va por `tg-notify` (ver
+[entrega de los crons](#entrega-de-los-crons-cuando-el-pc-manda)).
 
 ---
 
@@ -314,6 +315,31 @@ romperían el polling. El script antepone `#FAILOVER#` solo a las líneas reales
 
 Reactivar quita exactamente ese prefijo. Las de plantilla no se tocan nunca.
 
+### Entrega de los crons cuando el PC manda
+
+Los crons corren **en el inspiron** (el tick vive dentro de su `hermes-gateway`, no hay timer
+aparte), pero cuando el PC está encendido el inspiron **no tiene el token** activo y su
+plataforma Telegram queda en `enabled: false`. La entrega integrada de Hermes exige una
+plataforma activa y con polling, así que `--deliver telegram` falla con
+`no delivery target resolved` y, si se activa la plataforma, el inspiron vuelve a chocar con el
+PC en `getUpdates`.
+
+Solución: los dos crons están en **`--deliver local`** y el propio agente envía al final con
+`~/.local/bin/tg-notify.sh` (Python puro, `sendMessage` por HTTPS). Telegram solo prohíbe dos
+`getUpdates`; varios `sendMessage` con el mismo token no conflictúan.
+
+```bash
+# en el inspiron
+ls -l ~/.local/bin/tg-notify.sh              # 755
+stat -c '%a %n' ~/.hermes/telegram-send.token ~/.hermes/telegram-send.chat   # 600
+printf 'prueba' | ~/.local/bin/tg-notify.sh  # -> enviado a <chat_id>
+```
+
+El token y el chat viven en ficheros aparte (600), no en el `.env` comentado por el relevo. Los
+dos prompts terminan con una instrucción explícita de escribir el informe en
+`/tmp/cron-*.txt` y ejecutar `tg-notify.sh`, porque el aviso genérico del cron dice "no
+entregues tú" y hay que contrarrestarlo.
+
 ### Comprobar
 
 ```bash
@@ -321,6 +347,7 @@ Reactivar quita exactamente ese prefijo. Las de plantilla no se tocan nunca.
 tail -5 ~/.hermes/telegram-failover.log
 systemctl --user list-timers telegram-failover.timer
 grep -c '^TELEGRAM_BOT_TOKEN=' ~/.hermes/.env     # 0 si el PC manda, 1 si hay relevo
+printf 'ping' | ~/.local/bin/tg-notify.sh          # el emisor de crons responde
 
 # en el PC
 systemctl --user is-active hermes-gateway

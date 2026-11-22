@@ -158,6 +158,7 @@ if ssh -o ConnectTimeout=5 -o BatchMode=yes homelab 'true' 2>/dev/null; then
     nmcp="$(printf '%s' "$servers" | grep -o '"name"' | wc -l)"
     [ "${nmcp:-0}" -ge 1 ] && ok "$nmcp servidores MCP activos" || warn "no pude contar los MCP"
     printf '%s' "$servers" | grep -q '"study-platform"' && ok "study-platform entre los MCP del agente" || bad "study-platform no aparece en los MCP"
+    printf '%s' "$servers" | grep -q '"mikareno"' && ok "mikareno entre los MCP del agente" || warn "mikareno no aparece en los MCP"
 
     # Telegram: PC principal; inspiron 24/7 como relevo (nunca los dos a la vez)
     pc_tg=no
@@ -174,6 +175,13 @@ if ssh -o ConnectTimeout=5 -o BatchMode=yes homelab 'true' 2>/dev/null; then
         ok "PC sin gateway: Telegram en el inspiron (relevo)"
     else
         bad "nadie atiende Telegram (PC sin gateway y relevo sin token)"
+    fi
+
+    # emisor de crons sin polling (necesario cuando el PC es dueño del bot)
+    if ssh homelab 'test -x ~/.local/bin/tg-notify.sh && test -s ~/.hermes/telegram-send.token && test -s ~/.hermes/telegram-send.chat' 2>/dev/null; then
+        ok "emisor tg-notify listo (crons entregan sin polling)"
+    else
+        warn "tg-notify incompleto en el inspiron: los crons no entregarán"
     fi
 
     # avisos de memoria en el log reciente (desde el ultimo arranque)

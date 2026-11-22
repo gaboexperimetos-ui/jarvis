@@ -105,10 +105,12 @@ porque mezclan configuración con datos del usuario.
 |---|---|---|
 | Límites de memoria | 2200 / 1375 caracteres, desbordados | 6000 / 4500, con margen |
 | `USER.md` | tenía caracteres chinos colados (`最短`) | corregido |
-| MCPs de Hermes | 4 | 7 (más `cloudflare-docs`, `laraplugins` y `study-platform`) |
+| MCPs de Hermes | 4 | 8 (más `cloudflare-docs`, `laraplugins`, `study-platform` y `mikareno`) |
 | Dashboard "Bisa" | aislado en `127.0.0.1:3100` | conectado al agente por MCP vía tailnet, 9 herramientas |
 | Copias locales | solo GitHub y el home original | PC + homelab, diarias, 7 días (incluye `~/.hermes` del inspiron) |
 | Telegram | dos gateways con el mismo bot, en conflicto | PC principal; inspiron de relevo con `telegram-failover.sh` |
+| Crons del inspiron | `--deliver telegram` fallaba con el PC dueño del bot | `--deliver local` + emisor `tg-notify.sh` (solo `sendMessage`) |
+| Cron de Mikareno | corría sin el MCP configurado | MCP `mikareno` conectado (17 herramientas) |
 | `/tmp` lleno | 7,4 de 7,5 GB, al 100 % | 619 MB, 9 % |
 | Unidades systemd fallidas | 1 (bug del script de sync) | 0 |
 
