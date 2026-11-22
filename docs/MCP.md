@@ -19,8 +19,10 @@ respondiendo a `initialize` y `tools/list`:
 | `context7` | `https://mcp.context7.com/mcp` | activo |
 | `microsoft-learn` | `https://learn.microsoft.com/api/mcp` | activo |
 | `twilio-docs` | `https://mcp.twilio.com/docs` | activo |
+| `cloudflare-docs` | `https://docs.mcp.cloudflare.com/mcp` | activo (2 herramientas) |
+| `laraplugins` | `https://laraplugins.io/mcp/plugins` | activo (12 herramientas) |
 
-Los cuatro llevan `connect_timeout: 30`.
+Los seis llevan `connect_timeout: 30`.
 
 ```bash
 # consultar el estado real
@@ -36,12 +38,22 @@ quedar listo** después de reiniciar: no lo toques antes.
 
 | Servidor | Motivo |
 |---|---|
-| `cloudflare` | pide clave / token |
-| `vercel` | pide clave |
+| `memxus` | responde a `initialize` con 29 herramientas, pero al llamarlas da `Missing bearer token` |
+| `arcmira` | `No credential was sent` |
+| `huggingface` | sesión obligatoria; sin token no lista herramientas |
+| `gitmcp` | exige cabecera `Mcp-Session-Id` |
+| `sentry`, `docker`, `linear`, `confluent`, `qdrant`, `zep`, `groq`, `wolfram` | `initialize` OK pero `tools/list` vacío sin sesión |
+| `npm` | `Unauthorized` |
+| `smithery` | redirige (308), no es un servidor directo |
+| `cloudflare` (workers) | pide clave / token |
+| `vercel` | `NO` — pide autenticación |
 | `railway` | pide clave |
-| `postman` | pide clave |
+| `postman` | `NO` |
 | `hugging_face` | responde **401** sin token |
 | el resto del catálogo Nous | OAuth o claves |
+
+> Los que dan `initialize` OK pero `tools/list` vacío no sirven: Hermes los marca como
+> activos y luego falla al usarlos. Solo se añaden los que **cuentan herramientas de verdad**.
 
 ---
 
@@ -79,13 +91,28 @@ mnemosyne-os
 ### Cómo se añade uno nuevo
 
 1. Comprobar que responde **sin** credenciales:
+
    ```bash
-   npx -y @modelcontextprotocol/server-<nombre>   # si es stdio
-   curl -s <url> -X POST -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
+   curl -s -X POST <url> -H 'Content-Type: application/json' \
+     -H 'Accept: application/json, text/event-stream' \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}'
    ```
-2. Añadir a `opencode.json` con `"enabled": true`.
-3. Reiniciar OpenCode.
-4. Si pide clave, **no añadirlo**: dejar la entrada en el catálogo con el placeholder y
+
+2. **Y que `tools/list` devuelva nombres de verdad**, no vacío:
+
+   ```bash
+   curl -s -X POST <url> -H 'Content-Type: application/json' \
+     -H 'Accept: application/json, text/event-stream' \
+     -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | grep -o '"name"' | wc -l
+   ```
+
+   Muchos servidores dan `initialize` correcto y `tools/list` vacío si no hay sesión.
+   Esos **no sirven**: Hermes los marca como activos y fallan al usarlos.
+
+3. Añadir a `~/.hermes/config.yaml` en `mcp_servers:` con `url` y `connect_timeout: 30`.
+4. `systemctl --user restart hermes-gateway` y esperar **~45 s**.
+5. Verificar: `curl -H "Authorization: Bearer $TOKEN" http://localhost:9120/api/mcp/servers`.
+6. Si pide clave, **no añadirlo**: dejar la entrada en el catálogo con el placeholder y
    anotarlo en `PENDIENTES.md`.
 
 ---
