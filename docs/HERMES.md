@@ -260,6 +260,41 @@ ffmpeg. Probado y funciona.
 
 ---
 
+## Dos nodos, un solo bot
+
+Hermes está instalado en **dos lugares** (la base; a futuro se pueden añadir más):
+
+| Nodo | Rol | Messaging |
+|---|---|---|
+| `gabo-Inspiron-5720` (homelab) | el agente 24/7: memoria, crons, `study-platform` | **Telegram** |
+| `asus-tuf` (portátil) | Desktop/CLI local, para trabajar desde el PC | ninguno |
+
+El problema real (2026-11-21): **los dos gateways tenían el mismo `TELEGRAM_BOT_TOKEN`** y
+ambos hacían `getUpdates`. Telegram solo permite uno, así que se tiraban el bot entre sí:
+
+```
+Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+```
+
+El bot caía cada pocos minutos y, cuando el PC ganaba, contestaba con **otro modelo y otra
+memoria**. Se arregló dejando el bot con **un solo dueño**, el inspiron:
+
+```bash
+# en el portátil: comentar TELEGRAM_* en ~/.hermes/.env (copia .bak antes)
+# y reiniciar el gateway. El Desktop sigue funcionando en local.
+systemctl --user restart hermes-gateway
+# en el inspiron: reiniciar para que recupere el bot
+systemctl --user restart hermes-gateway
+```
+
+Comprobación: `journalctl --user -u hermes-gateway | grep -i conflict` sin líneas nuevas, y
+el estado del inspiron con `"telegram": {"state": "connected"}`.
+
+Si algún día el PC también debe atender Telegram, **no compartir el token**: crear un bot
+distinto en BotFather y ponerlo en el `.env` del PC.
+
+---
+
 ## Estado de los crons y verificaciones
 
 Regla de oro del proyecto, aprendida a golpes: **no afirmar nada sin leerlo en la conversación.**
