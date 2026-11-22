@@ -105,7 +105,8 @@ porque mezclan configuración con datos del usuario.
 |---|---|---|
 | Límites de memoria | 2200 / 1375 caracteres, desbordados | 6000 / 4500, con margen |
 | `USER.md` | tenía caracteres chinos colados (`最短`) | corregido |
-| MCPs de Hermes | 4 | 6 (más `cloudflare-docs` y `laraplugins`) |
+| MCPs de Hermes | 4 | 7 (más `cloudflare-docs`, `laraplugins` y `study-platform`) |
+| Dashboard "Bisa" | aislado en `127.0.0.1:3100` | conectado al agente por MCP vía tailnet, 9 herramientas |
 | `/tmp` lleno | 7,4 de 7,5 GB, al 100 % | 619 MB, 9 % |
 | Unidades systemd fallidas | 1 (bug del script de sync) | 0 |
 

@@ -34,6 +34,7 @@ Es donde está el usuario. Corre la interfaz.
 |---|---|
 | Hyprland 0.57 | Compositor Wayland |
 | `jarvis-sync.timer` | Este repo, cada 5 minutos |
+| `study-platform` | Dashboard académico "Bisa" en `127.0.0.1:3100` (Zig + SQLite) |
 | Hermes Desktop (oficial) | La ventana de la app, apuntando al gateway del inspiron |
 | llama.cpp local | `/home/gabo/llama.cpp-new/build-cuda/bin` |
 
@@ -52,6 +53,26 @@ portátil (asus-tuf)  ──SSH──►  inspiron  (clave ~/.ssh/id_ed25519_ope
 - `ssh homelab` funciona sin contraseña desde el portátil (clave + `~/.ssh/config`).
 - El portátil es **cliente remoto**: no ejecuta el agente, solo lo mira y le habla.
 - El gateway del inspiron escucha en `0.0.0.0`, así que el portátil lo alcanza por Tailscale.
+
+### El dashboard del portátil visto desde el inspiron
+
+El dashboard escucha solo en `127.0.0.1:3100` del portátil. Para que el agente lo use sin
+abrir puertos a la LAN, el portátil publica **solo en la tailnet**:
+
+```
+inspiron ──Tailscale──► 100.115.62.97:3101 ──tailscale serve (TCP)──► 127.0.0.1:3100
+```
+
+```bash
+# en el portátil, una vez; persiste tras reiniciar
+tailscale serve --bg --tcp=3101 tcp://127.0.0.1:3100
+```
+
+Se eligió TCP crudo y no HTTPS por nombre porque el inspiron **no resuelve MagicDNS**
+(`/etc/resolv.conf` inmutable) y su `sudo` pide contraseña. El 443 sigue con
+`tailscale serve --bg 3100` para el navegador. El MCP del dashboard exige `X-API-Key`;
+la clave está en `~/.hermes/.env` del inspiron y el `config.yaml` la referencia como
+`${STUDY_PLATFORM_MCP_KEY}`. Detalle en [MCP.md](MCP.md#study-platform--el-dashboard-bisa).
 
 ### Por qué el modelo local del inspiron se expone en `0.0.0.0:8004`
 

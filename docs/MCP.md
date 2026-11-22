@@ -10,8 +10,8 @@ credenciales.** Todo lo demás es ruido hasta que el usuario dé la clave.
 
 ## Hermes (el agente 24/7, en el inspiron)
 
-`~/.hermes/config.yaml`, sección `mcp_servers`. Cuatro activos, los cuatro verificados
-respondiendo a `initialize` y `tools/list`:
+`~/.hermes/config.yaml`, sección `mcp_servers`. Siete activos, verificados respondiendo a
+`initialize` y `tools/list`:
 
 | Servidor | URL | Estado |
 |---|---|---|
@@ -21,8 +21,67 @@ respondiendo a `initialize` y `tools/list`:
 | `twilio-docs` | `https://mcp.twilio.com/docs` | activo |
 | `cloudflare-docs` | `https://docs.mcp.cloudflare.com/mcp` | activo (2 herramientas) |
 | `laraplugins` | `https://laraplugins.io/mcp/plugins` | activo (12 herramientas) |
+| `study-platform` | `http://100.115.62.97:3101/mcp` | activo (9 herramientas) |
 
-Los seis llevan `connect_timeout: 30`.
+Los siete llevan `connect_timeout: 30`.
+
+### `study-platform` — el dashboard "Bisa"
+
+El dashboard académico (`~/proyectos/styp`, servicio `study-platform`) ya trae su propio
+servidor MCP en `POST /mcp`, autenticado con la cabecera `X-API-Key`. No se construyó nada
+nuevo: se conectó el que existe.
+
+El proceso escucha en `127.0.0.1:3100` del portátil, así que el inspiron no lo alcanza
+directo. Se publica **solo en la tailnet** con un reenvío TCP crudo de Tailscale, sin abrir
+puertos a la LAN, sin firewall y sin depender de MagicDNS (el inspiron tiene
+`/etc/resolv.conf` inmutable y no resuelve `*.ts.net`):
+
+```bash
+# en el portátil, una vez (persiste en el estado de tailscaled)
+tailscale serve --bg --tcp=3101 tcp://127.0.0.1:3100
+tailscale serve status
+```
+
+Queda accesible como `http://100.115.62.97:3101` y `http://asus-tuf.tail7deabb.ts.net:3101`.
+Además sigue el `tailscale serve` HTTPS en el 443 para abrir el dashboard por nombre desde
+un navegador con MagicDNS:
+
+```bash
+tailscale serve --bg 3100        # https://asus-tuf.tail7deabb.ts.net/
+```
+
+La clave **no se versiona**. Vive en `~/.hermes/.env` del inspiron (excluido del sync) y el
+`config.yaml` la referencia con `${STUDY_PLATFORM_MCP_KEY}`, que Hermes expande al conectar:
+
+```yaml
+  study-platform:
+    url: "http://100.115.62.97:3101/mcp"
+    headers:
+      X-API-Key: "${STUDY_PLATFORM_MCP_KEY}"
+    connect_timeout: 30
+```
+
+Herramientas (9): `search_notes`, `get_note`, `create_note`, `get_academic_context`,
+`get_subject_notes`, `get_study_sheets`, `app_list_backups`, `app_backup_now`, `app_ai_cost`.
+
+Verificación real, con la clave puesta y sin ella:
+
+```bash
+curl -s -X POST http://100.115.62.97:3101/mcp \
+  -H 'Content-Type: application/json' -H "X-API-Key: $STUDY_PLATFORM_MCP_KEY" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | head -c 200
+# sin la cabecera: HTTP 401
+
+hermes mcp test study-platform     # ✓ Connected, 9 tools discovered
+```
+
+Prueba de punta a punta desde el agente (2026-11-21): pidió `get_academic_context` y
+devolvió el promedio real de Lengua y Literatura, `5,51`. La UI del dashboard usa
+`AUTH_DISABLED=true`; el MCP **sí** exige la clave.
+
+> El `~/.hermes` que se espeja a este repo es el del **portátil**, no el del inspiron donde
+> corre el agente. Por eso esta entrada no aparece en `hermes/config.yaml` del repo: el
+> bloque de arriba es la fuente para reproducirla.
 
 ```bash
 # consultar el estado real

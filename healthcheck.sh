@@ -78,6 +78,26 @@ echo "Servicios locales"
 nfail="$(systemctl --user list-units --state=failed --no-pager --plain 2>/dev/null | grep -cE '^●' || true)"
 [ "${nfail:-0}" -eq 0 ] && ok "sin unidades fallidas" || bad "$nfail unidad(es) fallida(s)"
 
+# ── 5b. Dashboard Bisa (study-platform) ───────────────────────────────────
+echo
+echo "Dashboard Bisa"
+if systemctl --user is-active study-platform.service >/dev/null 2>&1; then
+    ok "study-platform.service activo"
+else
+    bad "study-platform.service caído"
+fi
+dash="$(curl -s -o /dev/null -w '%{http_code}' -m 8 http://127.0.0.1:3100/dashboard 2>/dev/null)"
+[ "$dash" = "200" ] && ok "UI local /dashboard -> 200" || bad "UI local /dashboard -> ${dash:-000}"
+# el reenvío TCP de tailscale hacia el inspiron
+if curl -s -o /dev/null -m 8 http://100.115.62.97:3101/dashboard 2>/dev/null; then
+    ok "tailnet 100.115.62.97:3101 alcanzable"
+else
+    warn "100.115.62.97:3101 no responde (¿tailscale serve caído?)"
+fi
+# el MCP debe exigir clave: sin cabecera tiene que dar 401
+mcp401="$(curl -s -o /dev/null -w '%{http_code}' -m 8 -X POST http://127.0.0.1:3100/mcp -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' 2>/dev/null)"
+[ "$mcp401" = "401" ] && ok "MCP local exige X-API-Key (401 sin clave)" || warn "MCP local sin clave dio ${mcp401:-000} (¿auth desactivada?)"
+
 # ── 6. El agente (inspiron) ───────────────────────────────────────────────
 echo
 echo "Agente (inspiron)"
@@ -103,8 +123,10 @@ if ssh -o ConnectTimeout=5 -o BatchMode=yes homelab 'true' 2>/dev/null; then
     fi
 
     # MCPs
-    nmcp="$(ssh homelab 'T=$(grep HERMES_DASHBOARD_SESSION_TOKEN ~/.hermes/.env 2>/dev/null | cut -d= -f2-); curl -s -m 10 -H "Authorization: Bearer $T" http://localhost:9120/api/mcp/servers 2>/dev/null' | grep -o '"name"' | wc -l)"
+    servers="$(ssh homelab 'T=$(grep HERMES_DASHBOARD_SESSION_TOKEN ~/.hermes/.env 2>/dev/null | cut -d= -f2-); curl -s -m 10 -H "Authorization: Bearer $T" http://localhost:9120/api/mcp/servers 2>/dev/null')"
+    nmcp="$(printf '%s' "$servers" | grep -o '"name"' | wc -l)"
     [ "${nmcp:-0}" -ge 1 ] && ok "$nmcp servidores MCP activos" || warn "no pude contar los MCP"
+    printf '%s' "$servers" | grep -q '"study-platform"' && ok "study-platform entre los MCP del agente" || bad "study-platform no aparece en los MCP"
 
     # avisos de memoria en el log reciente (desde el ultimo arranque)
     nwarn="$(ssh homelab 'journalctl --user -u hermes-gateway --since "1 hour ago" --no-pager 2>/dev/null | grep -c "exceeds its char limit" || true')"

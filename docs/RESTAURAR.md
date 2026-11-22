@@ -72,6 +72,22 @@ scp homelab:~/.config/systemd/user/{hermes-gateway,kilo-serve,ocshepherd,ocsheph
 systemctl --user daemon-reload
 ```
 
+### El dashboard Bisa y su reenvío por Tailscale
+
+El dashboard es un servicio **del portátil** (`study-platform`, `127.0.0.1:3100`). El agente
+del inspiron lo usa por MCP. Al reinstalar o reiniciar Tailscale hay que republicar el
+reenvío TCP (el HTTPS del 443 para el navegador es aparte):
+
+```bash
+tailscale serve --bg --tcp=3101 tcp://127.0.0.1:3100   # MCP del agente
+tailscale serve --bg 3100                              # navegador por nombre
+tailscale serve status
+```
+
+Y en el inspiron, la entrada `study-platform` de `~/.hermes/config.yaml` apunta a
+`http://100.115.62.97:3101/mcp` con `X-API-Key: "${STUDY_PLATFORM_MCP_KEY}"`; la clave va en
+`~/.hermes/.env`. Ver [MCP.md](MCP.md#study-platform--el-dashboard-bisa).
+
 ---
 
 ## 5. El agente
