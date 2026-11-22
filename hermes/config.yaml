@@ -2519,3 +2519,10 @@ approvals:
 onboarding:
   seen:
     busy_input_prompt: true
+
+mcp_servers:
+  study-platform:
+    url: "http://127.0.0.1:3100/mcp"
+    headers:
+      X-API-Key: "${STUDY_PLATFORM_MCP_KEY}"
+    connect_timeout: 30

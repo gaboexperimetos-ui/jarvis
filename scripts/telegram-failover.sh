@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 # telegram-failover.sh — un solo dueño del bot de Telegram, con relevo.
 #
-# Regla del usuario: el PC (asus-tuf) es el principal y atiende todo mientras
-# esté encendido. El inspiron es el 24/7 (crons y automatizaciones) y toma el
-# bot SOLO si el PC cae. En cuanto el PC vuelve, el inspiron lo suelta.
+# Regla: el PC (asus-tuf) es el principal y atiende todo mientras esté
+# encendido. El inspiron es el 24/7 (crons y automatizaciones) y toma el bot
+# SOLO si el PC cae. En cuanto el PC vuelve, el inspiron lo suelta.
 #
-# Este script corre EN EL INSPIRON, por un timer de systemd cada 30 s.
-# Telegram no permite dos getUpdates con el mismo token, por eso hay que turnarse.
+# Corre EN EL INSPIRON, por un timer de systemd cada 30 s.
+# Telegram no permite dos getUpdates con el mismo token: hay que turnarse.
+#
+# Las líneas de Telegram se desactivan anteponiendo el marcador #FAILOVER#.
+# Así se reactivan EXACTAMENTE las cuatro líneas reales y nunca las de
+# plantilla (`# TELEGRAM_WEBHOOK_URL=...`), que romperían el polling.
 set -uo pipefail
 
 PC_HOST="${PC_HOST:-asus-tuf}"
@@ -14,6 +18,7 @@ ENVF="$HOME/.hermes/.env"
 COUNT_FILE="$HOME/.hermes/.telegram-fail-count"
 LOG="$HOME/.hermes/telegram-failover.log"
 MAX_LOG=200
+MARK="#FAILOVER#"
 
 log() {
     printf '[%s] %s\n' "$(date '+%F %T')" "$*" >>"$LOG"
@@ -31,18 +36,22 @@ tg_enabled() {
     grep -q '^TELEGRAM_BOT_TOKEN=' "$ENVF" 2>/dev/null
 }
 
-# 1 = activar (quitar el # del marcador), 0 = desactivar (poner #TELEGRAM_)
+# 1 = activar (quitar el marcador), 0 = desactivar (poner el marcador).
 set_tg() {
-    python3 - "$ENVF" "$1" <<'PY'
-import re, sys, pathlib
+    python3 - "$ENVF" "$1" "$MARK" <<'PY'
+import pathlib, sys
 p = pathlib.Path(sys.argv[1])
 want = sys.argv[2] == "1"
-t = p.read_text()
-if want:
-    t = re.sub(r'(?m)^#\s?(TELEGRAM_[A-Z_]+=)', r'\1', t)
-else:
-    t = re.sub(r'(?m)^\s?(TELEGRAM_[A-Z_]+=)', r'#\1', t)
-p.write_text(t)
+mark = sys.argv[3]
+out = []
+for ln in p.read_text().splitlines(True):
+    if want and ln.startswith(mark):
+        out.append(ln[len(mark):])
+    elif not want and ln.startswith("TELEGRAM_"):
+        out.append(mark + ln)
+    else:
+        out.append(ln)
+p.write_text("".join(out))
 PY
 }
 
