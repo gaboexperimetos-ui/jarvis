@@ -5,11 +5,11 @@
 #
 # Uso:
 #   qwen-gui.sh send "<prompt>"      envia el prompt y guarda last_reply.png (solo la ventana)
-#   qwen-gui.sh newchat              clic en "New Chat" (reset a chat vacio)
+#   qwen-gui.sh newchat              clic en "New Chat" (poco fiable: puede tardar en cargar)
 #   qwen-gui.sh shot [archivo]       captura la ventana completa
 #   qwen-gui.sh focus                solo enfoca la app (la lanza si hace falta)
 #
-# Env: QWEN_COMPOSER_Y=47|94  (posicion vertical del composer; 47 chat vacio, 94 en conversacion)
+# Env: QWEN_COMPOSER_Y=auto|47|94 (posicion vertical del composer; auto lo detecta)
 #      QWEN_COMPOSER_X=35      (posicion horizontal dentro del composer)
 #      QWEN_WAIT=12            segundos de espera para la respuesta antes de capturar
 #      QWEN_NEWCHAT_WAIT=4     segundos tras pulsar New Chat
@@ -20,6 +20,7 @@
 set -uo pipefail
 
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/opencode/orquestar/qwen"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="${QWEN_STUDIO_APP:-$HOME/.local/opt/QwenStudio/qwen-studio-run}"
 CLASS="Qwen-studio"
 mkdir -p "$STATE"
@@ -62,7 +63,7 @@ focus_app() {
   ensure_daemon
   local a; a="$(ensure_app)"
   focus "$a"
-  sleep 0.3
+  sleep 0.5
   printf '%s' "$a"
 }
 
@@ -92,11 +93,16 @@ cmd_send() {
   local prompt="${1:?falta el prompt}"
   local a; a="$(focus_app)"
   read -r wx wy ww wh < <(geom)
-  local yfrac="${QWEN_COMPOSER_Y:-47}"
+  local yfrac="${QWEN_COMPOSER_Y:-auto}"
+  if [ "$yfrac" = auto ] || [ -z "$yfrac" ]; then
+    win_grab "$STATE/probe.png"
+    yfrac="$(python3 "$SCRIPT_DIR/qwen-composer-y.py" "$STATE/probe.png" 2>/dev/null)"
+    case "$yfrac" in ''|*[!0-9]*) yfrac=93 ;; esac
+  fi
   local xfrac="${QWEN_COMPOSER_X:-35}"
   local cx=$(( wx + ww*xfrac/100 ))  cy=$(( wy + wh*yfrac/100 ))
-  move "$cx" "$cy"; sleep 0.3; click; sleep 0.5
-  key 29:1 30:1 30:0 29:0; sleep 0.15   # Ctrl+A (limpiar borrador previo)
+  move "$cx" "$cy"; sleep 0.3; click; sleep 1.0
+  key 29:1 30:1 30:0 29:0; sleep 0.25   # Ctrl+A (limpiar borrador previo)
   key 14:1 14:0; sleep 0.1              # Backspace
   paste_prompt "$prompt"; sleep 0.4
   # WebKit/Tauri no sincroniza el estado React con el paste nativo: el boton de

@@ -48,7 +48,7 @@ Seguridad:
 Variables utiles:
   ORQ_CLINE_PROVIDER (default llamacpp)   ORQ_CLINE_MODEL (default deepseek-v4pro)
   ORQ_ZCODE_MODEL   (default deepseek-v4pro)
-  ORQ_QWEN_COMPOSER_Y (default 94)       47 chat nuevo, 94 en conversacion
+  ORQ_QWEN_COMPOSER_Y (default auto)     auto detecta 47/94; o fija 47|94
   ORQ_QWEN_WAIT     (default 30)         segundos de espera de la respuesta
   ORQ_FREEBUFF_SETTLE (default 15)        segundos de silencio para cerrar la TUI
 
@@ -255,7 +255,7 @@ case "$engine" in
     qwen_state="${XDG_STATE_HOME:-$HOME/.local/state}/opencode/orquestar/qwen"
     snap="$LOG_DIR/${stamp}-qwen-${mode}.png"
     run env \
-      QWEN_COMPOSER_Y="${ORQ_QWEN_COMPOSER_Y:-94}" \
+      QWEN_COMPOSER_Y="${ORQ_QWEN_COMPOSER_Y:-auto}" \
       QWEN_WAIT="${ORQ_QWEN_WAIT:-30}" \
       "$SCRIPT_DIR/qwen-gui.sh" send "$prompt"
     rc=$?

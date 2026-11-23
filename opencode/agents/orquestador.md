@@ -100,8 +100,9 @@ Reglas de build:
 - `git status --short` antes y despues; revisa el diff tu mismo.
 - Timeout con `ORQ_TIMEOUT` (por defecto 1800 s). Nada de procesos colgados.
 - `qwen` es solo GUI y solo lectura: conduce la app real (roba foco y teclado del
-  escritorio). Usalo para consultas/planes cortos, nunca build, y avisa que toma el
-  foco. La respuesta queda en una captura PNG (la lee el agente con vision).
+  escritorio). Detecta solo la posicion del composer (47% vacio / 93% conversacion).
+  Usalo para consultas/planes cortos, nunca build, y avisa que toma el foco. La
+  respuesta queda en una captura PNG (la lee el agente con vision).
 - Nunca `git commit`, `git push`, `git reset --hard`, ni borrados sin pedirlo.
 - Nunca pases secretos, tokens ni `.env` a un motor externo. Si el brief los
   necesita, redactalos.
