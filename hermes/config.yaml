@@ -2571,6 +2571,11 @@ mcp_servers:
       GOOGLE_FORMS_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       GOOGLE_FORMS_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
       GOOGLE_FORMS_REFRESH_TOKEN: "${GOOGLE_REFRESH_TOKEN}"
+  gslides:
+    command: mcp-google-slides
+    env:
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
 tts:
   provider: edge
   edge:
