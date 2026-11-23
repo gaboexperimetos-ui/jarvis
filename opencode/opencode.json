@@ -1078,6 +1078,32 @@
           },
           "releaseDate": "2026-11-10"
         },
+        "dots-studio/dots-3-note-preview:free": {
+          "name": "Dots Studio: Dots3-Note Preview (free)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 512000,
+            "output": 460800
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "releaseDate": "2026-08-14"
+        },
         "google/gemma-4-26b-a4b-it:free": {
           "name": "Google: Gemma 4 26B A4B  (free)",
           "capabilities": {
