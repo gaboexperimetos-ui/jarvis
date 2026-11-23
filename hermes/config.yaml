@@ -70,6 +70,7 @@ plugins:
   # Plugins opt-in: solo se cargan los listados aqui.
   enabled:
     - escalado-local
+    - whatsapp-triage
   # Margen para que el plugin de escalado consulte al modelo local y devuelva
   # su respuesta antes de que el hook se abandone (segundos).
   hook_callback_timeout: 200

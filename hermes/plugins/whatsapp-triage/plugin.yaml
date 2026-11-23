@@ -1,0 +1,6 @@
+name: whatsapp-triage
+version: 1.0.0
+description: "Lee todo WhatsApp sin responder; solo contesta si el mensaje trae !Hermes. Lo importante (deberes, comunicados, chats de 10mo) lo guarda como nota en NOVA y lo avisa por Telegram."
+author: "gabo"
+provides_hooks:
+  - post_gateway_admission
