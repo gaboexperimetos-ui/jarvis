@@ -2576,6 +2576,20 @@ mcp_servers:
     env:
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+  genoffice:
+    command: /opt/GenOffice/resources/cli/genoffice
+    args: ["mcp"]
+  shopify:
+    command: /usr/bin/node
+    args: ["/home/gabo/proyectos/shopify-mcp/src/server.js"]
+    env:
+      PATH: "/usr/local/bin:/usr/bin:/bin"
+  facebook:
+    command: bash
+    args: ["/home/gabo/proyectos/facebook-mcp/run.sh"]
+  metaads:
+    command: bash
+    args: ["/home/gabo/meta-ads-mcp-server/run.sh"]
 tts:
   provider: edge
   edge:
