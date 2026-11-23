@@ -155,7 +155,7 @@ protocolos no oficiales y puede hacer que WhatsApp restrinja el número.
 | Ver imágenes | el modelo principal es solo texto y no había router de visión en el PC | `auxiliary.vision` → `nvidia/nemotron-3.5-super-vl:free` (gratis); `vision_analyze` leyó `4271` de una prueba real |
 | Tono del agente | seco y marcial | `SOUL.md` en los dos nodos: corto pero cercano, sin listas secas, trata de usted y llama «señor» |
 | Negativas del modelo gratuito | la negativa se quedaba tal cual | plugin `escalado-local`: repite la petición al `deepseek-v4pro` local y entrega esa respuesta (`docs/ESCALADO-LOCAL.md`) |
-| Contexto del modelo local | 204800, no cabía con WebKit abierto | 65536; KV y buffers entran con ~0,5 GB libres; config previa en `router.ini.bak-20261122` |
+| Contexto del modelo local | 204800 no cabía con la app de GitHub abierta (~1,4 GB de VRAM) | 204800 intacto, con KV en RAM (`no-kv-offload`); ~22 tok/s |
 
 ---
 

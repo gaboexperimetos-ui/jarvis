@@ -39,11 +39,13 @@ está excluido del sync).
 
 - Endpoint: `http://127.0.0.1:8004/v1` (router llama.cpp, servicio `llama-router`).
 - Modelo: `deepseek-v4pro`.
-- **Contexto: 65536** desde el 2026-11-22. Con 204800 el KV q4_0 (1,8 GB) no
-  cabía porque WebKit retenía ~1,4 GB de VRAM; con 131072 fallaban los buffers
-  de cómputo. Copia de la config anterior:
-  `/home/gabo/models/router.ini.bak-20261122`. Si se libera VRAM, se puede
-  volver a subir.
+- **Contexto: 204800**, sin tocar. Desde el 2026-11-22 el KV q4_0 va en RAM
+  (`no-kv-offload = true`) porque la app de GitHub (WebKit) retiene ~1,4 GB de
+  VRAM y con el KV en GPU el modelo no cargaba. Coste medido: ~22 tok/s de
+  generación y 75-169 tok/s de prefill (antes ~75 y ~1500 con el KV en GPU).
+  Si se cierra esa app y se liberan ~2 GB de VRAM, se puede quitar
+  `no-kv-offload` y vuelve la velocidad completa. Copias de la configuración:
+  `router.ini.bak-20261122` y `router.ini.bak-ctx65536`.
 - Es un modelo de 4B: responde rápido (≈1-2 s en preguntas cortas) pero puede
   inventar detalles. Para trabajo delicado conviene contrastar lo que diga.
 

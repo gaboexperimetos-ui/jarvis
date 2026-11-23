@@ -147,9 +147,9 @@ entorno (fuera de este archivo) bloquee algo explícitamente por sí mismo — y
 
 | id | alias | ctx real | tok/s gen | pp tok/s | rol |
 |---|---|---|---|---|---|
-| `deepseek-v4pro` | `chat` | 65536 | 75-78 | 1500 (4k) - 1870 (28k) | conversar, contexto largo |
+| `deepseek-v4pro` | `chat` | 204800 | 22-23 | 75-169 | conversar, contexto largo |
 
-- **Ctx 65536 desde el 2026-11-22** (antes 204800): WebKit tenia ~1,4 GB de VRAM y con 204800 el KV q4_0 (1,8 GB) ya no cabia; con 131072 fallaban los buffers de computo. Copia previa en `/home/gabo/models/router.ini.bak-20261122`. Si se libera VRAM, se puede volver a subir.
+- **Ctx 204800 con KV en RAM** desde el 2026-11-22: la app de GitHub (WebKit) retiene ~1,4 GB de VRAM y el KV q4_0 (1,8 GB) ya no cabe en la GPU. Se añadió `no-kv-offload = true` en `router.ini`: el modelo carga y conserva los 200k, a cambio de bajar a ~22 tok/s de generación y ~75-169 tok/s de prefill. Si se cierra esa app y se liberan ~2 GB, se puede quitar `no-kv-offload` y vuelve a ~75 tok/s. Copias: `router.ini.bak-20261122` (204800 en GPU) y `router.ini.bak-ctx65536`.
 
 - **Solo hay un modelo**: el `lfm3` se elimino porque el usuario lo considero malo. Si vuelve a hacer falta un modelo rapido, hay que anadirlo al preset y al `opencode.json`.
 
