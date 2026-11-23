@@ -313,6 +313,10 @@ models/
 !scripts/
 !scripts/**
 # ─── V2: secretos y estado volatil de Hermes ───
+hermes/whatsapp/
+hermes/shared/
+hermes/platforms/
+hermes/gateway.pid
 hermes/gateway-connections.json
 hermes/auth.json
 hermes/runtime/

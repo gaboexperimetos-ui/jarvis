@@ -107,6 +107,8 @@ for entry in "${MAP[@]}"; do
         --exclude='runtime/' --exclude='terminal-sessions/' \
         --exclude='backups/' --exclude='cron/' --exclude='gateway/' \
         --exclude='kanban/' --exclude='secrets/' --exclude='*.bak*' \
+        --exclude='whatsapp/' --exclude='shared/' --exclude='platforms/' \
+        --exclude='gateway.pid' \
         --exclude='identity.json' --exclude='service*.json' \
         --exclude='unlimited*.json' \
         "$dst/" "$src/" 2>/dev/null || log "AVISO: rsync fallo en $src"
