@@ -72,6 +72,14 @@
       "url": "http://127.0.0.1:8080/mcp",
       "enabled": true
     },
+    "study-platform": {
+      "type": "remote",
+      "url": "http://127.0.0.1:3100/mcp",
+      "headers": {
+        "X-API-Key": "{file:/home/gabo/.config/opencode/secrets/study-platform-mcp-key}"
+      },
+      "enabled": true
+    },
     "rea": {
       "type": "local",
       "command": [

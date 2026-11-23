@@ -2526,3 +2526,6 @@ mcp_servers:
     headers:
       X-API-Key: "${STUDY_PLATFORM_MCP_KEY}"
     connect_timeout: 30
+  mikareno:
+    url: http://127.0.0.1:8080/mcp
+    connect_timeout: 30
