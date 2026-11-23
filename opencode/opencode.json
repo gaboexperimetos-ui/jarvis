@@ -200,7 +200,7 @@
       "package": "@opencode/ai/providers/openai-compatible",
       "settings": {
         "baseURL": "http://localhost:3001/v1",
-        "apiKey": "freellmapi-3967be1a01983271e31c18ce35ec29fc13f1b4a7484ca3a0"
+        "apiKey": "{file:/home/gabo/.freellmapi-key}"
       },
       "models": {
         "auto": {
