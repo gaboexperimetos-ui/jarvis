@@ -2541,6 +2541,16 @@ mcp_servers:
   mikareno:
     url: http://127.0.0.1:8080/mcp
     connect_timeout: 30
+  gmail:
+    command: mcp-google-gmail
+    env:
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+  gdrive:
+    command: mcp-google-drive
+    env:
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
 tts:
   provider: edge
   edge:
