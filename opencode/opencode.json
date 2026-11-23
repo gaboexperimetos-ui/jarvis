@@ -1392,6 +1392,40 @@
           "releaseDate": "2026-02-01"
         }
       }
+    },
+    "orcarouter": {
+      "name": "OrcaRouter",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://api.orcarouter.ai/v1",
+        "apiKey": "{file:/home/gabo/.config/opencode/secrets/orcarouter-api-key}"
+      },
+      "models": {
+        "deepseek/deepseek-v4.1-flash": {
+          "name": "DeepSeek V4.1 Flash (OrcaRouter)",
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ],
+            "reasoning": {
+              "supported": true,
+              "toggle": true
+            }
+          },
+          "limit": {
+            "context": 128000,
+            "output": 32768
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      }
     }
   },
   "agents": {
