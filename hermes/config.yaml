@@ -83,9 +83,9 @@ plugins:
 # Model Configuration
 # =============================================================================
 model:
-  # Default model to use (can be overridden with --model flag)
-  # Both "default" and "model" work as the key name here.
-  default: "nvidia/nemotron-3-ultra-550b-a55b:free"
+  # Default model: local deepseek-v4pro (llama.cpp router, 0 €, no se niega)
+  # El free de OpenRouter (nemotron) se negaba a responder; el local es fiable.
+  default: "deepseek-v4pro"
 
   # Inference provider selection:
   #   "auto"         - Auto-detect from credentials (default)
@@ -117,11 +117,12 @@ model:
   #   It works with both no-auth and auth-enabled server modes.
   #
   # Can also be overridden for a single invocation with the --provider flag.
-  provider: "openrouter"
+  provider: "llamacpp"
 
   # API configuration (falls back to OPENROUTER_API_KEY env var)
   # api_key: "your-key-here"  # Uncomment to set here instead of .env
-  base_url: "https://openrouter.ai/api/v1"
+  base_url: "http://127.0.0.1:8004/v1"
+  api_key: "sk-local"
 
   # Stream API responses from the provider (default: true). The agent core
   # prefers streaming for every turn — subagents included — for liveness
@@ -1064,9 +1065,8 @@ memory:
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
   nudge_interval: 10        # Nudge every 10 user turns (0 = disabled)
 
-  # External memory provider: byterover (0 €, local-first, solo lectura del vault)
-  # Requiere el CLI `brv` instalado (ver nota de instalación abajo).
-  provider: byterover
+  # Memoria built-in (vectorial externa desactivada: byterover requiere CLI `brv` no instalado)
+  provider: built-in
 
 # =============================================================================
 # Session Continuity (Messaging Platforms)
