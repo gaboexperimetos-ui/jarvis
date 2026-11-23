@@ -83,9 +83,9 @@ plugins:
 # Model Configuration
 # =============================================================================
 model:
-  # Default model: local deepseek-v4pro (llama.cpp router, 0 €, no se niega)
-  # El free de OpenRouter (nemotron) se negaba a responder; el local es fiable.
-  default: "deepseek-v4pro"
+  # Default model: nemotron-3.5-super-vl:free (OpenRouter, soporta tools, no se niega)
+  # El local deepseek-v4pro no soporta function calling; este sí y es 0 €.
+  default: "nvidia/nemotron-3.5-super-vl:free"
 
   # Inference provider selection:
   #   "auto"         - Auto-detect from credentials (default)
@@ -117,12 +117,11 @@ model:
   #   It works with both no-auth and auth-enabled server modes.
   #
   # Can also be overridden for a single invocation with the --provider flag.
-  provider: "llamacpp"
+  provider: "openrouter"
 
   # API configuration (falls back to OPENROUTER_API_KEY env var)
   # api_key: "your-key-here"  # Uncomment to set here instead of .env
-  base_url: "http://127.0.0.1:8004/v1"
-  api_key: "sk-local"
+  base_url: "https://openrouter.ai/api/v1"
 
   # Stream API responses from the provider (default: true). The agent core
   # prefers streaming for every turn — subagents included — for liveness
