@@ -84,6 +84,21 @@
     },
     {
       "action": "shell",
+      "resource": "*systemctl --user restart study-platform*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl --user stop study-platform*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl --user start study-platform*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
       "resource": "*chmod -R 777*",
       "effect": "ask"
     },
@@ -91,6 +106,11 @@
       "action": "shell",
       "resource": "*git push*",
       "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "*git push origin main*",
+      "effect": "allow"
     },
     {
       "action": "shell",
