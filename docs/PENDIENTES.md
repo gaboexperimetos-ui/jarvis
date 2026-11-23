@@ -112,6 +112,35 @@ si expone MCP o servicio y se documenta igual que estos dos.
 
 ---
 
+## 10. WhatsApp: que el agente vea tus chats
+
+**Estado:** el puente está emparejado y conectado, pero en modo `self-chat`: **solo procesa los
+mensajes que te escribes a ti mismo**. Todo lo demás se descarta a propósito. Prueba de ello en
+`~/.hermes/whatsapp/bridge.log`: desde el emparejamiento (21 nov 22:04) hay 27 mensajes
+ignorados con `self_chat_mode_rejects_non_self` y **cero procesados**.
+
+- Cuenta emparejada: `593980725699` (Gabriel Salas), LID `36790757015662`.
+- Puente: `scripts/whatsapp-bridge/bridge.js` (Baileys), puerto `3000`, sesión en
+  `~/.hermes/whatsapp/session/`.
+- El modo se fija con `WHATSAPP_MODE` en `~/.hermes/.env` (hoy `self-chat`).
+
+**Por qué no basta con cambiar el modo:** con un número personal no hay un modo «leer sin
+contestar». Las dos únicas vías que trae Hermes son:
+
+1. **`self-chat`** (lo que hay): le escribes en el chat «Mensaje a ti mismo» y responde ahí.
+   Seguro y gratis, pero no ve los chats con tus contactos.
+2. **`bot`**: ve y **contesta** los mensajes que te llegan de tus contactos. Es una
+   auto-respuesta real a nombre tuyo; para activarlo haría falta
+   `WHATSAPP_ALLOWED_USERS=*` (o la lista de chats) y `WHATSAPP_FORWARD_OWNER_MESSAGES=true`.
+
+No hay en el código un modo espejo de solo lectura. Si se quiere, hay que añadirlo (parche en
+el puente, se pierde con las actualizaciones) o instalar un plugin de la comunidad, que usa
+protocolos no oficiales y puede hacer que WhatsApp restrinja el número.
+
+**Decisión pendiente del usuario:** ¿`self-chat` (seguro) o `bot` (contesta a los contactos)?
+
+---
+
 ## Resuelto el 2026-11-22
 
 | Cosa | Antes | Ahora |
@@ -122,6 +151,9 @@ si expone MCP o servicio y se documenta igual que estos dos.
 | MCP de Mikareno en Hermes (PC) | no estaba | `mikareno` (`:8080/mcp`, 17 herramientas) |
 | Repo `mikareno-mcp-` | clon viejo | actualizado con la migración Zig/CDP; servicio reiniciado y probado |
 | Documentación de los repos | dispersa | `docs/MCP.md` dice de dónde sale cada servicio y qué clon corre |
+| Oído y voz | `stt-whisper` y `edge-tts` no estaban instalados en el PC | instalados; `stt.language=es`, `tts=edge`/`es-ES-AlvaroNeural`, `auto_tts=text_and_voice`; probado de punta a punta en PC e inspiron |
+| Ver imágenes | el modelo principal es solo texto y no había router de visión en el PC | `auxiliary.vision` → `nvidia/nemotron-3.5-super-vl:free` (gratis); `vision_analyze` leyó `4271` de una prueba real |
+| Tono del agente | seco y marcial | `SOUL.md` en los dos nodos: corto pero cercano, sin listas secas, trata de usted y llama «señor» |
 
 ---
 
