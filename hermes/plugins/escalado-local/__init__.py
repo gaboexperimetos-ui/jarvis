@@ -16,8 +16,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import threading
+import time
 import urllib.request
 from typing import Any, Dict, List, Optional
 
@@ -34,6 +36,17 @@ _MAX_PART = 8000
 
 _recent: Dict[str, Dict[str, Any]] = {}
 _lock = threading.Lock()
+
+_LOG_PATH = os.path.join(os.path.expanduser("~"), ".hermes", "logs", "escalado-local.log")
+
+
+def _audit(message: str) -> None:
+    try:
+        os.makedirs(os.path.dirname(_LOG_PATH), exist_ok=True)
+        with open(_LOG_PATH, "a", encoding="utf-8") as handle:
+            handle.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {message}\n")
+    except Exception:
+        pass
 
 _REFUSAL_RE = re.compile(
     "|".join(
@@ -170,10 +183,13 @@ def _on_transform_llm_output(*, response_text: Any = None, turn_id: str = "", se
         answer = _ask_local(entry)
     except Exception as exc:  # deja la respuesta original si el local falla
         logger.warning("escalado-local: no pude consultar el modelo local: %s", exc)
+        _audit(f"FALLO al consultar el local: {exc}")
         return None
     if not answer:
+        _audit("el local devolvio una respuesta vacia; se deja la original")
         return None
-    logger.info("escalado-local: el principal se negó; respondió %s", LOCAL_MODEL)
+    logger.warning("escalado-local: el principal se negó; respondió %s", LOCAL_MODEL)
+    _audit(f"negativa escalada al local (modelo principal: {model or '?'})")
     return answer
 
 

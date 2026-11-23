@@ -154,6 +154,8 @@ protocolos no oficiales y puede hacer que WhatsApp restrinja el número.
 | Oído y voz | `stt-whisper` y `edge-tts` no estaban instalados en el PC | instalados; `stt.language=es`, `tts=edge`/`es-ES-AlvaroNeural`, `auto_tts=text_and_voice`; probado de punta a punta en PC e inspiron |
 | Ver imágenes | el modelo principal es solo texto y no había router de visión en el PC | `auxiliary.vision` → `nvidia/nemotron-3.5-super-vl:free` (gratis); `vision_analyze` leyó `4271` de una prueba real |
 | Tono del agente | seco y marcial | `SOUL.md` en los dos nodos: corto pero cercano, sin listas secas, trata de usted y llama «señor» |
+| Negativas del modelo gratuito | la negativa se quedaba tal cual | plugin `escalado-local`: repite la petición al `deepseek-v4pro` local y entrega esa respuesta (`docs/ESCALADO-LOCAL.md`) |
+| Contexto del modelo local | 204800, no cabía con WebKit abierto | 65536; KV y buffers entran con ~0,5 GB libres; config previa en `router.ini.bak-20261122` |
 
 ---
 

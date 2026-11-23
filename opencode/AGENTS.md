@@ -147,7 +147,9 @@ entorno (fuera de este archivo) bloquee algo explícitamente por sí mismo — y
 
 | id | alias | ctx real | tok/s gen | pp tok/s | rol |
 |---|---|---|---|---|---|
-| `deepseek-v4pro` | `chat` | 204800 | 75-78 | 1500 (4k) - 1870 (28k) | conversar, contexto largo |
+| `deepseek-v4pro` | `chat` | 65536 | 75-78 | 1500 (4k) - 1870 (28k) | conversar, contexto largo |
+
+- **Ctx 65536 desde el 2026-11-22** (antes 204800): WebKit tenia ~1,4 GB de VRAM y con 204800 el KV q4_0 (1,8 GB) ya no cabia; con 131072 fallaban los buffers de computo. Copia previa en `/home/gabo/models/router.ini.bak-20261122`. Si se libera VRAM, se puede volver a subir.
 
 - **Solo hay un modelo**: el `lfm3` se elimino porque el usuario lo considero malo. Si vuelve a hacer falta un modelo rapido, hay que anadirlo al preset y al `opencode.json`.
 
