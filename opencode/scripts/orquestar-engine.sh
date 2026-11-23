@@ -69,6 +69,14 @@ router_chat() {
     -H 'Content-Type: application/json' \
     -d '{"model":"deepseek-v4pro","messages":[{"role":"user","content":"OK"}],"max_tokens":1}' 2>/dev/null
 }
+freellm_chat() {
+  local key; key="$(cat "$HOME/.freellmapi-key" 2>/dev/null)"
+  [ -n "$key" ] || { printf '000'; return; }
+  curl -s -m "${1:-30}" -o /dev/null -w '%{http_code}' \
+    http://127.0.0.1:3001/v1/chat/completions \
+    -H "Authorization: Bearer $key" -H 'Content-Type: application/json' \
+    -d '{"model":"auto","messages":[{"role":"user","content":"OK"}],"max_tokens":1}' 2>/dev/null
+}
 
 doctor() {
   printf '%-10s %-8s %s\n' MOTOR BINARIO ESTADO
@@ -79,8 +87,12 @@ doctor() {
   printf '%-10s %-8s %s\n' kilo "$(have kilo && echo si || echo no)" "$st"
 
   if have opencode; then
-    if [ -f "$HOME/.freellmapi-key" ] && http_ok "http://127.0.0.1:3001/v1/models"; then st="GRATIS ok (freellmapi/auto)"
-    else st="instalado, sin router free 3001"; fi
+    if ! http_ok "http://127.0.0.1:3001/v1/models"; then st="router 3001 caido"
+    else
+      code="$(freellm_chat 30)"
+      if [ "$code" = "200" ]; then st="GRATIS ok (freellmapi/auto)"
+      else st="freellmapi inestable (HTTP $code): usa kilo"; fi
+    fi
   else st="no instalado"; fi
   printf '%-10s %-8s %s\n' opencode "$(have opencode && echo si || echo no)" "$st"
 

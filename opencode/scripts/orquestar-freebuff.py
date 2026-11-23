@@ -80,8 +80,10 @@ def main() -> int:
                 break
 
     try:
-        pump(12, 2)                    # arranque de la TUI
-        os.write(master, (prompt.strip() + "\r").encode())
+        pump(14, 2)                    # arranque de la TUI
+        os.write(master, prompt.strip().encode())
+        time.sleep(0.6)
+        os.write(master, b"\r")        # Enter en un write aparte (si no, queda como pegado)
         pump(settle + 180, settle)     # respuesta + asentamiento
     finally:
         for _ in range(2):

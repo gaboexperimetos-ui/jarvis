@@ -44,6 +44,46 @@
     },
     {
       "action": "shell",
+      "resource": "*systemctl --user is-active*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl is-active*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl --user status*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl status*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl --user show*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl show*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl --user list-*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "*systemctl list-*",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
       "resource": "*chmod -R 777*",
       "effect": "ask"
     },
