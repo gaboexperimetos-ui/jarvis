@@ -26,6 +26,9 @@ credenciales.** Todo lo demás es ruido hasta que el usuario dé la clave.
 
 Los ocho llevan `connect_timeout: 30`.
 
+El PC (Hermes principal) usa las mismas dos entradas locales: `study-platform` en
+`http://127.0.0.1:3100/mcp` y `mikareno` en `http://127.0.0.1:8080/mcp`.
+
 ### `study-platform` — el dashboard "Bisa"
 
 El dashboard académico (`~/proyectos/styp`, servicio `study-platform`) ya trae su propio
@@ -138,12 +141,13 @@ cron falla entonces con un error claro, sin inventar datos.
 
 ## OpenCode (la interfaz del portátil)
 
-`~/.config/opencode/opencode.json`, sección `mcp`. **9 habilitados**:
+`~/.config/opencode/opencode.json`, sección `mcp`. **10 habilitados**:
 
 | Servidor | Tipo | Para qué |
 |---|---|---|
 | `genoffice` | local | documentos Office, PDF, presentaciones |
-| `mikareno` | remoto | seguimiento académico |
+| `mikareno` | remoto | seguimiento académico (17 herramientas) |
+| `study-platform` | remoto | dashboard NOVA: notas, promedios, respaldos (9 herramientas) |
 | `rea` | local | ingeniería inversa de binarios y artefactos |
 | `freecad` | local | CAD |
 | `blender` | local | 3D |
@@ -151,6 +155,10 @@ cron falla entonces con un error claro, sin inventar datos.
 | `facebook` | local | publicar en Facebook |
 | `meta-ads` | local | anuncios de Meta |
 | `servers` | stdio | utilidades varias |
+
+Las claves se referencian con `{file:...}` (por ejemplo `study-platform` usa
+`~/.config/opencode/secrets/study-platform-mcp-key`, ignorado por git), nunca en claro: el repo
+es público y una clave que llegue al índice hay que rotarla aunque se borre después.
 
 ### Catálogo de plantillas: 37 servidores
 
