@@ -75,6 +75,25 @@ Fecha: 2026-11-22 22:2x (America/Guayaquil)
   - `SOUL.md`: sección «WhatsApp (acceso real, verificado)» con estas capacidades y sus límites.
 - Nota: en modo `bot`, el puente descarta los mensajes que usted envía desde su propio teléfono (`FORWARD_OWNER_MESSAGES`), así que el registro contiene lo **recibido**, no lo que usted escribe.
 
+## ¿Y el modelo multimodal para audio?
+
+Comprobado, no asumido:
+
+- El modelo local (`deepseek-v4pro`, GGUF 4B) es **solo texto**: no tiene `mmproj`; llama.cpp no puede darle audio.
+- `lfm3-unc-gguf` (1.7B) también es solo texto.
+- El modelo multimodal configurado (`auxiliary.vision.model: nvidia/nemotron-3.5-super-vl:free`) acepta **texto, imagen y vídeo**, pero **no audio**.
+- En OpenRouter sí existe uno con audio gratis por tokens: `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` (`input_modalities: text, audio, image, video`).
+- Prueba real con un MP3 en español contra ese modelo: **HTTP 402** — «This request requires at least $0.50 in balance for audio». OpenRouter bloquea audio sin saldo, incluso en modelos `:free`. No es 0 €.
+- No hay `GROQ_API_KEY`, `GEMINI_API_KEY` ni `NVIDIA_API_KEY` configuradas.
+
+Conclusión: con presupuesto 0 € y las claves actuales, **Whisper en CPU es la vía que funciona** (ya verificada). El modelo multimodal no cubre audio en este entorno.
+
+Vías para usar un modelo multimodal de audio (elegir una):
+
+1. **Groq (gratis, sin tarjeta)**: crear clave en console.groq.com y poner `GROQ_API_KEY`; luego `stt.provider: groq` con `whisper-large-v3-turbo`. Rápido, sin CPU local.
+2. **Gemini API (gratis, sin tarjeta)**: clave en aistudio.google.com; audio nativo. Requiere un proveedor STT por comando (script que envía el audio a Gemini). Se puede dejar preparado.
+3. **OpenRouter omni**: cargar ≥ 0,50 USD de saldo y usar el modelo omni gratis para audio. Deja de ser 0 € de entrada.
+
 ## Cambios aplicados
 
 - `~/.hermes/config.yaml`: `stt.provider`, `stt.local.device`, `stt.local.compute_type`, `tts.edge.voice`, `voice.auto_tts`, `voice.auto_tts_mode`.
