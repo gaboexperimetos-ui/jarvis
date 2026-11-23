@@ -1064,6 +1064,10 @@ memory:
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
   nudge_interval: 10        # Nudge every 10 user turns (0 = disabled)
 
+  # External memory provider: byterover (0 €, local-first, solo lectura del vault)
+  # Requiere el CLI `brv` instalado (ver nota de instalación abajo).
+  provider: byterover
+
 # =============================================================================
 # Session Continuity (Messaging Platforms)
 # =============================================================================
