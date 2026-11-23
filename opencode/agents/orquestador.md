@@ -68,7 +68,7 @@ Elige el motor mas barato que resuelva el trabajo:
 | Antigravity, Qwen Studio, Kilo Desktop | GUI, a mano; no scriptables | free tier |
 
 Antes de delegar, comprueba el estado real: `~/.config/opencode/scripts/orquestar-engine.sh doctor`.
-Si un motor no esta en verde, no lo uses: cae al siguiente gratis (kilo u opencode).
+Si un motor no esta en verde, no lo uses: cae al siguiente gratis fiable (kilo o freebuff).
 
 Delega con el despachador, nunca adivinando flags:
 
