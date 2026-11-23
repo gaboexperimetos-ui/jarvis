@@ -75,6 +75,21 @@ Leer el contexto antes de alarmarse. Un patrón encontrado no es una fuga.
   aquí es el del portátil y no la contiene.
 - El **token del dashboard** del inspiron está en `~/.hermes/.env`.
 - La **clave de sudo** del inspiron solo la tiene el usuario.
+- La **clave unificada de `freellmapi`** vive en `~/.freellmapi-key` (600) y en la tabla
+  `settings` (`unified_api_key`) de `~/freellmapi/server/data/freeapi.db`. Los clientes la leen
+  con `{file:~/.freellmapi-key}` en `opencode.json` y con `$(cat ~/.freellmapi-key)` en
+  `.zshrc` (PC) y `.bashrc` (inspiron); nunca en claro.
+- El **`.env` de `mikareno-mcp`** (usuario y contraseña de Mikareno) vive solo en el disco del
+  PC, con permisos 600. El repo privado ya no lo versiona: solo publica `.env.example`.
+
+### Rotación del 2026-11-22
+
+Una copia de la clave de `freellmapi` llegó al historial del repo **público** `jarvis` dentro
+de `opencode.json`. Se sustituyó por `{file:...}`, se **rotó la clave** (la vieja responde 401
+y la nueva 200) y se actualizaron `.zshrc`, `.bashrc` del inspiron y el fichero de clave. La
+clave vieja sigue en commits antiguos: como el repo es público, la rotación es lo que la
+inutiliza; no hace falta reescribir el historial. Si aparece otra clave literal en un fichero
+versionado, el orden es siempre: sacarla del índice, rotarla y comprobar que la vieja falla.
 
 Si algún día se versiona el `config.yaml` del inspiron, hay que quitar antes:
 

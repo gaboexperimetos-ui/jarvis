@@ -116,6 +116,19 @@ hermes mcp test mikareno     # ✓ Connected, 17 tools discovered
 Limitación: si el PC está apagado, el inspiron no alcanza Mikareno (el MCP vive en el PC). El
 cron falla entonces con un error claro, sin inventar datos.
 
+**De dónde sale ese servicio.** El código es el repo privado
+`github.com/gaboexperimetos-ui/mikareno-mcp-`, clonado en `~/mikareno-mcp` y arrancado por
+`mikareno-mcp.service` (`venv/bin/python server.py`, `EnvironmentFile=.env`). El `.env` con el
+usuario y la contraseña de Mikareno vive **solo en disco** (600) y no se versiona; la plantilla
+pública es `.env.example`. El `server.py` sigue siendo el servidor real: la migración a Zig del
+repo está iniciada pero no terminada, así que no se sustituye el servicio por el binario Zig.
+
+**El dashboard.** El repo público `github.com/gaboexperimetos-ui/automaticaion-bida-` es la
+plataforma NOVA. El clon que corre es `~/proyectos/styp` (servicio `study-platform`, binario Zig
+`zig-out/bin/study-platform`); el directorio `~/proyectos/automaticaion-bida-` es un clon viejo
+del mismo repo y no es el que sirve. Su MCP sale del propio binario en `/mcp` (9 herramientas).
+Los dos repos se pueden usar desde OpenCode por los MCP `mikareno` y `study-platform`.
+
 ### Los que NO se añadieron, y por qué
 
 | Servidor | Motivo |

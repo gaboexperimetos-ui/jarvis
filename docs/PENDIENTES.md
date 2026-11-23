@@ -99,6 +99,32 @@ porque mezclan configuración con datos del usuario.
 
 ---
 
+## 9. Tercer repo de la petición
+
+El usuario pidió «añade estos 3» pero pasó dos URLs, una repetida:
+
+- `https://github.com/gaboexperimetos-ui/automaticaion-bida-` (repetida dos veces)
+- `https://github.com/gaboexperimetos-ui/mikareno-mcp-`
+
+Los dos están integrados y en uso (dashboard y MCP de Mikareno). **Falta identificar el
+tercero**: hace falta el nombre o la URL. No se inventa; cuando llegue, se clona, se comprueba
+si expone MCP o servicio y se documenta igual que estos dos.
+
+---
+
+## Resuelto el 2026-11-22
+
+| Cosa | Antes | Ahora |
+|---|---|---|
+| Clave de `freellmapi` | literal en `opencode.json`, en el historial público | `{file:~/.freellmapi-key}`; clave rotada (vieja 401, nueva 200) |
+| `.env` de `mikareno-mcp` | versionado con usuario y contraseña reales | fuera del índice, solo en disco (600); `.env.example` en el repo |
+| MCP del dashboard en OpenCode | no estaba | `study-platform` (`:3100/mcp`, 9 herramientas) |
+| MCP de Mikareno en Hermes (PC) | no estaba | `mikareno` (`:8080/mcp`, 17 herramientas) |
+| Repo `mikareno-mcp-` | clon viejo | actualizado con la migración Zig/CDP; servicio reiniciado y probado |
+| Documentación de los repos | dispersa | `docs/MCP.md` dice de dónde sale cada servicio y qué clon corre |
+
+---
+
 ## Resuelto el 2026-11-21
 
 | Cosa | Antes | Ahora |
