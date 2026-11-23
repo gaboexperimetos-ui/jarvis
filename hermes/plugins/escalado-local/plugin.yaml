@@ -1,0 +1,7 @@
+name: escalado-local
+version: 1.0.0
+description: "Cuando el modelo principal se niega a responder, repite la misma petición con el modelo local (llama.cpp, deepseek-v4pro) y entrega esa respuesta."
+author: "gabo"
+provides_hooks:
+  - pre_llm_call
+  - transform_llm_output

@@ -67,6 +67,12 @@ attachments:
 # Plugin Installation
 # =============================================================================
 plugins:
+  # Plugins opt-in: solo se cargan los listados aqui.
+  enabled:
+    - escalado-local
+  # Margen para que el plugin de escalado consulte al modelo local y devuelva
+  # su respuesta antes de que el hook se abandone (segundos).
+  hook_callback_timeout: 200
   # Deadline for each Git clone, fetch or checkout during plugin install. Default: 300
   # seconds. Subdirectory installs download only that folder.
   # Raise this for large repositories or slow connections. Maximum: 3600.
