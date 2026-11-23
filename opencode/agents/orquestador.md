@@ -1,8 +1,8 @@
 ---
 description: >-
   Orquestador multi-motor. Planifica, enruta el trabajo al motor adecuado
-  (OpenCode, Kilo, freebuff, Cline contra tu llama.cpp local, Qoder y Copilot
-  free), ejecuta con un solo dueno por archivo y verifica antes de reportar.
+  (OpenCode, Kilo, freebuff, Cline y ZCode contra tu llama.cpp local, Qoder y
+  Copilot free), ejecuta con un solo dueno por archivo y verifica antes de reportar.
   Equivale a plan + build, pero para orquestacion.
 mode: primary
 permission:
@@ -62,9 +62,10 @@ Elige el motor mas barato que resuelva el trabajo:
 | Refactor amplio o tareas independientes | `kilo run --auto` | gratis (`kilo-auto/free`) |
 | Segunda pasada con otro modelo free | `opencode run -m freellmapi/auto` | gratis |
 | Agente de terminal con su propia TUI | `freebuff` (driver por PTY) | gratis, experimental |
-| Usar tu modelo local (Qwen via llama.cpp) | `cline -P llamacpp` | gratis si el router carga |
+| Usar tu modelo local (llama.cpp) | `cline -P llamacpp` | gratis si el router carga |
+| Otro agente sobre tu modelo local | `zcode -p --mode ...` | gratis via router 8004 |
 | Tu cuenta Qoder | `qoder -p` | sesion ok, sin modelos en tu plan |
-| Copilot free | `copilot -p` | requiere `copilot login` |
+| Copilot free | `copilot -p` | sesion ok (modelos limitados) |
 | Antigravity, Qwen Studio, Kilo Desktop | GUI, a mano; no scriptables | free tier |
 
 Antes de delegar, comprueba el estado real: `~/.config/opencode/scripts/orquestar-engine.sh doctor`.
@@ -80,11 +81,14 @@ Delega con el despachador, nunca adivinando flags:
 ~/.config/opencode/scripts/orquestar-engine.sh kilo     plan <dir> <brief|archivo|->
 ~/.config/opencode/scripts/orquestar-engine.sh opencode plan <dir> <brief|archivo|->
 ~/.config/opencode/scripts/orquestar-engine.sh freebuff plan <dir> <brief|archivo|->
+~/.config/opencode/scripts/orquestar-engine.sh cline    plan <dir> <brief|archivo|->
+~/.config/opencode/scripts/orquestar-engine.sh zcode    plan <dir> <brief|archivo|->
 
 # build (exige permiso explicito de escritura)
 ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh kilo     build <dir> <brief|archivo|->
 ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh opencode build <dir> <brief|archivo|->
 ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh cline    build <dir> <brief|archivo|->
+ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh zcode    build <dir> <brief|archivo|->
 ```
 
 Reglas de build:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # orquestar-engine.sh - despacha un brief a un motor de codigo instalado.
-# Motores: kilo, opencode, freebuff, cline (llama.cpp), qoder, copilot.
+# Motores: kilo, opencode, freebuff, cline (llama.cpp), zcode (llama.cpp), qoder, copilot.
 # Lo llama el agente `orquestador` de OpenCode.
 set -uo pipefail
 
@@ -11,6 +11,13 @@ TIMEOUT="${ORQ_TIMEOUT:-1800}"
 # cline: proveedor/modelo por defecto = tu llama.cpp local ("mi qwen")
 CLINE_PROVIDER="${ORQ_CLINE_PROVIDER:-llamacpp}"
 CLINE_MODEL="${ORQ_CLINE_MODEL:-deepseek-v4pro}"
+
+# zcode: CLI de Z.ai en modo standalone con un proveedor personal -> llama.cpp local.
+# El plan gratis de Z.ai solo funciona en su GUI; el CLI standalone rechaza
+# proveedores de cuenta ("Standalone Account Provider"). Por eso va contra tu qwen.
+ZCODE_CJS="${ORQ_ZCODE_CJS:-$HOME/.local/opt/ZCode/resources/glm/zcode.cjs}"
+ZCODE_CFG_DIR="${ORQ_ZCODE_CFG_DIR:-$LOG_DIR/zcode}"
+ZCODE_MODEL="${ORQ_ZCODE_MODEL:-deepseek-v4pro}"
 
 usage() {
   cat <<'EOF'
@@ -25,6 +32,7 @@ Motores:
   opencode  opencode run               plan/build   GRATIS (freellmapi/auto)
   freebuff  driver TUI (scraping)      plan/build   GRATIS (experimental)
   cline     cline -P llamacpp          plan/build   tu qwen local (router 8004)
+  zcode     zcode -p                   plan/build   GRATIS via tu qwen (router 8004)
   qoder     qoder -p                   plan/build   sesion ok, sin modelos en tu plan
   copilot   copilot -p                 plan/build   requiere login GitHub (free)
 
@@ -38,6 +46,7 @@ Seguridad:
 
 Variables utiles:
   ORQ_CLINE_PROVIDER (default llamacpp)   ORQ_CLINE_MODEL (default deepseek-v4pro)
+  ORQ_ZCODE_MODEL   (default deepseek-v4pro)
   ORQ_FREEBUFF_SETTLE (default 15)        segundos de silencio para cerrar la TUI
 
 Ejemplos:
@@ -55,6 +64,7 @@ kilo       kilo run                                 kilo run --auto             
 opencode   opencode run -m freellmapi/auto           opencode run --auto                      si
 freebuff   driver TUI (scraping)                     driver TUI (scraping)                    si
 cline      cline -p -P llamacpp -m deepseek-v4pro    cline -y -P llamacpp ...                 si (router 8004)
+zcode      zcode -p --mode plan (local)              zcode -p --mode build (local)            si (router 8004)
 qoder      qoder -p --tools ""                       qoder -p --dangerously-skip-permissions  sesion, sin modelos
 copilot    copilot -p --plan                         copilot -p --allow-all-tools --allow-all-paths  requiere login
 EOF
@@ -111,12 +121,21 @@ doctor() {
   else st="no instalado"; fi
   printf '%-10s %-8s %s\n' cline "$(have cline && echo si || echo no)" "$st"
 
+  if have node && [ -f "$ZCODE_CJS" ]; then
+    if [ ! -f "$ZCODE_CFG_DIR/builtin.json" ] || [ ! -f "$ZCODE_CFG_DIR/personal.json" ]; then st="instalado; falta config local ($ZCODE_CFG_DIR)"
+    elif ! http_ok "http://127.0.0.1:8004/v1/models"; then st="config ok; router 8004 caido"
+    else st="GRATIS via local (zcode -> $ZCODE_MODEL)"; fi
+  else st="no instalado"; fi
+  printf '%-10s %-8s %s\n' zcode "$(have node && [ -f "$ZCODE_CJS" ] && echo si || echo no)" "$st"
+
   if have qoder; then
     if [ -d "$HOME/.qoder" ]; then st="sesion ok; sin modelos en tu plan"; else st="sin login (qoder login)"; fi
   else st="no instalado"; fi
   printf '%-10s %-8s %s\n' qoder "$(have qoder && echo si || echo no)" "$st"
 
-  if have copilot; then st="sin auth (corre: copilot login)"; else st="no instalado"; fi
+  if have copilot; then
+    [ -f "$HOME/.copilot/config.json" ] && st="sesion ok (free, modelos limitados)" || st="sin auth (corre: copilot login)"
+  else st="no instalado"; fi
   printf '%-10s %-8s %s\n' copilot "$(have copilot && echo si || echo no)" "$st"
 
   printf '\nGUI (a mano): Antigravity, Qwen Studio, Kilo Desktop\n'
@@ -135,8 +154,8 @@ esac
 engine="$1"; mode="$2"; dir="$3"; brief="$4"; model="${5:-}"
 
 case "$engine" in
-  kilo|opencode|freebuff|cline|qoder|copilot) ;;
-  *) die "motor desconocido: $engine (usa: kilo|opencode|freebuff|cline|qoder|copilot)" ;;
+  kilo|opencode|freebuff|cline|zcode|qoder|copilot) ;;
+  *) die "motor desconocido: $engine (usa: kilo|opencode|freebuff|cline|zcode|qoder|copilot)" ;;
 esac
 case "$mode" in plan|build) ;; *) die "modo invalido: $mode (usa: plan|build)" ;; esac
 [ -d "$dir" ] || die "directorio inexistente: $dir"
@@ -198,6 +217,23 @@ case "$engine" in
     if [ "$mode" = build ]; then args+=(-y); else args+=(-p); fi
     args+=("$prompt")
     run cline "${args[@]}"
+    ;;
+  zcode)
+    [ -f "$ZCODE_CJS" ] || die "no encuentro $ZCODE_CJS (ZCode no instalado)"
+    builtin_cfg="$ZCODE_CFG_DIR/builtin.json"
+    personal_cfg="$ZCODE_CFG_DIR/personal.json"
+    [ -f "$builtin_cfg" ] || die "falta $builtin_cfg"
+    [ -f "$personal_cfg" ] || die "falta $personal_cfg"
+    personal_use="$personal_cfg"
+    if [ -n "$model" ] && [ "$model" != "$ZCODE_MODEL" ]; then
+      personal_use="$(mktemp "${TMPDIR:-/tmp}/orq-zcode-XXXXXX.json")"
+      jq --arg m "$model" '.config.providerConfigRules.providerRules[0].config.personalModelIds=[$m] | .config.defaultModelSelection.modelId=$m' "$personal_cfg" > "$personal_use" || die "no pude preparar config zcode para $model"
+    fi
+    args=(-p "$prompt" --mode "$mode" --cwd "$dir")
+    run env ZCODE_BUILTIN_PROVIDER_CONFIG_FILE="$builtin_cfg" ZCODE_PERSONAL_PROVIDER_CONFIG_FILE="$personal_use" node "$ZCODE_CJS" "${args[@]}"
+    rc=$?
+    [ "$personal_use" != "$personal_cfg" ] && rm -f "$personal_use"
+    exit "$rc"
     ;;
   qoder)
     args=(-p --cwd "$dir")
