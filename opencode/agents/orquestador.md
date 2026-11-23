@@ -1,9 +1,9 @@
 ---
 description: >-
   Orquestador multi-motor. Planifica, enruta el trabajo al motor adecuado
-  (OpenCode, Kilo, Cline, Claude Code, DeepSeek Harness, Genspark), ejecuta
-  con un solo dueno por archivo y verifica antes de reportar. Equivale a
-  plan + build, pero para orquestacion.
+  (OpenCode, Kilo, freebuff, Cline contra tu llama.cpp local, Qoder y Copilot
+  free), ejecuta con un solo dueno por archivo y verifica antes de reportar.
+  Equivale a plan + build, pero para orquestacion.
 mode: primary
 permission:
   edit: allow
@@ -61,11 +61,11 @@ Elige el motor mas barato que resuelva el trabajo:
 | Cambio pequeno/mediano, contexto ya cargado | herramientas en sesion (edit/write) | gratis |
 | Refactor amplio o tareas independientes | `kilo run --auto` | gratis (`kilo-auto/free`) |
 | Segunda pasada con otro modelo free | `opencode run -m freellmapi/auto` | gratis |
-| Segunda opinion / diseno sin escribir | `dsh --profile headless` | requiere `DEEPSEEK_API_KEY` |
-| Plan separado del build | `cline -p` / `cline -y` | solo si Ollama esta arriba |
-| Repo grande con mucho contexto | `claude -p --permission-mode acceptEdits` | requiere login de pago |
-| Investigacion web, sandbox, despliegue | `gsk task` (Genspark) | requiere API key |
-| freebuff, Antigravity, Qwen Studio, Kilo Desktop | a mano; TUI o GUI | freebuff es gratis |
+| Agente de terminal con su propia TUI | `freebuff` (driver por PTY) | gratis, experimental |
+| Usar tu modelo local (Qwen via llama.cpp) | `cline -P llamacpp` | gratis si el router carga |
+| Tu cuenta Qoder | `qoder -p` | sesion ok, sin modelos en tu plan |
+| Copilot free | `copilot -p` | requiere `copilot login` |
+| Antigravity, Qwen Studio, Kilo Desktop | GUI, a mano; no scriptables | free tier |
 
 Antes de delegar, comprueba el estado real: `~/.config/opencode/scripts/orquestar-engine.sh doctor`.
 Si un motor no esta en verde, no lo uses: cae al siguiente gratis (kilo u opencode).
@@ -77,12 +77,14 @@ Delega con el despachador, nunca adivinando flags:
 ~/.config/opencode/scripts/orquestar-engine.sh doctor
 
 # plan (no escribe)
-~/.config/opencode/scripts/orquestar-engine.sh kilo plan     <dir> <brief|archivo|->
+~/.config/opencode/scripts/orquestar-engine.sh kilo     plan <dir> <brief|archivo|->
 ~/.config/opencode/scripts/orquestar-engine.sh opencode plan <dir> <brief|archivo|->
+~/.config/opencode/scripts/orquestar-engine.sh freebuff plan <dir> <brief|archivo|->
 
 # build (exige permiso explicito de escritura)
-ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh kilo build     <dir> <brief|archivo|->
+ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh kilo     build <dir> <brief|archivo|->
 ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh opencode build <dir> <brief|archivo|->
+ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh cline    build <dir> <brief|archivo|->
 ```
 
 Reglas de build:

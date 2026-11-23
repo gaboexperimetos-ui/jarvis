@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # orquestar-engine.sh - despacha un brief a un motor de codigo instalado.
-# Pensado para que lo llame el agente `orquestador` de OpenCode.
+# Motores: kilo, opencode, freebuff, cline (llama.cpp), qoder, copilot.
+# Lo llama el agente `orquestador` de OpenCode.
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="${ORQ_LOG_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/opencode/orquestar}"
 TIMEOUT="${ORQ_TIMEOUT:-1800}"
+
+# cline: proveedor/modelo por defecto = tu llama.cpp local ("mi qwen")
+CLINE_PROVIDER="${ORQ_CLINE_PROVIDER:-llamacpp}"
+CLINE_MODEL="${ORQ_CLINE_MODEL:-deepseek-v4pro}"
 
 usage() {
   cat <<'EOF'
@@ -14,98 +20,92 @@ Uso:
   orquestar-engine.sh list
   orquestar-engine.sh --help
 
-Motores scriptables:
-  kilo      kilo run            (plan: sin --auto | build: --auto)     GRATIS
-  opencode  opencode run        (modelo por defecto: freellmapi/auto)  GRATIS
-  cline     cline               (plan: -p | build: -y)                 requiere Ollama
-  claude    claude -p           (plan/build con permission-mode)       requiere login
-  dsh       dsh --profile headless (asesor, no escribe)                requiere DEEPSEEK_API_KEY
+Motores:
+  kilo      kilo run                   plan/build   GRATIS (kilo-auto/free)
+  opencode  opencode run               plan/build   GRATIS (freellmapi/auto)
+  freebuff  driver TUI (scraping)      plan/build   GRATIS (experimental)
+  cline     cline -P llamacpp          plan/build   tu qwen local (router 8004)
+  qoder     qoder -p                   plan/build   sesion ok, sin modelos en tu plan
+  copilot   copilot -p                 plan/build   requiere login GitHub (free)
 
-No scriptables (TUI o GUI, a mano): freebuff (gratis), Antigravity, Qwen Studio,
-Kilo Desktop, Copilot CLI.
+No scriptables (GUI, a mano): Antigravity, Qwen Studio, Kilo Desktop.
 
 Seguridad:
-  - build exige ORQ_ALLOW_WRITE=1 en el entorno; sin eso aborta con codigo 3.
-  - El log completo queda en $ORQ_LOG_DIR
-    (por defecto ~/.local/state/opencode/orquestar).
+  - build exige ORQ_ALLOW_WRITE=1; sin eso aborta con codigo 3.
+  - Un solo escritor por arbol a la vez.
+  - Log en $ORQ_LOG_DIR (por defecto ~/.local/state/opencode/orquestar).
   - Timeout por defecto 1800 s; ajustalo con ORQ_TIMEOUT.
+
+Variables utiles:
+  ORQ_CLINE_PROVIDER (default llamacpp)   ORQ_CLINE_MODEL (default deepseek-v4pro)
+  ORQ_FREEBUFF_SETTLE (default 15)        segundos de silencio para cerrar la TUI
 
 Ejemplos:
   orquestar-engine.sh doctor
   orquestar-engine.sh kilo plan  ~/proyectos/styp "arregla el test que falla"
-  ORQ_ALLOW_WRITE=1 orquestar-engine.sh opencode build ~/proyectos/styp brief.md
-  git diff --stat | orquestar-engine.sh dsh plan ~/proyectos/styp -
+  ORQ_ALLOW_WRITE=1 orquestar-engine.sh cline build ~/proyectos/styp brief.md
+  git diff --stat | orquestar-engine.sh opencode plan ~/proyectos/styp -
 EOF
 }
 
 list_engines() {
   cat <<'EOF'
-motor      plan                                build                              free
-kilo       kilo run                            kilo run --auto                    si
-opencode   opencode run -m freellmapi/auto      opencode run -m freellmapi/auto    si
-cline      cline -p                            cline -y                           si Ollama arriba
-claude     claude -p --permission-mode plan    claude -p --permission-mode acceptEdits  no (login)
-dsh        dsh --profile headless              (solo asesor)                      no (API key)
-freebuff   (TUI interactiva, no scriptable)    (TUI interactiva)                  si
+motor      plan                                     build                                    gratis
+kilo       kilo run                                 kilo run --auto                          si
+opencode   opencode run -m freellmapi/auto           opencode run --auto                      si
+freebuff   driver TUI (scraping)                     driver TUI (scraping)                    si
+cline      cline -p -P llamacpp -m deepseek-v4pro    cline -y -P llamacpp ...                 si (router 8004)
+qoder      qoder -p --tools ""                       qoder -p --dangerously-skip-permissions  sesion, sin modelos
+copilot    copilot -p --plan                         copilot -p --allow-all-tools --allow-all-paths  requiere login
 EOF
 }
 
 have() { command -v "$1" >/dev/null 2>&1; }
-up() { curl -s -m 2 -o /dev/null "$1" 2>/dev/null; }
+http_ok() { curl -s -m "${2:-2}" -o /dev/null "$1" 2>/dev/null; }
+router_chat() {
+  # Prueba real: intenta cargar el modelo y responder 1 token. Imprime el HTTP code.
+  curl -s -m "${1:-25}" -o /dev/null -w '%{http_code}' \
+    http://127.0.0.1:8004/v1/chat/completions \
+    -H 'Content-Type: application/json' \
+    -d '{"model":"deepseek-v4pro","messages":[{"role":"user","content":"OK"}],"max_tokens":1}' 2>/dev/null
+}
 
 doctor() {
-  printf '%-12s %-8s %s\n' MOTOR BINARIO ESTADO
-  # kilo: binario + auth oauth
+  printf '%-10s %-8s %s\n' MOTOR BINARIO ESTADO
+
   if have kilo; then
-    if [ -f "$HOME/.local/share/kilo/auth.json" ]; then st="GRATIS ok (kilo-auto/free)"; else st="instalado, sin auth"; fi
+    [ -f "$HOME/.local/share/kilo/auth.json" ] && st="GRATIS ok (kilo-auto/free)" || st="instalado, sin auth (kilo login)"
   else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' kilo "$(have kilo && echo si || echo no)" "$st"
+  printf '%-10s %-8s %s\n' kilo "$(have kilo && echo si || echo no)" "$st"
 
-  # opencode: binario + router free
   if have opencode; then
-    if [ -f "$HOME/.freellmapi-key" ] && up "http://127.0.0.1:3001/v1/models"; then st="GRATIS ok (freellmapi/auto)";
-    elif up "http://127.0.0.1:8004/v1/models"; then st="GRATIS ok (local/deepseek-v4pro)";
-    else st="instalado, sin router free"; fi
+    if [ -f "$HOME/.freellmapi-key" ] && http_ok "http://127.0.0.1:3001/v1/models"; then st="GRATIS ok (freellmapi/auto)"
+    else st="instalado, sin router free 3001"; fi
   else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' opencode "$(have opencode && echo si || echo no)" "$st"
+  printf '%-10s %-8s %s\n' opencode "$(have opencode && echo si || echo no)" "$st"
 
-  # cline: binario + ollama
-  if have cline; then
-    if up "http://127.0.0.1:11434/api/tags"; then st="GRATIS ok (ollama)"; else st="Ollama caido: no usable"; fi
-  else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' cline "$(have cline && echo si || echo no)" "$st"
-
-  # claude
-  if have claude; then
-    if [ -f "$HOME/.claude/.credentials.json" ] || [ -f "$HOME/.local/share/claude/.credentials.json" ]; then st="con credenciales"; else st="sin login"; fi
-  else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' claude "$(have claude && echo si || echo no)" "$st"
-
-  # dsh
-  if have dsh; then
-    if [ -n "${DEEPSEEK_API_KEY:-}" ]; then st="con DEEPSEEK_API_KEY"; else st="falta DEEPSEEK_API_KEY (pago)"; fi
-  else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' dsh "$(have dsh && echo si || echo no)" "$st"
-
-  # freebuff
   if have freebuff; then
-    if [ -f "$HOME/.config/manicode/credentials.json" ]; then st="GRATIS, solo TUI"; else st="sin login"; fi
+    [ -f "$HOME/.config/manicode/credentials.json" ] && st="GRATIS, driver TUI (experimental)" || st="sin login (freebuff login)"
   else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' freebuff "$(have freebuff && echo si || echo no)" "$st"
+  printf '%-10s %-8s %s\n' freebuff "$(have freebuff && echo si || echo no)" "$st"
 
-  # qoder
-  if have qoder; then st="sin modelo (login/modelo no disponible)"; else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' qoder "$(have qoder && echo si || echo no)" "$st"
-
-  # copilot
-  if have copilot; then st="sin auth GitHub (y requiere suscripcion)"; else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' copilot "$(have copilot && echo si || echo no)" "$st"
-
-  # gsk
-  if have gsk; then
-    if [ -f "$HOME/.genspark-tool-cli/config.json" ]; then st="con config"; else st="sin API key"; fi
+  if have cline; then
+    if ! http_ok "http://127.0.0.1:8004/v1/models"; then st="router 8004 caido"
+    else
+      code="$(router_chat 25)"
+      if [ "$code" = "200" ]; then st="GRATIS ok (llamacpp/$CLINE_MODEL)"
+      else st="router responde pero el modelo no carga (VRAM): HTTP $code"; fi
+    fi
   else st="no instalado"; fi
-  printf '%-12s %-8s %s\n' gsk "$(have gsk && echo si || echo no)" "$st"
+  printf '%-10s %-8s %s\n' cline "$(have cline && echo si || echo no)" "$st"
+
+  if have qoder; then
+    if [ -d "$HOME/.qoder" ]; then st="sesion ok; sin modelos en tu plan"; else st="sin login (qoder login)"; fi
+  else st="no instalado"; fi
+  printf '%-10s %-8s %s\n' qoder "$(have qoder && echo si || echo no)" "$st"
+
+  if have copilot; then st="sin auth (corre: copilot login)"; else st="no instalado"; fi
+  printf '%-10s %-8s %s\n' copilot "$(have copilot && echo si || echo no)" "$st"
 
   printf '\nGUI (a mano): Antigravity, Qwen Studio, Kilo Desktop\n'
 }
@@ -122,7 +122,10 @@ esac
 
 engine="$1"; mode="$2"; dir="$3"; brief="$4"; model="${5:-}"
 
-case "$engine" in kilo|opencode|cline|claude|dsh) ;; *) die "motor desconocido: $engine (usa: kilo|opencode|cline|claude|dsh)" ;; esac
+case "$engine" in
+  kilo|opencode|freebuff|cline|qoder|copilot) ;;
+  *) die "motor desconocido: $engine (usa: kilo|opencode|freebuff|cline|qoder|copilot)" ;;
+esac
 case "$mode" in plan|build) ;; *) die "modo invalido: $mode (usa: plan|build)" ;; esac
 [ -d "$dir" ] || die "directorio inexistente: $dir"
 dir="$(cd "$dir" && pwd)"
@@ -164,26 +167,39 @@ case "$engine" in
     run kilo "${args[@]}"
     ;;
   opencode)
-    args=(run --archived -m "${model:-freellmapi/auto}")
+    args=(run -m "${model:-freellmapi/auto}")
     [ "$mode" = build ] && args+=(--auto)
     args+=("$prompt")
     run opencode "${args[@]}"
     ;;
+  freebuff)
+    printf '[orquestar] aviso: freebuff es TUI; se conduce por scraping de pantalla (experimental)\n' >&2
+    tmpbrief="$(mktemp "${TMPDIR:-/tmp}/orq-freebuff-XXXXXX.md")"
+    printf '%s' "$prompt" > "$tmpbrief"
+    run python3 "$SCRIPT_DIR/orquestar-freebuff.py" "$dir" "$tmpbrief" "${ORQ_FREEBUFF_SETTLE:-15}"
+    rc=$?
+    rm -f "$tmpbrief"
+    exit "$rc"
+    ;;
   cline)
-    args=(-c "$dir")
+    args=(-P "$CLINE_PROVIDER" -m "${model:-$CLINE_MODEL}" -c "$dir")
     if [ "$mode" = build ]; then args+=(-y); else args+=(-p); fi
-    [ -n "$model" ] && args+=(-m "$model")
     args+=("$prompt")
     run cline "${args[@]}"
     ;;
-  claude)
-    args=(-p "$prompt")
-    if [ "$mode" = build ]; then args+=(--permission-mode acceptEdits); else args+=(--permission-mode plan); fi
-    [ -n "$model" ] && args+=(--model "$model")
-    run claude "${args[@]}"
+  qoder)
+    args=(-p --cwd "$dir")
+    if [ "$mode" = build ]; then args+=(--dangerously-skip-permissions); else args+=(--tools ""); fi
+    args+=("$prompt")
+    run qoder "${args[@]}"
     ;;
-  dsh)
-    [ "$mode" = build ] && printf '[orquestar] aviso: dsh es asesor, no escribe archivos\n' >&2
-    run dsh --profile headless "$prompt"
+  copilot)
+    if [ "$mode" = build ]; then
+      args=(-p "$prompt" --allow-all-tools --allow-all-paths)
+    else
+      args=(-p "$prompt" --plan)
+    fi
+    [ -n "$model" ] && args+=(--model "$model")
+    run copilot "${args[@]}"
     ;;
 esac

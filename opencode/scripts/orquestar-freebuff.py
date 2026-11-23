@@ -32,7 +32,7 @@ def main() -> int:
         return 2
     workdir = os.path.abspath(sys.argv[1])
     brief = sys.argv[2]
-    settle = float(sys.argv[3]) if len(sys.argv) > 3 else 8.0
+    settle = float(sys.argv[3]) if len(sys.argv) > 3 else 15.0
 
     if not os.path.isdir(workdir):
         print(f"directorio inexistente: {workdir}", file=sys.stderr)
