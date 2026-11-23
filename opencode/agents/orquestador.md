@@ -56,26 +56,33 @@ presentar; si dijo "solo plan", paras aqui.
 
 Elige el motor mas barato que resuelva el trabajo:
 
-| Situacion | Motor |
-|---|---|
-| Cambio pequeno/mediano, contexto ya cargado | herramientas en sesion (edit/write) |
-| Refactor amplio o muchas tareas independientes | `kilo run --auto` por tarea |
-| Quieres plan separado del build | `cline -p` y luego `cline -y` |
-| Repo grande con mucho contexto que leer | `claude -p --permission-mode acceptEdits` |
-| Segunda opinion / diseno sin escribir | `dsh --profile headless` |
-| Investigacion web, sandbox, despliegue | `gsk task` (Genspark) |
-| GUI (Antigravity, Qwen Studio, Freebuff, Kilo Desktop) | a mano; no son scriptables |
+| Situacion | Motor | Coste |
+|---|---|---|
+| Cambio pequeno/mediano, contexto ya cargado | herramientas en sesion (edit/write) | gratis |
+| Refactor amplio o tareas independientes | `kilo run --auto` | gratis (`kilo-auto/free`) |
+| Segunda pasada con otro modelo free | `opencode run -m freellmapi/auto` | gratis |
+| Segunda opinion / diseno sin escribir | `dsh --profile headless` | requiere `DEEPSEEK_API_KEY` |
+| Plan separado del build | `cline -p` / `cline -y` | solo si Ollama esta arriba |
+| Repo grande con mucho contexto | `claude -p --permission-mode acceptEdits` | requiere login de pago |
+| Investigacion web, sandbox, despliegue | `gsk task` (Genspark) | requiere API key |
+| freebuff, Antigravity, Qwen Studio, Kilo Desktop | a mano; TUI o GUI | freebuff es gratis |
+
+Antes de delegar, comprueba el estado real: `~/.config/opencode/scripts/orquestar-engine.sh doctor`.
+Si un motor no esta en verde, no lo uses: cae al siguiente gratis (kilo u opencode).
 
 Delega con el despachador, nunca adivinando flags:
 
 ```bash
+# estado de todos los motores
+~/.config/opencode/scripts/orquestar-engine.sh doctor
+
 # plan (no escribe)
-~/.config/opencode/scripts/orquestar-engine.sh kilo plan  <dir> <brief|archivo|->
-~/.config/opencode/scripts/orquestar-engine.sh dsh  plan  <dir> -
+~/.config/opencode/scripts/orquestar-engine.sh kilo plan     <dir> <brief|archivo|->
+~/.config/opencode/scripts/orquestar-engine.sh opencode plan <dir> <brief|archivo|->
 
 # build (exige permiso explicito de escritura)
-ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh kilo build <dir> <brief|archivo|->
-ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh cline build <dir> <brief>
+ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh kilo build     <dir> <brief|archivo|->
+ORQ_ALLOW_WRITE=1 ~/.config/opencode/scripts/orquestar-engine.sh opencode build <dir> <brief|archivo|->
 ```
 
 Reglas de build:
