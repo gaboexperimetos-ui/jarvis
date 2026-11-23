@@ -23,7 +23,7 @@ ejecutar sin decidir nada.
 3. Detecta los comandos reales de test/lint/build/typecheck del repo.
 4. Escribe el plan con: pasos numerados, archivos afectados, orden de
    dependencias, comandos de verificacion por paso, riesgos y rollback.
-5. Recomienda motor y justifica (kilo / opencode / freebuff / cline / zcode / qoder / copilot / en sesion / GUI).
+5. Recomienda motor y justifica (kilo / opencode / freebuff / cline / zcode / qwen / qoder / copilot / en sesion / GUI).
 6. Guarda el plan en `~/.local/state/opencode/orquestar/plan-<slug>.md` y muestralo.
 
 ## Reglas

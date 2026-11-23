@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # orquestar-engine.sh - despacha un brief a un motor de codigo instalado.
-# Motores: kilo, opencode, freebuff, cline (llama.cpp), zcode (llama.cpp), qoder, copilot.
+# Motores: kilo, opencode, freebuff, cline (llama.cpp), zcode (llama.cpp), qwen (GUI), qoder, copilot.
 # Lo llama el agente `orquestador` de OpenCode.
 set -uo pipefail
 
@@ -33,10 +33,11 @@ Motores:
   freebuff  driver TUI (scraping)      plan/build   GRATIS (experimental)
   cline     cline -P llamacpp          plan/build   tu qwen local (router 8004)
   zcode     zcode -p                   plan/build   GRATIS via tu qwen (router 8004)
+  qwen      GUI de Qwen Studio         plan         GRATIS (plan Free, solo lectura)
   qoder     qoder -p                   plan/build   sesion ok, sin modelos en tu plan
   copilot   copilot -p                 plan/build   requiere login GitHub (free)
 
-No scriptables (GUI, a mano): Antigravity, Qwen Studio, Kilo Desktop.
+No scriptables (GUI, a mano): Antigravity, Kilo Desktop, Qwen Studio (via motor qwen).
 
 Seguridad:
   - build exige ORQ_ALLOW_WRITE=1; sin eso aborta con codigo 3.
@@ -47,12 +48,15 @@ Seguridad:
 Variables utiles:
   ORQ_CLINE_PROVIDER (default llamacpp)   ORQ_CLINE_MODEL (default deepseek-v4pro)
   ORQ_ZCODE_MODEL   (default deepseek-v4pro)
+  ORQ_QWEN_COMPOSER_Y (default 94)       47 chat nuevo, 94 en conversacion
+  ORQ_QWEN_WAIT     (default 30)         segundos de espera de la respuesta
   ORQ_FREEBUFF_SETTLE (default 15)        segundos de silencio para cerrar la TUI
 
 Ejemplos:
   orquestar-engine.sh doctor
   orquestar-engine.sh kilo plan  ~/proyectos/styp "arregla el test que falla"
   ORQ_ALLOW_WRITE=1 orquestar-engine.sh cline build ~/proyectos/styp brief.md
+  orquestar-engine.sh qwen plan ~/ Cual es el bug en este stacktrace
   git diff --stat | orquestar-engine.sh opencode plan ~/proyectos/styp -
 EOF
 }
@@ -65,6 +69,7 @@ opencode   opencode run -m freellmapi/auto           opencode run --auto        
 freebuff   driver TUI (scraping)                     driver TUI (scraping)                    si
 cline      cline -p -P llamacpp -m deepseek-v4pro    cline -y -P llamacpp ...                 si (router 8004)
 zcode      zcode -p --mode plan (local)              zcode -p --mode build (local)            si (router 8004)
+qwen       GUI de Qwen Studio (captura la respuesta)  no (GUI no edita archivos)               si (plan Free)
 qoder      qoder -p --tools ""                       qoder -p --dangerously-skip-permissions  sesion, sin modelos
 copilot    copilot -p --plan                         copilot -p --allow-all-tools --allow-all-paths  requiere login
 EOF
@@ -128,6 +133,13 @@ doctor() {
   else st="no instalado"; fi
   printf '%-10s %-8s %s\n' zcode "$(have node && [ -f "$ZCODE_CJS" ] && echo si || echo no)" "$st"
 
+  if have hyprctl && have ydotool && have grim && have jq; then
+    if [ -n "$(hyprctl clients -j 2>/dev/null | jq -r '.[]|select(.class=="Qwen-studio").address' | head -1)" ]; then st="GRATIS ok (GUI abierta, solo plan)"
+    elif [ -x "$HOME/.local/opt/QwenStudio/qwen-studio-run" ]; then st="app instalada (se lanza al usar; solo plan)"
+    else st="falta la app Qwen Studio"; fi
+  else st="faltan hyprctl/ydotool/grim/jq"; fi
+  printf '%-10s %-8s %s\n' qwen "$(have hyprctl && have ydotool && have grim && have jq && echo si || echo no)" "$st"
+
   if have qoder; then
     if [ -d "$HOME/.qoder" ]; then st="sesion ok; sin modelos en tu plan"; else st="sin login (qoder login)"; fi
   else st="no instalado"; fi
@@ -138,7 +150,7 @@ doctor() {
   else st="no instalado"; fi
   printf '%-10s %-8s %s\n' copilot "$(have copilot && echo si || echo no)" "$st"
 
-  printf '\nGUI (a mano): Antigravity, Qwen Studio, Kilo Desktop\n'
+  printf '\nGUI (a mano): Antigravity, Kilo Desktop. Qwen Studio se conduce con el motor qwen (solo plan).\n'
 }
 
 die() { printf 'orquestar-engine: %s\n' "$*" >&2; exit "${2:-2}"; }
@@ -154,10 +166,13 @@ esac
 engine="$1"; mode="$2"; dir="$3"; brief="$4"; model="${5:-}"
 
 case "$engine" in
-  kilo|opencode|freebuff|cline|zcode|qoder|copilot) ;;
-  *) die "motor desconocido: $engine (usa: kilo|opencode|freebuff|cline|zcode|qoder|copilot)" ;;
+  kilo|opencode|freebuff|cline|zcode|qwen|qoder|copilot) ;;
+  *) die "motor desconocido: $engine (usa: kilo|opencode|freebuff|cline|zcode|qwen|qoder|copilot)" ;;
 esac
 case "$mode" in plan|build) ;; *) die "modo invalido: $mode (usa: plan|build)" ;; esac
+if [ "$engine" = qwen ] && [ "$mode" = build ]; then
+  die "qwen es solo lectura (GUI, no edita archivos): usa modo plan o el build con otro motor" 4
+fi
 [ -d "$dir" ] || die "directorio inexistente: $dir"
 dir="$(cd "$dir" && pwd)"
 
@@ -233,6 +248,20 @@ case "$engine" in
     run env ZCODE_BUILTIN_PROVIDER_CONFIG_FILE="$builtin_cfg" ZCODE_PERSONAL_PROVIDER_CONFIG_FILE="$personal_use" node "$ZCODE_CJS" "${args[@]}"
     rc=$?
     [ "$personal_use" != "$personal_cfg" ] && rm -f "$personal_use"
+    exit "$rc"
+    ;;
+  qwen)
+    [ -x "$SCRIPT_DIR/qwen-gui.sh" ] || die "falta $SCRIPT_DIR/qwen-gui.sh"
+    qwen_state="${XDG_STATE_HOME:-$HOME/.local/state}/opencode/orquestar/qwen"
+    snap="$LOG_DIR/${stamp}-qwen-${mode}.png"
+    run env \
+      QWEN_COMPOSER_Y="${ORQ_QWEN_COMPOSER_Y:-94}" \
+      QWEN_WAIT="${ORQ_QWEN_WAIT:-30}" \
+      "$SCRIPT_DIR/qwen-gui.sh" send "$prompt"
+    rc=$?
+    if [ -f "$qwen_state/last_reply.png" ]; then
+      cp -f "$qwen_state/last_reply.png" "$snap" 2>/dev/null && printf '[orquestar] captura=%s\n' "$snap" >&2
+    fi
     exit "$rc"
     ;;
   qoder)
