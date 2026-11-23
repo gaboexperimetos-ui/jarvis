@@ -58,6 +58,32 @@ Leer el contexto antes de alarmarse. Un patrón encontrado no es una fuga.
 
 ---
 
+## Fuga real: la sesión de WhatsApp (2026-11-22)
+
+El sync copió `~/.hermes/whatsapp/` al repo. Dentro iba la **sesión completa de WhatsApp**
+(`session/creds.json`, claves de identidad y de app-state, 3 402 ficheros), más el token del
+puente y el estado de pairing. También subió `~/.hermes/shared/nous_auth.json`, con
+`access_token` y `refresh_token`.
+
+- Repo **público** (`private: false`), expuesto desde el **21 nov 22:04** (≈22 h).
+- Detectado el **22 nov 20:19** al revisar el commit automático del sync.
+- **Hecho:** `git rm --cached` de `hermes/whatsapp`, `hermes/shared`, `hermes/platforms` y
+  `hermes/gateway.pid`; borrado del espejo; reglas nuevas en `.gitignore` y en
+  `jarvis-sync.sh` (`--exclude='whatsapp/'`, `'shared/'`, `'platforms/'`, `'gateway.pid'`).
+  Commit `c3a9a11`, subido.
+- **Token del puente:** el filtrado era el activo; se borró y se reinició el gateway. El
+  nuevo es distinto (hash `e427…`). El token solo escucha en `127.0.0.1`, así que fuera de la
+  máquina no servía.
+- **Pendiente:** revocar la sesión de WhatsApp (cerrar el dispositivo vinculado) y volver a
+  emparejar. Mientras no se revoque, las credenciales filtradas siguen siendo válidas para
+  quien las haya copiado. La autenticación de Nous era de nivel `anonymous`; aun así conviene
+  regenerarla.
+
+**Lección:** el `.gitignore` no protege un fichero que ya está en el índice. Hay que borrarlo
+del índice y comprobar `git ls-files`, no solo `git status`.
+
+---
+
 ## Cifrado y transporte
 
 - GitHub se usa por **SSH** (`git@github.com:…`), nunca HTTPS con contraseña.
