@@ -2544,13 +2544,15 @@ mcp_servers:
   gmail:
     command: mcp-google-gmail
     env:
-      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
-      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      GOOGLE_GMAIL_CLIENT_ID: "${GOOGLE_GMAIL_CLIENT_ID}"
+      GOOGLE_GMAIL_CLIENT_SECRET: "${GOOGLE_GMAIL_CLIENT_SECRET}"
+      GOOGLE_GMAIL_REFRESH_TOKEN: "${GOOGLE_GMAIL_REFRESH_TOKEN}"
   gdrive:
     command: mcp-google-drive
     env:
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      GOOGLE_REFRESH_TOKEN: "${GOOGLE_REFRESH_TOKEN}"
 tts:
   provider: edge
   edge:
