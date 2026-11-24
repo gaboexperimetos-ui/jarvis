@@ -2527,6 +2527,11 @@ fallback_providers:
   - provider: "openrouter"
     model: "nvidia/nemotron-3.5-super-vl:free"
     base_url: "https://openrouter.ai/api/v1"
+
+# Servidor llama.cpp externo ya en marcha (router.ini) en :8004.
+# Permite que el cerebro local se detecte como "encendido" sin que Hermes lo gestione.
+local_runtime:
+  detect_ports: [8004]
 approvals:
   mode: smart
   timeout: 300
