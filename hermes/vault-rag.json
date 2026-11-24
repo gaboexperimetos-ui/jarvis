@@ -1,0 +1,14 @@
+{
+  "max_kb": 512,
+  "mikareno": true,
+  "exclude_dirs": [
+    "node_modules", ".git", ".zig-cache", "zig-out", "target", "dist", "build",
+    ".venv", "venv", "__pycache__", ".next", "site-packages", ".cache", ".npm"
+  ],
+  "sources": [
+    {"name": "vault", "path": "~/SegundoCerebro", "recursive": false, "weight": 2.0},
+    {"name": "Documentos", "path": "~/Documentos", "recursive": true, "weight": 1.5},
+    {"name": "styp", "path": "~/proyectos/styp", "recursive": true, "weight": 1.2, "exclude": ["notes"]},
+    {"name": "proyectos", "path": "~/proyectos", "recursive": true, "weight": 0.8, "exclude": ["olliecode-sandbox", "copilot-worktrees", "styp"]}
+  ]
+}

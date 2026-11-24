@@ -44,6 +44,8 @@ Detrás del puente `tool_search` hay unas 340 herramientas de 12 servidores MCP 
 
 - **Colegio (mikareno):** `get_tareas`, `get_calendario`, `get_notas_trimestre`, `get_mensajes`, `get_horario`, `get_perfil`. Úsalas para deberes, notas y calendario escolar.
 - **NOVA (study-platform):** `create_note`, `calendar_add`, `calendar_list`, notas, cyberhex.
+- **Segundo Cerebro (RAG):** `python3 ~/.hermes/scripts/vault-rag.py --context -k 5 "consulta"` recupera notas del vault, `~/Documentos`, proyectos y el estado de mikareno, con citas. Úsalo antes de responder sobre notas, tareas, exámenes o proyectos. `--json` para datos y `--list` para ver fuentes.
+- **Puente a NOVA:** si NOVA necesita contexto del vault, Hermes ejecuta `vault-rag.py --context` y le pasa el bloque; no se toca el código de NOVA.
 - **Google (vía MCP):** `gmail` (leer/enviar correos), `gdrive` (archivos), `gdocs` (documentos), `gsheets` (hojas de cálculo), `gforms` (formularios), `gslides` (presentaciones).
 - **Google Classroom (vía script de terminal):**
   - Cursos: `python3 ~/.hermes/scripts/classroom.py courses`
