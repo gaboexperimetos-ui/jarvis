@@ -14,6 +14,7 @@ Si una fuente falla, se omite su seccion y el resto se envia igual.
 from __future__ import annotations
 
 import importlib.util
+import html
 import json
 import os
 import re
@@ -294,8 +295,17 @@ def ai_news(commit: bool = True) -> list[str]:
             cands.append((when, score, name, title, link))
     cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
     out = []
+    chosen_words = []
+    per_source = {}
     for when, score, name, title, link in cands:
-        out.append(f"• {title[:95]} ({name})")
+        if per_source.get(name, 0) >= 1:
+            continue
+        words = {w for w in re.findall(r"[a-záéíóúñ]{4,}", html.unescape(title).lower())}
+        if any(len(words & prev) / max(1, len(words | prev)) >= 0.5 for prev in chosen_words):
+            continue
+        chosen_words.append(words)
+        per_source[name] = per_source.get(name, 0) + 1
+        out.append(f"• {html.unescape(title)[:95]} ({name})")
         seen.add(link)
         if len(out) >= 5:
             break
@@ -315,7 +325,7 @@ def main() -> int:
 
     sections = [
         ("COLEGIO · mikareno", mikareno()),
-        ("CLASSROOM · próximas entregas", classroom()),
+        ("CLASSROOM · entregas", classroom()),
         ("CORREO IMPORTANTE", gmail()),
         ("IA · últimas 36 h", ai_news(commit=not dry)),
     ]
