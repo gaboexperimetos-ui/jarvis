@@ -41,6 +41,7 @@ import math
 import re
 import sys
 import unicodedata
+import urllib.request
 from collections import Counter
 from pathlib import Path
 
@@ -208,6 +209,8 @@ def mikareno_note() -> dict | None:
             if mat.get(k):
                 lines.append(f"Matrícula {k}: {mat[k]}")
     body = "\n".join(lines)
+    toks = tokenize("Estado mikareno tareas " * 2 + body)
+    tf = Counter(toks)
     return {
         "stem": "mikareno-estado",
         "title": "Estado mikareno (tareas)",
@@ -217,7 +220,7 @@ def mikareno_note() -> dict | None:
         "source_name": "mikareno",
         "source_weight": 1.6,
         "area_hint": "Estudio",
-        "_tokens": tokenize("Estado mikareno tareas " * 2 + body),
+        "_chunks": [{"tf": dict(tf), "len": sum(tf.values())}],
     }
 
 
@@ -231,6 +234,28 @@ def signature(entries: list[tuple[Path, dict]], snap: Path | None, cfg: dict) ->
         sig.append(["__mikareno__", str(snap), st.st_mtime_ns, st.st_size])
     sig.append(["__cfg__", cfg["max_kb"], sorted(cfg["exclude_dirs"])])
     return sig
+
+
+def chunk_body(body: str, target: int = 800, overlap: int = 120) -> list[str]:
+    """Divide el cuerpo en fragmentos de ~target caracteres, con solape."""
+    paras = [p.strip() for p in re.split(r"\n\s*\n", body) if p.strip()]
+    if not paras:
+        return []
+    chunks: list[str] = []
+    cur: list[str] = []
+    size = 0
+    for p in paras:
+        parts = [p[i:i + target] for i in range(0, len(p), target)] if len(p) > target * 2 else [p]
+        for part in parts:
+            if cur and size + len(part) > target:
+                chunks.append("\n\n".join(cur))
+                cur = [cur[-1]] if overlap and len(cur[-1]) <= overlap * 2 else []
+                size = sum(len(x) for x in cur)
+            cur.append(part)
+            size += len(part)
+    if cur:
+        chunks.append("\n\n".join(cur))
+    return chunks
 
 
 def build(entries: list[tuple[Path, dict]], mk: dict | None) -> list[dict]:
@@ -248,7 +273,15 @@ def build(entries: list[tuple[Path, dict]], mk: dict | None) -> list[dict]:
         n = parse_text(p, text)
         n["source_name"] = src.get("name", "")
         n["source_weight"] = src["weight"]
-        n["_tokens"] = tokenize(n["title"]) * 3 + tokenize(" ".join(n["tags"])) * 2 + tokenize(n["body"])
+        head = tokenize(n["title"]) * 3 + tokenize(" ".join(n["tags"])) * 2
+        chunks = []
+        for part in chunk_body(n["body"]):
+            tf = Counter(head + tokenize(part))
+            chunks.append({"tf": dict(tf), "len": sum(tf.values())})
+        if not chunks:
+            tf = Counter(head)
+            chunks = [{"tf": dict(tf), "len": sum(tf.values()) or 1}]
+        n["_chunks"] = chunks
         notes.append(n)
     if mk:
         notes.append(mk)
@@ -292,38 +325,66 @@ def load_index(cfg: dict, extra: list[str], rebuild: bool) -> tuple[list[dict], 
     return notes, entries
 
 
-def bm25(docs: list[list[str]], avg: float, query: list[str], k1: float = 1.5, b: float = 0.75) -> list[float]:
-    n = len(docs)
+def score_chunks(notes: list[dict], query: list[str], k1: float = 1.5, b: float = 0.75) -> list[tuple[float, int, int]]:
+    """BM25 sobre fragmentos. Devuelve (puntuación, índice de nota, índice de fragmento)."""
+    rows = [
+        (i, j, c["len"], c["tf"])
+        for i, n in enumerate(notes)
+        for j, c in enumerate(n.get("_chunks") or [])
+    ]
+    if not rows:
+        return []
+    total = len(rows)
     df = Counter()
-    for d in docs:
-        df.update(set(d))
-    scores = []
-    for d in docs:
-        tf = Counter(d)
+    for _, _, _, tf in rows:
+        df.update(tf.keys())
+    avg = sum(r[2] for r in rows) / total
+    out = []
+    for i, j, ln, tf in rows:
         s = 0.0
         for w in query:
-            if w not in tf:
+            f = tf.get(w, 0)
+            if not f:
                 continue
-            idf = math.log(1 + (n - df[w] + 0.5) / (df[w] + 0.5))
-            s += idf * (tf[w] * (k1 + 1)) / (tf[w] + k1 * (1 - b + b * len(d) / (avg or 1)))
-        scores.append(s)
-    return scores
+            idf = math.log(1 + (total - df[w] + 0.5) / (df[w] + 0.5))
+            s += idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * ln / (avg or 1)))
+        if s > 0:
+            out.append((s * float(notes[i].get("source_weight", 1.0)), i, j))
+    return out
 
 
-def snippet(body: str, query: list[str], width: int = 240) -> str:
-    parts = [p.strip() for p in re.split(r"\n\s*\n|\n", body) if p.strip()]
-    if not parts:
-        return ""
-    qs = set(query)
+LOCAL_API = "http://127.0.0.1:8004/v1/chat/completions"
 
-    def hits(p: str) -> int:
-        return sum(1 for w in tokenize(p) if w in qs)
 
-    best = max(parts, key=lambda p: (hits(p), len(p)))
-    clean = re.sub(r"\s+", " ", best).strip()
-    if len(clean) > width:
-        clean = clean[:width].rsplit(" ", 1)[0] + "…"
-    return clean
+def ask(question: str, results: list[dict], model: str) -> str:
+    """Respuesta del modelo local usando solo los fragmentos recuperados."""
+    blocks = []
+    for r in results:
+        ref = r["link"] or f"{r['title']} ({r['path']})"
+        blocks.append(f"### {ref}\n" + "\n".join(s for s in r["snippets"] if s))
+    context = "\n\n".join(blocks) or "(sin resultados)"
+    system = (
+        "Respondes en español usando solo el contexto. Cita cada dato con la nota "
+        "[[...]] o la ruta entre paréntesis. Si el contexto no responde, dilo; no inventes."
+    )
+    payload = json.dumps(
+        {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": f"Contexto:\n{context}\n\nPregunta: {question}"},
+            ],
+            "temperature": 0.2,
+            "max_tokens": 600,
+            "stream": False,
+        }
+    ).encode("utf-8")
+    req = urllib.request.Request(
+        LOCAL_API, data=payload, headers={"Content-Type": "application/json"}, method="POST"
+    )
+    with urllib.request.urlopen(req, timeout=180) as r:
+        data = json.loads(r.read().decode("utf-8", "replace"))
+    return (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
 
 
 def main() -> int:
@@ -336,6 +397,12 @@ def main() -> int:
     ap.add_argument("--source", action="append", default=[], help="fuente extra recursiva (repetible)")
     ap.add_argument("--max-kb", type=int, default=None)
     ap.add_argument("--rebuild", action="store_true")
+    ap.add_argument("--only", action="append", default=[], help="fuente exacta (repetible)")
+    ap.add_argument("--path", default="", help="subcadena de ruta")
+    ap.add_argument("--area", action="append", default=[], help="área del vault (repetible)")
+    ap.add_argument("--chunks", type=int, default=1, help="fragmentos por nota")
+    ap.add_argument("--ask", action="store_true", help="responde con el modelo local y citas")
+    ap.add_argument("--model", default="deepseek-v4pro", help="modelo del router local")
     args = ap.parse_args()
 
     cfg = load_config()
@@ -363,18 +430,45 @@ def main() -> int:
         print("vault-rag: consulta vacía", file=sys.stderr)
         return 2
 
-    docs = [n["_tokens"] for n in notes]
-    avg = sum(len(d) for d in docs) / len(docs) if docs else 0.0
-    scores = bm25(docs, avg, query)
-    for i, n in enumerate(notes):
-        scores[i] *= float(n.get("source_weight", 1.0))
-    order = sorted(range(len(notes)), key=lambda i: scores[i], reverse=True)
-    picked = [i for i in order if scores[i] > 0][: args.top]
+    # filtros
+    only = {norm(s) for s in args.only}
+    areas = {norm(a) for a in args.area}
+    path_q = (args.path or "").lower()
+
+    def keep(n: dict) -> bool:
+        if only and norm(n.get("source_name", "")) not in only:
+            return False
+        if path_q and path_q not in n["path"].lower():
+            return False
+        if areas:
+            note_areas = area_of.get(n["stem"], []) or ([n["area_hint"]] if n.get("area_hint") else [])
+            if not ({norm(a) for a in note_areas} & areas):
+                return False
+        return True
+
+    sub = [n for n in notes if keep(n)]
+    scored = score_chunks(sub, query)
+    per_note: dict[int, list[tuple[float, int, int]]] = {}
+    for item in scored:
+        per_note.setdefault(item[1], []).append(item)
+    ranked = sorted(per_note.values(), key=lambda rows: max(r[0] for r in rows), reverse=True)
+    ranked = [
+        sorted(rows, key=lambda r: r[0], reverse=True)[: max(1, args.chunks)]
+        for rows in ranked
+    ][: args.top]
 
     results = []
-    for i in picked:
-        n = notes[i]
+    for rows in ranked:
+        n = sub[rows[0][1]]
         is_vault = n.get("source_name") == "vault"
+        texts = chunk_body(n["body"])
+        snips = []
+        for _, _, j in rows:
+            t = texts[j] if j < len(texts) else n["body"]
+            t = re.sub(r"\s+", " ", t).strip()
+            if len(t) > 420:
+                t = t[:420].rsplit(" ", 1)[0] + "…"
+            snips.append(t)
         results.append(
             {
                 "title": n["title"],
@@ -383,11 +477,29 @@ def main() -> int:
                 "areas": area_of.get(n["stem"], []) or ([n["area_hint"]] if n.get("area_hint") else []),
                 "tags": n["tags"],
                 "source": n.get("source_name", ""),
-                "score": round(scores[i], 3),
-                "snippet": snippet(n["body"], query),
+                "score": round(rows[0][0], 3),
+                "snippet": snips[0] if snips else "",
+                "snippets": snips,
                 "path": n["path"],
             }
         )
+
+    if args.ask:
+        try:
+            print(ask(" ".join(args.query), results, args.model))
+        except Exception as e:
+            print(f"vault-rag: el modelo local no respondió ({e})", file=sys.stderr)
+            print(f"[vault-rag] Consulta: {' '.join(args.query)}\n")
+            for r in results:
+                print(f"- {r['link'] or r['title'] + ' (' + r['path'] + ')'}")
+                for s in r["snippets"]:
+                    if s:
+                        print(f"  {s}")
+            return 1
+        print("\nFuentes:")
+        for r in results:
+            print(f"- {r['link'] or r['path']}")
+        return 0
 
     if args.json:
         print(json.dumps({"query": " ".join(args.query), "results": results}, ensure_ascii=False, indent=2))
@@ -399,8 +511,9 @@ def main() -> int:
             ref = r["link"] or f"{r['title']} ({r['path']})"
             a = ", ".join(r["areas"]) or "—"
             print(f"- {ref} (área: {a}; fuente: {r['source']})")
-            if r["snippet"]:
-                print(f"  {r['snippet']}")
+            for s in r["snippets"]:
+                if s:
+                    print(f"  {s}")
         if not results:
             print("(sin coincidencias)")
         return 0
@@ -413,8 +526,9 @@ def main() -> int:
         a = ", ".join(r["areas"]) or "—"
         print(f"{n}) {ref}  ({r['score']})")
         print(f"   área: {a} · fuente: {r['source']}")
-        if r["snippet"]:
-            print(f"   {r['snippet']}")
+        for s in r["snippets"]:
+            if s:
+                print(f"   {s}")
     return 0
 
 

@@ -33,6 +33,9 @@ SEEN_NEWS = STATE / "ai-news-seen.json"
 SNAP_DIR = HOME / ".cache" / "mikareno-mcp" / "snapshots"
 CLASSROOM = HERMES / "scripts" / "classroom.py"
 GMAIL_CRED = HOME / ".config" / "mcp-google-gmail" / "credentials.json"
+VAULT = HOME / "SegundoCerebro"
+DIARY = VAULT / "Resumen diario.md"
+DIARY_DAYS = 30
 
 LOCAL_TZ = datetime.now().astimezone().tzinfo
 DIAS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
@@ -317,6 +320,50 @@ def ai_news(commit: bool = True) -> list[str]:
     return out
 
 
+# ── nota en el vault ───────────────────────────────────────────────────────
+DAY_RE = re.compile(r"<!-- dia:(\d{4}-\d{2}-\d{2}) -->\n(.*?)(?=\n<!-- dia:|\Z)", re.S)
+DAY_SECTIONS = ("COLEGIO · mikareno", "CLASSROOM · entregas", "CORREO IMPORTANTE", "IA · últimas 36 h")
+
+
+def _diary_body(text: str) -> str:
+    lines = ["### " + line if line in DAY_SECTIONS else line for line in text.splitlines()]
+    return "\n".join(lines).strip()
+
+
+def save_diary(text: str, now: datetime) -> Path | None:
+    """Guarda el resumen del día en una nota rodante del vault (idempotente)."""
+    if not VAULT.is_dir():
+        return None
+    days: dict[str, str] = {}
+    try:
+        for day, block in DAY_RE.findall(DIARY.read_text(encoding="utf-8", errors="replace")):
+            days[day] = re.sub(r"\A##[^\n]*\n+", "", block.strip())
+    except OSError:
+        pass
+    days[now.strftime("%Y-%m-%d")] = _diary_body(text)
+    parts = [
+        "---",
+        'title: "Resumen diario"',
+        "tags: [resumen, diario, estudio, ia]",
+        "---",
+        "",
+        "# Resumen diario",
+        "",
+        "Resúmenes de cada mañana (mikareno, Classroom, correo importante e IA).",
+        f"El más reciente va primero. Se conservan los últimos {DIARY_DAYS} días.",
+        "",
+    ]
+    for day in sorted(days, reverse=True)[:DIARY_DAYS]:
+        d = datetime.strptime(day, "%Y-%m-%d")
+        parts += [f"<!-- dia:{day} -->", f"## {d.day} {MESES[d.month-1]} {d.year}", "", days[day], ""]
+    try:
+        DIARY.write_text("\n".join(parts), encoding="utf-8")
+        return DIARY
+    except OSError as e:
+        print("vault:", e, file=sys.stderr)
+        return None
+
+
 # ── composición ────────────────────────────────────────────────────────────
 def main() -> int:
     dry = "--dry-run" in sys.argv
@@ -338,6 +385,9 @@ def main() -> int:
     if dry:
         return 0
     ok = telegram(text)
+    saved = save_diary(text, now)
+    if saved:
+        print(f"\nGuardado en el vault: {saved}")
     return 0 if ok else 1
 
 
