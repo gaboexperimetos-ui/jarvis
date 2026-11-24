@@ -2548,6 +2548,7 @@ mcp_servers:
   mikareno:
     url: http://127.0.0.1:8080/mcp
     connect_timeout: 30
+    keepalive_interval: 60
   gmail:
     command: mcp-google-gmail
     env:

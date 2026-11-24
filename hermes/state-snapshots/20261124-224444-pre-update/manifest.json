@@ -1,0 +1,23 @@
+{
+  "id": "20261124-224444-pre-update",
+  "timestamp": "20261124-224444",
+  "label": "pre-update",
+  "file_count": 12,
+  "total_size": 2307982,
+  "files": {
+    "state.db": 1945600,
+    "config.yaml": 138449,
+    ".env": 30813,
+    "auth.json": 3070,
+    "cron/executions.db": 24576,
+    "gateway_state.json": 978,
+    "channel_directory.json": 236,
+    "projects.db": 45056,
+    "kanban.db": 118784,
+    "platforms/pairing/.lock": 0,
+    "platforms/pairing/whatsapp-pending.json": 260,
+    "platforms/pairing/_rate_limits.json": 160
+  },
+  "failed_dbs": [],
+  "oversized_skipped": []
+}
