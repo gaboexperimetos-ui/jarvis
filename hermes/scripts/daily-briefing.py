@@ -18,6 +18,7 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -388,6 +389,11 @@ def main() -> int:
     saved = save_diary(text, now)
     if saved:
         print(f"\nGuardado en el vault: {saved}")
+    try:
+        subprocess.run([sys.executable, str(HERMES / "scripts" / "horario-nova.py")],
+                       check=False, timeout=60, capture_output=True)
+    except (OSError, subprocess.SubprocessError):
+        pass
     return 0 if ok else 1
 
 

@@ -586,6 +586,11 @@ def main() -> int:
     if not query:
         print("vault-rag: consulta vacía", file=sys.stderr)
         return 2
+    # una palabra de la consulta que también es el título de una nota manda
+    stems = {norm(n["stem"]): n["stem"] for n in notes}
+    words = re.findall(r"[a-z0-9áéíóúñ]+", norm(" ".join(args.query)))
+    pinned = [i for i, n in enumerate(notes) if norm(n["stem"]) in words]
+    pin = set(pinned)
 
     # filtros
     only = {norm(s) for s in args.only}
@@ -663,6 +668,7 @@ def main() -> int:
         order = sorted(range(len(notes)), key=lambda i: scores[i], reverse=True)
 
     picked = [i for i in order if scores[i] > 0][: max(args.top * 4, 10)]
+    picked = list(dict.fromkeys(pinned + picked))
     by_note: dict[int, list[tuple[float, int]]] = {}
     for s, i, j in scored:
         by_note.setdefault(i, []).append((s, j))
@@ -675,6 +681,8 @@ def main() -> int:
     results = []
     for i, rows in ranked:
         n = sub[i]
+        if i in pin:
+            scores[i] = max(scores[i], 1.0)
         is_vault = n.get("source_name") == "vault"
         texts = chunk_body(n["body"])
         snips = []
