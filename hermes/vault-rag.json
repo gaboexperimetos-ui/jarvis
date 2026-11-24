@@ -6,9 +6,9 @@
     ".venv", "venv", "__pycache__", ".next", "site-packages", ".cache", ".npm"
   ],
   "sources": [
-    {"name": "vault", "path": "~/SegundoCerebro", "recursive": false, "weight": 2.0},
-    {"name": "Documentos", "path": "~/Documentos", "recursive": true, "weight": 1.5},
-    {"name": "styp", "path": "~/proyectos/styp", "recursive": true, "weight": 1.2, "exclude": ["notes"]},
-    {"name": "proyectos", "path": "~/proyectos", "recursive": true, "weight": 0.8, "exclude": ["olliecode-sandbox", "copilot-worktrees", "styp"]}
+    {"name": "vault", "path": "~/SegundoCerebro", "recursive": false, "weight": 2.0, "suffixes": [".md"]},
+    {"name": "Documentos", "path": "~/Documentos", "recursive": true, "weight": 1.5, "suffixes": [".md", ".txt", ".pdf", ".docx", ".html", ".csv"]},
+    {"name": "styp", "path": "~/proyectos/styp", "recursive": true, "weight": 1.2, "exclude": ["notes"], "suffixes": [".md", ".pdf", ".docx"]},
+    {"name": "proyectos", "path": "~/proyectos", "recursive": true, "weight": 0.8, "exclude": ["olliecode-sandbox", "copilot-worktrees", "styp"], "suffixes": [".md", ".pdf", ".docx"]}
   ]
 }

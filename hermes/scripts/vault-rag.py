@@ -38,12 +38,21 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import re
+import subprocess
 import sys
 import unicodedata
 import urllib.request
+import zipfile
 from collections import Counter
+from html import unescape
 from pathlib import Path
+
+try:
+    import orjson
+except ImportError:  # opcional: solo acelera la caché
+    orjson = None
 
 HOME = Path.home()
 DEFAULT_VAULT = HOME / "SegundoCerebro"
@@ -56,6 +65,12 @@ DEFAULT_EXCLUDES = [
     "node_modules", ".git", ".zig-cache", "zig-out", "target", "dist", "build",
     ".venv", "venv", "__pycache__", ".next", "site-packages", ".cache", ".npm",
 ]
+
+# Formatos que se indexan. Los binarios se extraen a texto y se limitan aparte.
+TEXT_SUFFIXES = {".md", ".markdown", ".txt", ".rst", ".org", ".csv"}
+BINARY_SUFFIXES = {".pdf", ".docx", ".html", ".htm"}
+MAX_BINARY_MB = 20
+INDEX_VERSION = 3
 
 STOP = set(
     """de la que el en y a los se del las un por con no una su para es al lo como
@@ -93,8 +108,50 @@ def norm(text: str) -> str:
     return "".join(c for c in text if not unicodedata.combining(c))
 
 
+def stem_es(w: str) -> str:
+    """Raíz ligera para español: une plurales y variantes de género."""
+    if len(w) > 4 and w.endswith("s") and not w.endswith("ss"):
+        w = w[:-1]
+    if len(w) > 5 and w.endswith("e"):
+        w = w[:-1]
+    if len(w) > 5 and w[-1] in "oa":
+        w = w[:-1]
+    return w
+
+
 def tokenize(text: str) -> list[str]:
-    return [w for w in re.findall(r"[a-z0-9]+", norm(text)) if len(w) > 1 and w not in STOP]
+    return [
+        stem_es(w)
+        for w in re.findall(r"[a-z0-9]+", norm(text))
+        if len(w) > 1 and w not in STOP
+    ]
+
+
+def extract_text(path: Path) -> str:
+    """Texto plano de md/txt/pdf/docx/html. Devuelve '' si no se puede."""
+    suf = path.suffix.lower()
+    try:
+        if suf in TEXT_SUFFIXES:
+            return path.read_text(encoding="utf-8", errors="replace")
+        if suf == ".pdf":
+            r = subprocess.run(
+                ["pdftotext", "-q", "-enc", "UTF-8", str(path), "-"],
+                capture_output=True, timeout=30,
+            )
+            return r.stdout.decode("utf-8", "replace")
+        if suf == ".docx":
+            with zipfile.ZipFile(path) as z:
+                xml = z.read("word/document.xml").decode("utf-8", "replace")
+            xml = re.sub(r"</w:(p|tr)>", "\n", xml)
+            return unescape(re.sub(r"<[^>]+>", "", xml))
+        if suf in (".html", ".htm"):
+            raw = path.read_text(encoding="utf-8", errors="replace")
+            raw = re.sub(r"(?is)<(script|style).*?</\1>", " ", raw)
+            raw = re.sub(r"(?i)</(p|div|h[1-6]|li|tr|br)>", "\n", raw)
+            return unescape(re.sub(r"<[^>]+>", " ", raw))
+    except (OSError, subprocess.SubprocessError, zipfile.BadZipFile, KeyError):
+        return ""
+    return ""
 
 
 def parse_text(path: Path, text: str) -> dict:
@@ -113,17 +170,29 @@ def parse_text(path: Path, text: str) -> dict:
                     if raw.startswith("[") and raw.endswith("]"):
                         raw = raw[1:-1]
                     tags = [x.strip().strip('"').strip("'").lstrip("#") for x in raw.split(",") if x.strip()]
+    if title == path.stem and path.suffix.lower() not in (".md", ".markdown"):
+        for line in body.splitlines()[:40]:
+            first = re.sub(r"^#+\s*", "", line.strip())
+            if not (3 <= len(first) <= 90) or not first[0].isalnum():
+                continue
+            if first.startswith("--") or re.match(r"^\d+[/.-]\d+", first):
+                continue
+            if not re.search(r"[a-záéíóúñ]", first):
+                continue
+            title = first
+            break
     return {"stem": path.stem, "title": title, "tags": tags, "body": body, "path": str(path)}
 
 
 def norm_source(s) -> dict:
     if isinstance(s, str):
-        return {"name": Path(s).name, "path": s, "recursive": True, "weight": 1.0, "exclude": []}
+        return {"name": Path(s).name, "path": s, "recursive": True, "weight": 1.0, "exclude": [], "suffixes": None}
     d = dict(s)
     d.setdefault("name", Path(d.get("path", "")).name)
     d.setdefault("recursive", True)
     d.setdefault("weight", 1.0)
     d.setdefault("exclude", [])
+    d.setdefault("suffixes", None)
     return d
 
 
@@ -145,6 +214,19 @@ def load_config() -> dict:
     return cfg
 
 
+def walk_files(root: Path, recursive: bool, excludes: set[str]):
+    """Recorre sin entrar en directorios excluidos (mucho más rápido que rglob)."""
+    if not recursive:
+        yield from root.iterdir()
+        return
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in excludes and not d.startswith(".")]
+        base = Path(dirpath)
+        for name in filenames:
+            if not name.startswith("."):
+                yield base / name
+
+
 def collect(cfg: dict, extra: list[str]) -> list[tuple[Path, dict]]:
     sources = list(cfg["sources"])
     sources += [norm_source({"name": "extra", "path": p, "recursive": True, "weight": 1.0}) for p in extra]
@@ -156,14 +238,21 @@ def collect(cfg: dict, extra: list[str]) -> list[tuple[Path, dict]]:
         if not root.is_dir():
             continue
         excludes = set(cfg["exclude_dirs"]) | set(src.get("exclude", []))
-        it = root.rglob("*.md") if src["recursive"] else root.glob("*.md")
+        allowed = {s.lower() for s in (src.get("suffixes") or (TEXT_SUFFIXES | BINARY_SUFFIXES))}
+        it = walk_files(root, src["recursive"], excludes)
         for p in it:
             try:
                 if not p.is_file() or p.name.startswith("."):
                     continue
+                suf = p.suffix.lower()
+                if suf not in allowed:
+                    continue
                 if set(p.parts) & excludes:
                     continue
-                if p.stat().st_size > cfg["max_kb"] * 1024:
+                size = p.stat().st_size
+                if suf in TEXT_SUFFIXES and size > cfg["max_kb"] * 1024:
+                    continue
+                if suf in BINARY_SUFFIXES and size > MAX_BINARY_MB * 1024 * 1024:
                     continue
             except OSError:
                 continue
@@ -172,6 +261,7 @@ def collect(cfg: dict, extra: list[str]) -> list[tuple[Path, dict]]:
                 continue
             seen.add(rp)
             entries.append((p, src))
+    entries.sort(key=lambda e: str(e[0]))
     return entries
 
 
@@ -232,15 +322,12 @@ def signature(entries: list[tuple[Path, dict]], snap: Path | None, cfg: dict) ->
     if snap:
         st = snap.stat()
         sig.append(["__mikareno__", str(snap), st.st_mtime_ns, st.st_size])
-    sig.append(["__cfg__", cfg["max_kb"], sorted(cfg["exclude_dirs"])])
+    sig.append(["__cfg__", INDEX_VERSION, cfg["max_kb"], sorted(cfg["exclude_dirs"]), sorted(TEXT_SUFFIXES | BINARY_SUFFIXES)])
     return sig
 
 
-def chunk_body(body: str, target: int = 800, overlap: int = 120) -> list[str]:
-    """Divide el cuerpo en fragmentos de ~target caracteres, con solape."""
-    paras = [p.strip() for p in re.split(r"\n\s*\n", body) if p.strip()]
-    if not paras:
-        return []
+def _pack(text: str, target: int, overlap: int) -> list[str]:
+    paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
     chunks: list[str] = []
     cur: list[str] = []
     size = 0
@@ -258,14 +345,40 @@ def chunk_body(body: str, target: int = 800, overlap: int = 120) -> list[str]:
     return chunks
 
 
-def build(entries: list[tuple[Path, dict]], mk: dict | None) -> list[dict]:
+def chunk_body(body: str, target: int = 800, overlap: int = 120) -> list[str]:
+    """Fragmentos con su encabezado más cercano, para que se citen solos."""
+    sections: list[tuple[str, list[str]]] = []
+    head, buf = "", []
+    for line in body.splitlines():
+        if re.match(r"^#{1,6}\s", line.strip()):
+            if buf:
+                sections.append((head, buf))
+            head, buf = line.strip(), []
+        else:
+            buf.append(line)
+    if buf or not sections:
+        sections.append((head, buf))
+    chunks: list[str] = []
+    for h, lines in sections:
+        text = "\n".join(lines).strip()
+        if not text:
+            if h:
+                chunks.append(h)
+            continue
+        for part in _pack(text, target, overlap):
+            chunks.append(f"{h}\n{part}" if h else part)
+    return [c for c in chunks if c.strip()]
+
+
+def build(entries: list[tuple[Path, dict]], mk: dict | None, cfg: dict) -> list[dict]:
     notes: list[dict] = []
     seen: set[str] = set()
+    limit = cfg["max_kb"] * 1024
     for p, src in entries:
-        try:
-            text = p.read_text(encoding="utf-8", errors="replace")
-        except OSError:
+        text = extract_text(p)
+        if not text.strip():
             continue
+        text = text[:limit]
         h = hashlib.sha1(norm(text).encode("utf-8", "ignore")).hexdigest()
         if h in seen:
             continue
@@ -311,15 +424,19 @@ def load_index(cfg: dict, extra: list[str], rebuild: bool) -> tuple[list[dict], 
     sig = signature(entries, snap, cfg)
     if not rebuild and CACHE.exists():
         try:
-            cached = json.loads(CACHE.read_text(encoding="utf-8"))
+            cached = orjson.loads(CACHE.read_bytes()) if orjson else json.loads(CACHE.read_text(encoding="utf-8"))
             if cached.get("signature") == sig:
                 return cached["notes"], entries
         except (OSError, ValueError, KeyError):
             pass
-    notes = build(entries, mikareno_note() if cfg.get("mikareno") else None)
+    notes = build(entries, mikareno_note() if cfg.get("mikareno") else None, cfg)
     try:
         CACHE.parent.mkdir(parents=True, exist_ok=True)
-        CACHE.write_text(json.dumps({"signature": sig, "notes": notes}, ensure_ascii=False), encoding="utf-8")
+        data = {"signature": sig, "notes": notes}
+        if orjson:
+            CACHE.write_bytes(orjson.dumps(data))
+        else:
+            CACHE.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     except OSError:
         pass
     return notes, entries
@@ -455,7 +572,7 @@ def main() -> int:
     ranked = [
         sorted(rows, key=lambda r: r[0], reverse=True)[: max(1, args.chunks)]
         for rows in ranked
-    ][: args.top]
+    ][: max(args.top * 4, 10)]
 
     results = []
     for rows in ranked:
@@ -483,6 +600,19 @@ def main() -> int:
                 "path": n["path"],
             }
         )
+
+    seen_titles: set[str] = set()
+    seen_snips: set[str] = set()
+    unique = []
+    for r in results:
+        t = norm(r["title"])
+        s = norm(r["snippet"][:300])
+        if (t and t in seen_titles) or (s and s in seen_snips):
+            continue
+        seen_titles.add(t)
+        seen_snips.add(s)
+        unique.append(r)
+    results = unique[: args.top]
 
     if args.ask:
         try:
