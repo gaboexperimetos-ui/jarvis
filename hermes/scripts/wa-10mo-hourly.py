@@ -72,7 +72,7 @@ def main() -> int:
                 if ts <= last:
                     continue
                 hay = f"{rec.get('chat_name', '')} {rec.get('chat_id', '')}"
-                if not pattern.search(hay):
+                if not (pattern.search(hay) or wa._is_ten_chat(str(rec.get("chat_id") or ""))):
                     continue
                 key = str(rec.get("message_id") or f"{ts}-{rec.get('text','')[:40]}")
                 if key in seen:

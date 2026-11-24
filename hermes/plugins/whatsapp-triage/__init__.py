@@ -38,7 +38,7 @@ LOG_DIR = HERMES_HOME / "logs"
 LOG_PATH = LOG_DIR / "whatsapp-inbox.jsonl"
 
 DEFAULT_TRIGGER = "!Hermes"
-NOVA_DEFAULT_URL = "http://127.0.0.1:3917/mcp"
+NOVA_DEFAULT_URL = "http://127.0.0.1:3100/mcp"
 EXTRA_ENV_PATHS = (Path("/home/gabo/proyectos/styp/.env"),)
 
 _log_lock = threading.Lock()
@@ -85,6 +85,31 @@ def _trigger() -> str:
     return _read_setting("WHATSAPP_TRIGGER", DEFAULT_TRIGGER) or DEFAULT_TRIGGER
 
 
+def _ten_chat_ids() -> frozenset[str]:
+    """Chats de 10mo por id (env WA_10MO_CHATS, separados por coma).
+
+    El grupo real de padres suele tener JID numérico, no "10mo" en el nombre.
+    Se acepta el id completo y su parte antes de ``@``.
+    """
+    raw = _read_setting("WA_10MO_CHATS", "")
+    out: set[str] = set()
+    for part in raw.split(","):
+        p = part.strip().lower()
+        if not p:
+            continue
+        out.add(p)
+        out.add(p.split("@", 1)[0])
+    return frozenset(out)
+
+
+def _is_ten_chat(chat_id: str) -> bool:
+    ids = _ten_chat_ids()
+    if not ids:
+        return False
+    cid = str(chat_id or "").strip().lower()
+    return cid in ids or cid.split("@", 1)[0] in ids
+
+
 def _append_log(record: dict[str, Any]) -> None:
     try:
         LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -123,23 +148,34 @@ def _telegram_send(text: str) -> bool:
 
 
 def _nova_create_note(title: str, content: str, tags: str) -> Optional[dict[str, Any]]:
-    key = _read_setting("CUSTOM_MCP_API_KEY") or _read_setting("NOVA_MCP_KEY")
+    key = (
+        _read_setting("CUSTOM_MCP_API_KEY")
+        or _read_setting("NOVA_MCP_KEY")
+        or _read_setting("STUDY_PLATFORM_MCP_KEY")
+    )
     if not key:
         return None
     url = _read_setting("NOVA_MCP_URL", NOVA_DEFAULT_URL) or NOVA_DEFAULT_URL
+    tag_list = [t.strip() for t in str(tags or "").split(",") if t.strip()]
     payload = {
         "jsonrpc": "2.0",
         "id": 1,
         "method": "tools/call",
-        "params": {"name": "create_note", "arguments": {"title": title, "content": content, "tags": tags}},
+        "params": {"name": "create_note", "arguments": {"title": title, "content": content, "tags": tag_list}},
     }
-    return _post_json(url, payload, {"x-api-key": key})
+    result = _post_json(url, payload, {"x-api-key": key})
+    if isinstance(result, dict) and result.get("error"):
+        raise RuntimeError(f"NOVA rechazó la nota: {result['error']}")
+    return result
 
 
 def _looks_important(text: str, chat_name: str, chat_id: str) -> tuple[bool, bool, list[str]]:
     low = (text or "").casefold()
     hits = [k for k in IMPORTANT_KEYWORDS if k in low]
-    ten = bool(TEN_RE.search(f"{chat_name or ''} {chat_id or ''} {text or ''}"))
+    # "nota"/"notas" como calificacion escolar, pero "nota de voz" es un audio normal.
+    if "voz" in low or "[audio]" in low or "audio" in low:
+        hits = [k for k in hits if k not in ("nota", "notas")]
+    ten = bool(TEN_RE.search(f"{chat_name or ''} {chat_id or ''} {text or ''}")) or _is_ten_chat(chat_id)
     return bool(hits) or ten, ten, hits
 
 
