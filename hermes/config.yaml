@@ -2583,6 +2583,7 @@ mcp_servers:
     env:
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      DOTENV_CONFIG_QUIET: "true"
   genoffice:
     command: /opt/GenOffice/resources/cli/genoffice
     args: ["mcp"]
