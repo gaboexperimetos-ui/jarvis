@@ -58,6 +58,7 @@ HOME = Path.home()
 DEFAULT_VAULT = HOME / "SegundoCerebro"
 CONFIG = HOME / ".hermes" / "vault-rag.json"
 CACHE = HOME / ".hermes" / "cache" / "vault-rag-index.json"
+EMB_CACHE = HOME / ".hermes" / "cache" / "vault-rag-embed.json"
 SNAP_DIR = HOME / ".cache" / "mikareno-mcp" / "snapshots"
 AREAS = ["Estudio", "Proyectos", "IA local", "WhatsApp", "Personal", "Bandeja de entrada"]
 
@@ -70,7 +71,13 @@ DEFAULT_EXCLUDES = [
 TEXT_SUFFIXES = {".md", ".markdown", ".txt", ".rst", ".org", ".csv"}
 BINARY_SUFFIXES = {".pdf", ".docx", ".html", ".htm"}
 MAX_BINARY_MB = 20
-INDEX_VERSION = 3
+INDEX_VERSION = 4
+STALE_RE = re.compile(r"(obsolet|deprecat|legacy|backup|\.bak|_old|/old/|archive)", re.I)
+
+# ── embeddings (opcional, CPU; no toca la VRAM del modelo de chat) ─────────
+EMB_MODEL = HOME / "models-hf/models--BAAI--bge-small-en-v1.5/snapshots/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
+EMB_DIM = 384
+EMB_BATCH = 32
 
 STOP = set(
     """de la que el en y a los se del las un por con no una su para es al lo como
@@ -261,7 +268,7 @@ def collect(cfg: dict, extra: list[str]) -> list[tuple[Path, dict]]:
                 continue
             seen.add(rp)
             entries.append((p, src))
-    entries.sort(key=lambda e: str(e[0]))
+    entries.sort(key=lambda e: (-e[1]["weight"], str(e[0])))
     return entries
 
 
@@ -385,7 +392,7 @@ def build(entries: list[tuple[Path, dict]], mk: dict | None, cfg: dict) -> list[
         seen.add(h)
         n = parse_text(p, text)
         n["source_name"] = src.get("name", "")
-        n["source_weight"] = src["weight"]
+        n["source_weight"] = float(src["weight"]) * (0.4 if STALE_RE.search(str(p)) else 1.0)
         head = tokenize(n["title"]) * 3 + tokenize(" ".join(n["tags"])) * 2
         chunks = []
         for part in chunk_body(n["body"]):
@@ -473,6 +480,34 @@ def score_chunks(notes: list[dict], query: list[str], k1: float = 1.5, b: float 
 LOCAL_API = "http://127.0.0.1:8004/v1/chat/completions"
 
 
+def embed_texts(texts: list[str]):
+    """Vectores unitarios (cpu). Devuelve None si no hay torch/transformers/modelo."""
+    if not texts:
+        return []
+    try:
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+    except Exception:
+        return None
+    if not EMB_MODEL.is_dir():
+        return None
+    try:
+        torch.set_num_threads(4)
+        tok = AutoTokenizer.from_pretrained(str(EMB_MODEL))
+        mdl = AutoModel.from_pretrained(str(EMB_MODEL)).eval()
+    except Exception:
+        return None
+    out = []
+    with torch.no_grad():
+        for i in range(0, len(texts), EMB_BATCH):
+            batch = texts[i:i + EMB_BATCH]
+            enc = tok(batch, padding=True, truncation=True, max_length=256, return_tensors="pt")
+            vec = mdl(**enc).last_hidden_state[:, 0]
+            vec = torch.nn.functional.normalize(vec, dim=-1)
+            out.extend(v.tolist() for v in vec)
+    return out
+
+
 def ask(question: str, results: list[dict], model: str) -> str:
     """Respuesta del modelo local usando solo los fragmentos recuperados."""
     blocks = []
@@ -520,6 +555,10 @@ def main() -> int:
     ap.add_argument("--chunks", type=int, default=1, help="fragmentos por nota")
     ap.add_argument("--ask", action="store_true", help="responde con el modelo local y citas")
     ap.add_argument("--model", default="deepseek-v4pro", help="modelo del router local")
+    ap.add_argument("--semantic", action="store_true", help="añade búsqueda por embeddings (CPU)")
+    ap.add_argument("--semantic-only", action="store_true", help="solo embeddings")
+    ap.add_argument("--embed-rebuild", action="store_true", help="recalcula los vectores")
+    ap.add_argument("--alpha", type=float, default=0.6, help="peso semántico (0=léxico, 1=semántico)")
     args = ap.parse_args()
 
     cfg = load_config()
@@ -530,6 +569,7 @@ def main() -> int:
     if not notes:
         print("vault-rag: no hay notas que indexar", file=sys.stderr)
         return 1
+    sig = signature(entries, latest_snapshot() if cfg.get("mikareno") else None, cfg)
     area_of = area_map(notes)
 
     if args.list:
@@ -565,22 +605,80 @@ def main() -> int:
 
     sub = [n for n in notes if keep(n)]
     scored = score_chunks(sub, query)
-    per_note: dict[int, list[tuple[float, int, int]]] = {}
-    for item in scored:
-        per_note.setdefault(item[1], []).append(item)
-    ranked = sorted(per_note.values(), key=lambda rows: max(r[0] for r in rows), reverse=True)
-    ranked = [
-        sorted(rows, key=lambda r: r[0], reverse=True)[: max(1, args.chunks)]
-        for rows in ranked
-    ][: max(args.top * 4, 10)]
+    scores = []
+    semantic = args.semantic or args.semantic_only
+    if semantic:
+        vecs = None
+        if not args.embed_rebuild:
+            try:
+                ec = orjson.loads(EMB_CACHE.read_bytes()) if orjson else json.loads(EMB_CACHE.read_text(encoding="utf-8"))
+                if ec.get("signature") == sig:
+                    vecs = ec["vectors"]
+            except (OSError, ValueError, KeyError):
+                vecs = None
+        if vecs is None:
+            vecs = embed_texts([
+                (n["title"] + "\n" + " ".join(n["tags"]) + "\n" + n["body"][:1200]) for n in notes
+            ])
+            if vecs is None:
+                print("vault-rag: embeddings no disponibles (falta torch/transformers o el modelo)", file=sys.stderr)
+                return 1
+            try:
+                EMB_CACHE.parent.mkdir(parents=True, exist_ok=True)
+                data = {"signature": sig, "vectors": vecs}
+                if orjson:
+                    EMB_CACHE.write_bytes(orjson.dumps(data))
+                else:
+                    EMB_CACHE.write_text(json.dumps(data), encoding="utf-8")
+            except OSError:
+                pass
+        qv = embed_texts([" ".join(args.query)])
+        if not qv:
+            print("vault-rag: no se pudo calcular el vector de la consulta", file=sys.stderr)
+            return 1
+        qv = qv[0]
+        best = {}
+        for i, v in enumerate(vecs):
+            s = sum(a * b for a, b in zip(qv, v))
+            if s > best.get(i, -1.0):
+                best[i] = s
+        top = sorted(best, key=lambda i: best[i], reverse=True)
+        if args.semantic_only:
+            order = top
+            scores = [best[i] for i in range(len(notes))]
+        else:
+            lmax = max((s for s, _, _ in scored), default=1.0) or 1.0
+            smax = max(best.values(), default=1.0) or 1.0
+            scores = [0.0] * len(notes)
+            for s, i, _ in scored:
+                scores[i] = max(scores[i], (1 - args.alpha) * (s / lmax))
+            for i, v in best.items():
+                scores[i] += args.alpha * (v / smax)
+            order = sorted(range(len(notes)), key=lambda i: scores[i], reverse=True)
+    else:
+        lmax = max((s for s, _, _ in scored), default=1.0) or 1.0
+        scores = [0.0] * len(notes)
+        for s, i, _ in scored:
+            scores[i] = max(scores[i], s / lmax)
+        order = sorted(range(len(notes)), key=lambda i: scores[i], reverse=True)
+
+    picked = [i for i in order if scores[i] > 0][: max(args.top * 4, 10)]
+    by_note: dict[int, list[tuple[float, int]]] = {}
+    for s, i, j in scored:
+        by_note.setdefault(i, []).append((s, j))
+    ranked = []
+    for i in picked:
+        rows = sorted(by_note.get(i, [(0.0, 0)]), reverse=True)[: max(1, args.chunks)]
+        ranked.append((i, rows))
+    ranked = ranked[: max(args.top * 4, 10)]
 
     results = []
-    for rows in ranked:
-        n = sub[rows[0][1]]
+    for i, rows in ranked:
+        n = sub[i]
         is_vault = n.get("source_name") == "vault"
         texts = chunk_body(n["body"])
         snips = []
-        for _, _, j in rows:
+        for _, j in rows:
             t = texts[j] if j < len(texts) else n["body"]
             t = re.sub(r"\s+", " ", t).strip()
             if len(t) > 420:
@@ -594,7 +692,7 @@ def main() -> int:
                 "areas": area_of.get(n["stem"], []) or ([n["area_hint"]] if n.get("area_hint") else []),
                 "tags": n["tags"],
                 "source": n.get("source_name", ""),
-                "score": round(rows[0][0], 3),
+                "score": round(float(scores[i]), 3),
                 "snippet": snips[0] if snips else "",
                 "snippets": snips,
                 "path": n["path"],
