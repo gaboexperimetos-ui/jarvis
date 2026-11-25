@@ -14,16 +14,19 @@ import fcntl
 import json
 import logging
 import os
+import re
 import signal
 import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 import urllib.request
 import wave
 from collections import deque
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import sounddevice as sd
@@ -59,6 +62,53 @@ TTS_SPEED = float(os.environ.get("JARVIS_TTS_SPEED", "0.9"))
 _DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 _MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
           "agosto", "septiembre", "octubre", "noviembre", "diciembre")
+_HORAS_12 = ("", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete",
+             "ocho", "nueve", "diez", "once", "doce")
+
+_CIUDADES = (
+    (("tokio", "tokyo"), "Asia/Tokyo", "Tokio"),
+    (("madrid",), "Europe/Madrid", "Madrid"),
+    (("barcelona",), "Europe/Madrid", "Barcelona"),
+    (("espana",), "Europe/Madrid", "España"),
+    (("londres", "london"), "Europe/London", "Londres"),
+    (("paris",), "Europe/Paris", "París"),
+    (("berlin",), "Europe/Berlin", "Berlín"),
+    (("roma", "rome"), "Europe/Rome", "Roma"),
+    (("lisboa",), "Europe/Lisbon", "Lisboa"),
+    (("moscu",), "Europe/Moscow", "Moscú"),
+    (("nueva york", "new york"), "America/New_York", "Nueva York"),
+    (("los angeles",), "America/Los_Angeles", "Los Ángeles"),
+    (("ciudad de mexico", "cdmx", "mexico"), "America/Mexico_City", "Ciudad de México"),
+    (("bogota",), "America/Bogota", "Bogotá"),
+    (("lima",), "America/Lima", "Lima"),
+    (("quito",), "America/Guayaquil", "Quito"),
+    (("guayaquil",), "America/Guayaquil", "Guayaquil"),
+    (("buenos aires",), "America/Argentina/Buenos_Aires", "Buenos Aires"),
+    (("santiago",), "America/Santiago", "Santiago"),
+    (("sao paulo",), "America/Sao_Paulo", "São Paulo"),
+    (("la habana", "habana"), "America/Havana", "La Habana"),
+    (("caracas",), "America/Caracas", "Caracas"),
+    (("dubai",), "Asia/Dubai", "Dubái"),
+    (("shanghai", "pekin", "beijing"), "Asia/Shanghai", "Shanghái"),
+    (("hong kong",), "Asia/Hong_Kong", "Hong Kong"),
+    (("singapur", "singapore"), "Asia/Singapore", "Singapur"),
+    (("nueva delhi", "delhi"), "Asia/Kolkata", "Nueva Delhi"),
+    (("sydney", "sidney"), "Australia/Sydney", "Sídney"),
+    (("el cairo", "cairo"), "Africa/Cairo", "El Cairo"),
+    (("johannesburgo",), "Africa/Johannesburg", "Johannesburgo"),
+    (("reikiavik",), "Atlantic/Reykjavik", "Reikiavik"),
+    (("honolulu",), "Pacific/Honolulu", "Honolulú"),
+)
+
+_TIME_INTENT = re.compile(
+    r"\b(que hora (es|tienes|tenemos|sera|hay)|dime la hora|"
+    r"la hora (actual|ahora|exacta)|hora es en|hora tiene)\b"
+)
+_SCHEDULE_INTENT = re.compile(r"\ba que hora\b")
+_DATE_INTENT = re.compile(
+    r"\b(que dia (es|estamos)|que fecha (es|estamos)|fecha (de hoy|actual)|"
+    r"a cuanto (estamos|estamos hoy)|en que dia (estamos|vivimos))\b"
+)
 
 SYSTEM_PROMPT = (
     "Eres JARVIS, el asistente personal de Gabo. Hablas español de España y le "
@@ -68,8 +118,8 @@ SYSTEM_PROMPT = (
     "pidan explícitamente más detalle. Si no sabes algo o te falta un dato, dilo con "
     "naturalidad en lugar de inventarlo. No tienes acceso a internet ni a datos en "
     "tiempo real: la única referencia temporal fiable es la fecha y hora del equipo que "
-    "se te indica abajo. Si te preguntan por la hora de otra ciudad, calcula el desfase "
-    "solo si lo conoces con certeza; si no, dilo en vez de inventar la hora."
+    "se te indica abajo. No calcules ni inventes la hora de otras ciudades: si te la "
+    "preguntan y no la tienes, dilo con naturalidad."
 )
 
 log = logging.getLogger("jarvis-voice")
@@ -193,6 +243,63 @@ def _write_wav(audio: np.ndarray, path: Path) -> None:
 def _transcribe(model: WhisperModel, wav_path: Path) -> str:
     segments, _ = model.transcribe(str(wav_path), language="es", vad_filter=True, beam_size=1)
     return " ".join(seg.text.strip() for seg in segments).strip()
+
+
+def _norm(text: str) -> str:
+    text = unicodedata.normalize("NFD", text.lower())
+    return "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
+
+
+def _time_phrase(now: datetime) -> str:
+    h, m = now.hour, now.minute
+    period = ("madrugada" if h < 6 else "mañana" if h < 12
+              else "tarde" if h < 20 else "noche")
+    if m <= 30:
+        h12 = h % 12 or 12
+        prefix = "Es la" if h12 == 1 else "Son las"
+        tail = ("" if m == 0 else " y cuarto" if m == 15 else " y media"
+                if m == 30 else " y un minuto" if m == 1 else f" y {m} minutos")
+        return f"{prefix} {_HORAS_12[h12]}{tail} de la {period}"
+    h12 = ((h + 1) % 24) % 12 or 12
+    prefix = "Es la" if h12 == 1 else "Son las"
+    falta = 60 - m
+    tail = (" menos cuarto" if falta == 15
+            else " menos un minuto" if falta == 1 else f" menos {falta} minutos")
+    return f"{prefix} {_HORAS_12[h12]}{tail} de la {period}"
+
+
+def _deterministic_answer(text: str) -> str | None:
+    t = _norm(text)
+    if _SCHEDULE_INTENT.search(t):
+        return None
+    wants_time = bool(_TIME_INTENT.search(t))
+    wants_date = bool(_DATE_INTENT.search(t))
+    if not (wants_time or wants_date):
+        return None
+    zone, nombre = None, None
+    for aliases, tz, display in _CIUDADES:
+        if any(re.search(rf"\b{re.escape(alias)}\b", t) for alias in aliases):
+            zone, nombre = tz, display
+            break
+    try:
+        now = datetime.now(ZoneInfo(zone)) if zone else datetime.now().astimezone()
+    except Exception:
+        now = datetime.now().astimezone()
+        nombre = None
+    dia = _DIAS[now.weekday()]
+    if wants_time:
+        frase = _time_phrase(now)
+        frase = frase[0].lower() + frase[1:]
+        return f"En {nombre} {frase} del {dia}." if nombre else f"Aquí {frase} del {dia}."
+    return f"Hoy es {dia}, {now.day} de {_MESES[now.month - 1]} de {now.year}."
+
+
+def _respond(text: str) -> str:
+    fixed = _deterministic_answer(text)
+    if fixed:
+        log.info("respuesta determinista: %s", fixed)
+        return fixed
+    return _ask(text)
 
 
 def _now_text() -> str:
@@ -321,7 +428,7 @@ def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) 
         log.info("transcripción vacía")
         return
     log.info("usted: %s", text)
-    answer = _ask(text)
+    answer = _respond(text)
     log.info("jarvis: %s", answer)
     try:
         _speak(answer, workdir)
@@ -354,9 +461,13 @@ def _selftest(engine, whisper: WhisperModel, workdir: Path) -> int:
     log.info("autotest STT: %s", text or "FALLO")
     if not text:
         return 1
-    answer = _ask(text)
-    log.info("autotest modelo: %s", answer or "FALLO")
+    answer = _respond(text)
+    log.info("autotest respuesta: %s", answer or "FALLO")
     if not answer:
+        return 1
+    probe = _ask("Preséntese en una frase, por favor.")
+    log.info("autotest modelo: %s", probe or "FALLO")
+    if not probe:
         return 1
     try:
         _speak(answer, workdir)
@@ -389,7 +500,10 @@ def main() -> int:
     signal.signal(signal.SIGINT, _on_signal)
     _lock = _acquire_lock()
 
-    workdir = Path(tempfile.mkdtemp(prefix="jarvis-voice-", dir="/tmp/opencode"))
+    base_tmp = Path("/tmp/opencode")
+    if not base_tmp.is_dir():
+        base_tmp = Path(tempfile.gettempdir())
+    workdir = Path(tempfile.mkdtemp(prefix="jarvis-voice-", dir=base_tmp))
     _beep_path = workdir / "beep.wav"
     _make_beep(_beep_path)
 

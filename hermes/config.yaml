@@ -2613,7 +2613,7 @@ auxiliary:
     model: nvidia/nemotron-3.5-super-vl:free
     timeout: 60
 wake_word:
-  enabled: true
+  enabled: false
   provider: sherpa
   phrase: hey jarvis
   sensitivity: 0.6
