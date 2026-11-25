@@ -2,8 +2,9 @@
 """JARVIS de voz local: «hey jarvis» -> graba -> STT -> modelo local -> voz.
 
 Reutiliza los motores que ya trae Hermes (sherpa-onnx para la palabra de
-activación, faster-whisper para el oído, Edge TTS para la voz) y habla con el
-router local de llama.cpp en http://127.0.0.1:8004/v1.
+activación y para la voz local Piper «Miro», faster-whisper para el oído) y
+habla con el router local de llama.cpp en http://127.0.0.1:8004/v1. Si la voz
+local falla, cae a Edge TTS.
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ from pathlib import Path
 
 import numpy as np
 import sounddevice as sd
+import sherpa_onnx
 import edge_tts
 from faster_whisper import WhisperModel
 
@@ -47,18 +49,33 @@ BASE_URL = os.environ.get("JARVIS_BASE_URL", "http://127.0.0.1:8004/v1").rstrip(
 MODEL = os.environ.get("JARVIS_MODEL", "deepseek-v4pro")
 MAX_ANSWER_CHARS = 800
 
+TTS_DIR = Path(os.environ.get(
+    "JARVIS_TTS_DIR",
+    str(HERMES_HOME / "cache" / "piper-voices" / "vits-piper-es_ES-miro-high"),
+))
+TTS_LENGTH_SCALE = float(os.environ.get("JARVIS_TTS_LENGTH_SCALE", "1.15"))
+TTS_SPEED = float(os.environ.get("JARVIS_TTS_SPEED", "0.9"))
+
+_DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+_MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+          "agosto", "septiembre", "octubre", "noviembre", "diciembre")
+
 SYSTEM_PROMPT = (
     "Eres JARVIS, el asistente personal de Gabo. Hablas español de España y le "
     "tratas siempre de usted, con un tono breve, cálido y directo, como un mayordomo "
     "competente. Tus respuestas se leen en voz alta: no uses markdown, listas, "
     "viñetas, emojis ni símbolos raros. Responde en una o dos frases, salvo que le "
     "pidan explícitamente más detalle. Si no sabes algo o te falta un dato, dilo con "
-    "naturalidad en lugar de inventarlo."
+    "naturalidad en lugar de inventarlo. No tienes acceso a internet ni a datos en "
+    "tiempo real: la única referencia temporal fiable es la fecha y hora del equipo que "
+    "se te indica abajo. Si te preguntan por la hora de otra ciudad, calcula el desfase "
+    "solo si lo conoces con certeza; si no, dilo en vez de inventar la hora."
 )
 
 log = logging.getLogger("jarvis-voice")
 _running = True
 _beep_path: Path | None = None
+_tts = None
 
 
 def _setup_logging() -> None:
@@ -178,11 +195,22 @@ def _transcribe(model: WhisperModel, wav_path: Path) -> str:
     return " ".join(seg.text.strip() for seg in segments).strip()
 
 
+def _now_text() -> str:
+    now = datetime.now().astimezone()
+    offset = now.strftime("%z")
+    offset = f"UTC{offset[:3]}:{offset[3:]}" if offset else "UTC"
+    return (
+        f"{_DIAS[now.weekday()]}, {now.day} de {_MESES[now.month - 1]} de {now.year}, "
+        f"{now.hour:02d}:{now.minute:02d} ({offset})"
+    )
+
+
 def _ask(text: str) -> str:
+    system = f"{SYSTEM_PROMPT}\n\nFecha y hora actuales en el equipo: {_now_text()}."
     payload = {
         "model": MODEL,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system},
             {"role": "user", "content": text},
         ],
         "max_tokens": 220,
@@ -210,17 +238,71 @@ def _clean_for_speech(text: str) -> str:
     return text
 
 
-def _speak(text: str, workdir: Path) -> None:
-    clean = _clean_for_speech(text)
-    if not clean:
-        return
+def _build_tts():
+    cfg = sherpa_onnx.OfflineTtsConfig(
+        model=sherpa_onnx.OfflineTtsModelConfig(
+            vits=sherpa_onnx.OfflineTtsVitsModelConfig(
+                model=str(TTS_DIR / "es_ES-miro-high.onnx"),
+                tokens=str(TTS_DIR / "tokens.txt"),
+                data_dir=str(TTS_DIR / "espeak-ng-data"),
+                length_scale=TTS_LENGTH_SCALE,
+                noise_scale=0.667,
+                noise_scale_w=0.8,
+            ),
+            num_threads=2,
+            provider="cpu",
+        ),
+        max_num_sentences=1,
+    )
+    if not cfg.validate():
+        raise RuntimeError("configuración TTS local inválida")
+    return sherpa_onnx.OfflineTts(cfg)
+
+
+def _speak_local(text: str, workdir: Path) -> None:
+    global _tts
+    if _tts is None:
+        log.info("cargando voz local Miro…")
+        _tts = _build_tts()
+    gen = sherpa_onnx.GenerationConfig()
+    gen.sid = 0
+    gen.speed = TTS_SPEED
+    gen.silence_scale = 0.25
+    audio = _tts.generate(text, gen)
+    if len(audio.samples) == 0:
+        raise RuntimeError("la voz local no generó audio")
+    pcm = np.clip(np.asarray(audio.samples, dtype=np.float32), -1, 1)
+    wav = workdir / "answer.wav"
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(audio.sample_rate)
+        w.writeframes((pcm * 32767).astype(np.int16).tobytes())
+    _play_wav(wav)
+
+
+def _speak_edge(text: str, workdir: Path) -> None:
     mp3 = workdir / "answer.mp3"
-    asyncio.run(edge_tts.Communicate(clean, VOICE).save(str(mp3)))
+    asyncio.run(
+        edge_tts.Communicate(text, VOICE, rate=RATE, pitch=PITCH).save(str(mp3))
+    )
     subprocess.run(
         ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", str(mp3)],
         check=False,
         timeout=120,
     )
+
+
+def _speak(text: str, workdir: Path) -> None:
+    clean = _clean_for_speech(text)
+    if not clean:
+        return
+    try:
+        _speak_local(clean, workdir)
+        return
+    except Exception as exc:
+        log.warning("voz local falló (%s); usando Edge", exc)
+    _speak_edge(clean, workdir)
 
 
 def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) -> None:
