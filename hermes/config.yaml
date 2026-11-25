@@ -2602,7 +2602,7 @@ mcp_servers:
 tts:
   provider: edge
   edge:
-    voice: es-EC-LuisNeural
+    voice: es-ES-AlvaroNeural
 voice:
   auto_tts: false
   auto_tts_mode: voice_only
@@ -2612,3 +2612,10 @@ auxiliary:
     provider: openrouter
     model: nvidia/nemotron-3.5-super-vl:free
     timeout: 60
+wake_word:
+  enabled: true
+  provider: sherpa
+  phrase: hey jarvis
+  sensitivity: 0.6
+  surface: auto
+  start_new_session: true
