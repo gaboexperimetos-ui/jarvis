@@ -126,6 +126,7 @@ SYSTEM_PROMPT = (
 
 log = logging.getLogger("jarvis-voice")
 _running = True
+_trigger = False
 _beep_path: Path | None = None
 _tts = None
 
@@ -522,11 +523,17 @@ def _on_signal(signum, _frame) -> None:
     log.info("señal %s recibida, cerrando", signum)
 
 
+def _on_trigger(_signum, _frame) -> None:
+    global _trigger
+    _trigger = True
+
+
 def main() -> int:
-    global _beep_path
+    global _beep_path, _trigger
     _setup_logging()
     signal.signal(signal.SIGTERM, _on_signal)
     signal.signal(signal.SIGINT, _on_signal)
+    signal.signal(signal.SIGUSR1, _on_trigger)
     _lock = _acquire_lock()
 
     base_tmp = Path("/tmp/opencode")
@@ -557,6 +564,17 @@ def main() -> int:
                 frame = data[:, 0]
                 floor_hist.append(_rms(frame))
                 floor = float(np.median(floor_hist)) if len(floor_hist) >= 10 else 400.0
+                if _trigger:
+                    _trigger = False
+                    log.info("activación manual (Super+J)")
+                    engine.reset()
+                    try:
+                        _handle(stream, floor, engine, whisper, workdir)
+                    except Exception as exc:
+                        log.exception("error atendiendo la petición: %s", exc)
+                    engine.reset()
+                    log.info("escuchando «%s»…", WAKE_PHRASE)
+                    continue
                 if engine.process(frame):
                     log.info("«%s» detectado", WAKE_PHRASE)
                     engine.reset()
