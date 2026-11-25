@@ -18,11 +18,14 @@ import html
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
+import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -61,25 +64,80 @@ def http_json(url: str, data: bytes | None = None, headers: dict | None = None, 
         return json.loads(r.read().decode("utf-8", "replace"))
 
 
+@contextmanager
+def _force_ipv4():
+    """Resuelve solo IPv4 mientras dure: algunas redes descartan las respuestas AAAA."""
+    orig = socket.getaddrinfo
+
+    def ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+        return orig(host, port, socket.AF_INET, type, proto, flags)
+
+    socket.getaddrinfo = ipv4_only
+    try:
+        yield
+    finally:
+        socket.getaddrinfo = orig
+
+
+def wait_for_network(host: str = "api.telegram.org", timeout: int = 120) -> bool:
+    """Espera a que el DNS resuelva. Tras encender, la red suele llegar después del arranque."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            socket.getaddrinfo(host, 443, socket.AF_INET)
+            return True
+        except OSError:
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(3)
+
+
+def _telegram_once(url: str, payload: bytes) -> tuple[bool, str]:
+    """Un envío: primero el DNS normal y, si falla, forzando IPv4."""
+    last = "sin intento"
+    for force_v4 in (False, True):
+        try:
+            if force_v4:
+                with _force_ipv4():
+                    d = http_json(url, payload, timeout=25)
+            else:
+                d = http_json(url, payload, timeout=25)
+            if d.get("ok"):
+                return True, ""
+            code = d.get("error_code")
+            if code == 429:
+                ra = int((d.get("parameters") or {}).get("retry_after") or 5)
+                return False, f"429 retry_after={ra}"
+            return False, f"rechazó ({code}): {str(d)[:160]}"
+        except Exception as e:
+            last = f"{type(e).__name__}: {str(e)[:150]}"
+    return False, last
+
+
 def telegram(text: str) -> bool:
     token, chat = env("TELEGRAM_BOT_TOKEN"), env("TELEGRAM_HOME_CHANNEL")
     if not token or not chat:
         print("Telegram: falta token o chat", file=sys.stderr)
         return False
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = urllib.parse.urlencode({
         "chat_id": chat,
         "text": text[:4000],
         "disable_web_page_preview": "true",
     }).encode()
-    try:
-        d = http_json(f"https://api.telegram.org/bot{token}/sendMessage", payload)
-        ok = bool(d.get("ok"))
-        if not ok:
-            print("Telegram rechazó:", str(d)[:200], file=sys.stderr)
-        return ok
-    except Exception as e:
-        print("Telegram error:", type(e).__name__, str(e)[:150], file=sys.stderr)
-        return False
+    delay = 2
+    for attempt in range(1, 5):
+        ok, reason = _telegram_once(url, payload)
+        if ok:
+            return True
+        print(f"Telegram intento {attempt}/4 falló: {reason}", file=sys.stderr)
+        if reason.startswith("rechazó"):
+            return False
+        if attempt < 4:
+            time.sleep(delay)
+            delay = min(delay * 2, 20)
+    print("Telegram: no se pudo entregar el resumen tras varios intentos", file=sys.stderr)
+    return False
 
 
 # ── mikareno (snapshot en disco) ───────────────────────────────────────────
@@ -369,6 +427,8 @@ def save_diary(text: str, now: datetime) -> Path | None:
 def main() -> int:
     dry = "--dry-run" in sys.argv
     now = datetime.now(LOCAL_TZ)
+    if not dry and not wait_for_network("api.telegram.org", timeout=120):
+        print("Red: el DNS no resolvió en 120 s; se intenta igualmente", file=sys.stderr)
     parts = [f"Buenos días, señor. Resumen del {DIAS[now.weekday()]} {now.day} {MESES[now.month-1]}."]
 
     sections = [
@@ -394,7 +454,9 @@ def main() -> int:
                        check=False, timeout=60, capture_output=True)
     except (OSError, subprocess.SubprocessError):
         pass
-    return 0 if ok else 1
+    if not ok:
+        print("AVISO: el resumen no se entregó por Telegram; queda guardado en el vault.", file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":

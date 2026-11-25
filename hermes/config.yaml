@@ -2619,3 +2619,9 @@ wake_word:
   sensitivity: 0.6
   surface: auto
   start_new_session: true
+
+# Avisos de ciclo de vida: silenciar el «♻️ Gateway online/restarted» en Telegram
+# (cada reinicio del gateway enviaba un mensaje extra al chat).
+platforms:
+  telegram:
+    gateway_restart_notification: false
