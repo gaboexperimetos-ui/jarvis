@@ -2095,7 +2095,7 @@ display:
   # Requested results, approvals, clarifications and command outcomes are never
   # hidden, and nothing is removed from the logs. Per-platform override under
   # display.platforms.<platform>.suppress_warning_notifications.
-  suppress_warning_notifications: false
+  suppress_warning_notifications: true
 
   # Gateway-only long-running status heartbeats.
   # When false, the platform does not receive periodic "⏳ Working — N min"
