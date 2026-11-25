@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-printf "%s bind\n" "$(date +%H:%M:%S)" >> /tmp/opencode/jarvis-listen-calls
 
 if ! systemctl --user is-active --quiet jarvis-voice.service; then
     systemctl --user start jarvis-voice.service
