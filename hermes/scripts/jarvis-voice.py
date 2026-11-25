@@ -31,20 +31,15 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import sounddevice as sd
 import sherpa_onnx
+import vosk
 import edge_tts
 from faster_whisper import WhisperModel
 
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
-HERMES_AGENT = HERMES_HOME / "hermes-agent"
-if str(HERMES_AGENT) not in sys.path:
-    sys.path.insert(0, str(HERMES_AGENT))
-
-from tools import wake_word_engines as we  # noqa: E402
 
 SAMPLE_RATE = 16000
 FRAME = 1280
 WAKE_PHRASE = os.environ.get("JARVIS_WAKE", "hey jarvis")
-SENSITIVITY = float(os.environ.get("JARVIS_SENSITIVITY", "0.6"))
 VOICE = os.environ.get("JARVIS_VOICE", "es-ES-AlvaroNeural")
 RATE = os.environ.get("JARVIS_RATE", "-10%")
 PITCH = os.environ.get("JARVIS_PITCH", "-2Hz")
@@ -58,6 +53,13 @@ TTS_DIR = Path(os.environ.get(
 ))
 TTS_LENGTH_SCALE = float(os.environ.get("JARVIS_TTS_LENGTH_SCALE", "1.15"))
 TTS_SPEED = float(os.environ.get("JARVIS_TTS_SPEED", "0.9"))
+
+VOSK_DIR = Path(os.environ.get(
+    "JARVIS_VOSK_DIR",
+    str(HERMES_HOME / "cache" / "vosk" / "vosk-model-small-es-0.42"),
+))
+WAKE_GRAMMAR = json.dumps(["hey jarvis", "jarvis", "[unk]"])
+_WAKE_RE = re.compile(r"\b(jarvis|yarvis|yarbis|jarbis)\b")
 
 _DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 _MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
@@ -153,18 +155,45 @@ def _acquire_lock():
     return handle
 
 
+class _VoskWake:
+    """Detector de «hey jarvis» con Vosk español y gramática restringida."""
+
+    def __init__(self) -> None:
+        vosk.SetLogLevel(-1)
+        if not (VOSK_DIR / "am").is_dir():
+            raise RuntimeError(f"modelo Vosk no encontrado en {VOSK_DIR}")
+        self._model = vosk.Model(str(VOSK_DIR))
+        self._rec = self._new_rec()
+
+    def _new_rec(self):
+        return vosk.KaldiRecognizer(self._model, SAMPLE_RATE, WAKE_GRAMMAR)
+
+    def process(self, frame: np.ndarray) -> bool:
+        pcm = np.ascontiguousarray(frame, dtype=np.int16).tobytes()
+        if self._rec.AcceptWaveform(pcm):
+            text = json.loads(self._rec.Result()).get("text", "")
+        else:
+            text = json.loads(self._rec.PartialResult()).get("partial", "")
+        if _is_wake_text(text):
+            self.reset()
+            return True
+        return False
+
+    def reset(self) -> None:
+        self._rec = self._new_rec()
+
+    def close(self) -> None:
+        self._rec = None
+        self._model = None
+
+
+def _is_wake_text(text: str) -> bool:
+    return bool(_WAKE_RE.search(_norm(text)))
+
+
 def _build_engine():
-    cfg = {
-        "phrase": WAKE_PHRASE,
-        "sensitivity": SENSITIVITY,
-        "profile_routing": False,
-        "capture": "local",
-        "sherpa": {"model_dir": ""},
-    }
-    engine = we._SherpaKwsEngine.__new__(we._SherpaKwsEngine)
-    engine.last_match = None
-    engine._build(cfg, cfg["sherpa"], we._ww())
-    return engine
+    log.info("cargando detector español Vosk…")
+    return _VoskWake()
 
 
 def _rms(frame: np.ndarray) -> float:
@@ -438,7 +467,7 @@ def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) 
 
 def _selftest(engine, whisper: WhisperModel, workdir: Path) -> int:
     hey = workdir / "hey_jarvis.wav"
-    _synth_wav("Hey Jarvis", "en-US-GuyNeural", hey)
+    _synth_wav("Hey Jarvis", "es-ES-AlvaroNeural", hey)
     with wave.open(str(hey), "rb") as w:
         raw = w.readframes(w.getnframes())
     audio = np.frombuffer(raw, dtype=np.int16)

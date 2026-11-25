@@ -6,7 +6,7 @@ export HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 PY=""
 for cand in "$HERMES_HOME"/installs/*/environments/*/venv/bin/python; do
     [ -x "$cand" ] || continue
-    if "$cand" -c 'import sherpa_onnx, sounddevice, faster_whisper, edge_tts' >/dev/null 2>&1; then
+    if "$cand" -c 'import sherpa_onnx, sounddevice, faster_whisper, edge_tts, vosk' >/dev/null 2>&1; then
         PY="$cand"
         break
     fi
