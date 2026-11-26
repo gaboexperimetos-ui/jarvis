@@ -1,0 +1,3413 @@
+{
+  "version": 5,
+  "desc_limit": 60,
+  "manifest": {
+    "web/DESCRIPTION.md": [
+      1795182081944878058,
+      137,
+      6458787,
+      1795724355019362939,
+      "69c9c9f9aef6a0719d0d71082120a8b1"
+    ],
+    "web/blocked-page-recovery/SKILL.md": [
+      1795182081945384491,
+      5175,
+      6458784,
+      1795724355018954346,
+      "5cf72239b3e644d7e83ee973b3694609"
+    ],
+    "software-development/codebase-inspection/SKILL.md": [
+      1795182081943938151,
+      3612,
+      6458790,
+      1795724355019777744,
+      "a9a23052862d1954b5231ad8c21a664f"
+    ],
+    "software-development/dogfood/SKILL.md": [
+      1795182081943938151,
+      8652,
+      6458792,
+      1795724355019999143,
+      "66ded2c63a171e681f3a3d269b62d36a"
+    ],
+    "software-development/github/SKILL.md": [
+      1795182081944071391,
+      2446,
+      6458798,
+      1795724355020749673,
+      "0369eea527f7241672f33a41b68a2351"
+    ],
+    "software-development/requesting-code-review/SKILL.md": [
+      1795182081944878058,
+      8781,
+      6458819,
+      1795724355023776300,
+      "76d40be267e82dc1257114a5de3eedab"
+    ],
+    "software-development/simplify-code/SKILL.md": [
+      1795182081944878058,
+      14694,
+      6458821,
+      1795724355024291795,
+      "4122fa08bba6105c0c66b01e932512e9"
+    ],
+    "software-development/spike/SKILL.md": [
+      1795182081944878058,
+      8723,
+      6458823,
+      1795724355024651706,
+      "5d62c1005889b74c72d0da32953d74f3"
+    ],
+    "software-development/systematic-debugging/SKILL.md": [
+      1795182081944878058,
+      14059,
+      6458825,
+      1795724355024996228,
+      "be298aab5cce9739a14765d1d3dc4f9d"
+    ],
+    "software-development/test-driven-development/SKILL.md": [
+      1795182081944878058,
+      10300,
+      6458827,
+      1795724355025242214,
+      "c1aceeec8301d9ee8ed3eec57f42e6cd"
+    ],
+    "software-development/ast-grep/SKILL.md": [
+      1795233135971488220,
+      13065,
+      6458843,
+      1795724355027569447,
+      "b5f066dc425548f3f8dc5123fd7ab230"
+    ],
+    "software-development/code-wiki/SKILL.md": [
+      1795233139099073881,
+      14020,
+      6458852,
+      1795724355028597953,
+      "13508504af6ce3fb859888ab1207b8cb"
+    ],
+    "software-development/python-debugpy/SKILL.md": [
+      1795233144554335596,
+      15008,
+      6458854,
+      1795724355028794785,
+      "9b9227d48eafae9252294e047ac0071e"
+    ],
+    "software-development/rest-graphql-debug/SKILL.md": [
+      1795233147537278917,
+      15636,
+      6458856,
+      1795724355029008019,
+      "2dc1f41b14b41a16ef8f42be46754a8a"
+    ],
+    "software-development/subagent-driven-development/SKILL.md": [
+      1795233141784326231,
+      10699,
+      6458861,
+      1795724355029546327,
+      "d26ff9d27555b05d31de6e65545db4db"
+    ],
+    "social-media/DESCRIPTION.md": [
+      1795182081943722916,
+      151,
+      6458865,
+      1795724355029963677,
+      "d54f750ff827117e4b40c9f76d64fb00"
+    ],
+    "social-media/xurl/SKILL.md": [
+      1795182081943839876,
+      16345,
+      6458864,
+      1795724355029848509,
+      "2312530a9deef9748cec23b384f47f59"
+    ],
+    "research/DESCRIPTION.md": [
+      1795182081942411109,
+      179,
+      6458881,
+      1795724355031585656,
+      "e7c50d312d69f35ac7fae94423f1974d"
+    ],
+    "research/arxiv/SKILL.md": [
+      1795182081943317333,
+      10061,
+      6458868,
+      1795724355030247434,
+      "a007079c25d720cc360aa3bcb64c5f71"
+    ],
+    "research/competitor-news-monitor/SKILL.md": [
+      1795182081943385211,
+      4619,
+      6458872,
+      1795724355030648844,
+      "81445419176c38884a6f948b0a899940"
+    ],
+    "research/grounded-citations/SKILL.md": [
+      1795182081943385211,
+      12644,
+      6458874,
+      1795724355030851567,
+      "03a41bc3b06db1139382ebc259282f19"
+    ],
+    "research/blogwatcher/SKILL.md": [
+      1795233172052360243,
+      6423,
+      6458883,
+      1795724355031755838,
+      "789a78cb9d1b9ccbb3b4b9830a066f91"
+    ],
+    "research/domain-intel/SKILL.md": [
+      1795233177360327366,
+      4535,
+      6458887,
+      1795724355032273999,
+      "74af39a4370f33927ef6282e680095cf"
+    ],
+    "research/llm-wiki/SKILL.md": [
+      1795233189173075689,
+      20121,
+      6458889,
+      1795724355032974654,
+      "5a7972a255b4e17a9e775eabdf3c0a68"
+    ],
+    "research/osint-investigation/SKILL.md": [
+      1795233180500927000,
+      11750,
+      6458923,
+      1795724355047235918,
+      "eb5d4d019fd43e5ac08f383e91af127b"
+    ],
+    "research/parallel-cli/SKILL.md": [
+      1795233186513719059,
+      10896,
+      6458925,
+      1795724355047682584,
+      "d3795b4a05b72a5d494ab1a9793f0396"
+    ],
+    "research/rss-feeds/SKILL.md": [
+      1795233174688715723,
+      4557,
+      6458929,
+      1795724355048867916,
+      "8ea9f76170b400a8aadc5ec7f5196c1a"
+    ],
+    "research/scrapling/SKILL.md": [
+      1795233183884576841,
+      8974,
+      6458931,
+      1795724355049657230,
+      "1b7a50b9c73ec9c1ddf96cd95c236571"
+    ],
+    "productivity/DESCRIPTION.md": [
+      1795182081939929703,
+      114,
+      6459017,
+      1795724355092178345,
+      "7caf452e2390224547d187f56a51dfcd"
+    ],
+    "productivity/document-to-action-items/SKILL.md": [
+      1795182081940012098,
+      3913,
+      6458934,
+      1795724355052274422,
+      "aed140e0f3db49b334eb4361d18fab3e"
+    ],
+    "productivity/google-workspace/SKILL.md": [
+      1795182081940012098,
+      14241,
+      6458936,
+      1795724355054056684,
+      "32ece0e05f6ed76b19783ec8b3f91925"
+    ],
+    "productivity/maps/SKILL.md": [
+      1795182081940278779,
+      6705,
+      6458947,
+      1795724355060736884,
+      "065b86a0d3845d380f500f6795825b2a"
+    ],
+    "productivity/meeting-action-items/SKILL.md": [
+      1795182081940575227,
+      3798,
+      6458951,
+      1795724355062282909,
+      "51406f94bc25b9f4255b1c08612236b2"
+    ],
+    "productivity/microsoft-office/SKILL.md": [
+      1795182081940782727,
+      8073,
+      6458954,
+      1795724355064198554,
+      "9bccd32cd61dd982fd13700f71b1cd4e"
+    ],
+    "productivity/pdf/SKILL.md": [
+      1795182081942167581,
+      15308,
+      6458988,
+      1795724355086803004,
+      "1e050a7169a74ce6e5b4ffa56ced11d4"
+    ],
+    "productivity/product-price-monitor/SKILL.md": [
+      1795182081942411109,
+      4396,
+      6459012,
+      1795724355091354166,
+      "8ff58e988ddcd1e4396f57f0448ef197"
+    ],
+    "productivity/teams-meeting-pipeline/SKILL.md": [
+      1795182081942411109,
+      7206,
+      6459014,
+      1795724355091679732,
+      "3a8da914d46d7429ab9637140f2fb323"
+    ],
+    "productivity/weekly-review-planning/SKILL.md": [
+      1795182081942411109,
+      3955,
+      6459016,
+      1795724355091969370,
+      "430e548f8f95bd83f3366fcfe2708452"
+    ],
+    "productivity/decision-questionnaire/SKILL.md": [
+      1795233169469343947,
+      4171,
+      6459019,
+      1795724355092575306,
+      "8e6133471d7696bb0134acef880f89ea"
+    ],
+    "productivity/here-now/SKILL.md": [
+      1795233164102331734,
+      8782,
+      6459024,
+      1795724355093541585,
+      "a62030001d24a25259f623385c06a4c7"
+    ],
+    "productivity/live-dashboard/SKILL.md": [
+      1795233166851147534,
+      8328,
+      6459026,
+      1795724355094306792,
+      "4c1688e5cece04a464d653b2373892dc"
+    ],
+    "note-taking/DESCRIPTION.md": [
+      1795182081939767648,
+      146,
+      6459030,
+      1795724355095602715,
+      "da7083e903d53abdf96d06c456959494"
+    ],
+    "note-taking/obsidian/SKILL.md": [
+      1795182081939929703,
+      3092,
+      6459029,
+      1795724355095256239,
+      "90dd7d5e33ddd6746fdb973b21e6485e"
+    ],
+    "media/DESCRIPTION.md": [
+      1795182081939294238,
+      98,
+      6459038,
+      1795724355096840156,
+      "cdca050677f7586f582f2809096afa56"
+    ],
+    "media/youtube-content/SKILL.md": [
+      1795182081939713817,
+      4377,
+      6459033,
+      1795724355096035684,
+      "4ef8e7097f3f8066e17337cb83dcd078"
+    ],
+    "media/gif-search/SKILL.md": [
+      1795233191859549534,
+      2720,
+      6459040,
+      1795724355097081312,
+      "cdb8d2856d53767e12e64c0ab32f3d3b"
+    ],
+    "media/songsee/SKILL.md": [
+      1795233194474499790,
+      2336,
+      6459042,
+      1795724355097350792,
+      "410a4e500131c60b73edcfeed125cfa3"
+    ],
+    "email/DESCRIPTION.md": [
+      1795182081938893645,
+      101,
+      6459051,
+      1795724355098782982,
+      "4be60e6df2eb4b9cba8ddad557e41057"
+    ],
+    "email/email-inbox-triage/SKILL.md": [
+      1795182081939022417,
+      5447,
+      6459045,
+      1795724355097802577,
+      "b286da3f85c70cefde0c16ba5ae5d2d4"
+    ],
+    "email/himalaya/SKILL.md": [
+      1795182081939022417,
+      7272,
+      6459047,
+      1795724355098114497,
+      "5bc714c5717f302f73c013e7cf77ce44"
+    ],
+    "devops/sdlc-review/SKILL.md": [
+      1795182081938893645,
+      9073,
+      6459054,
+      1795724355099204680,
+      "4f6bbdf50453f1211664da81faa23dad"
+    ],
+    "devops/coding-orchestrator/SKILL.md": [
+      1795232798572994341,
+      4469,
+      6459056,
+      1795724355099275228,
+      "4fb21481ab214910f6b08920865adf11"
+    ],
+    "devops/docker-management/SKILL.md": [
+      1795233152895073878,
+      10426,
+      6459058,
+      1795724355100220762,
+      "0881e4efe3c168015ca5ff90764ccb1a"
+    ],
+    "devops/pinggy-tunnel/SKILL.md": [
+      1795233158389491667,
+      14117,
+      6459060,
+      1795724355101275263,
+      "51344dcbfe9ee77eb8c8655f35239ac4"
+    ],
+    "devops/watchers/SKILL.md": [
+      1795233155566102989,
+      4512,
+      6459067,
+      1795724355103239965,
+      "b200b13f967ffc60670e00dd6dd9c9cd"
+    ],
+    "creative/DESCRIPTION.md": [
+      1795182081930726506,
+      116,
+      6459241,
+      1795724355154193776,
+      "46e64cc16943251684fdc5126fddf033"
+    ],
+    "creative/architecture-diagram/SKILL.md": [
+      1795182081930843747,
+      5830,
+      6459070,
+      1795724355103803772,
+      "580c2fe8a1e76857dff79af21b466e62"
+    ],
+    "creative/ascii-video/SKILL.md": [
+      1795182081931041379,
+      15011,
+      6459075,
+      1795724355104636427,
+      "cb017f3ca2f771147a41430c5721560c"
+    ],
+    "creative/baoyu-infographic/SKILL.md": [
+      1795182081931912056,
+      10490,
+      6459087,
+      1795724355107018495,
+      "6da76db092943a156bcc61dd854383e1"
+    ],
+    "creative/claude-design/SKILL.md": [
+      1795182081932860590,
+      25204,
+      6459137,
+      1795724355121418101,
+      "1352559bea8ac5b0623da83df41742b3"
+    ],
+    "creative/humanizer/SKILL.md": [
+      1795182081933640226,
+      34463,
+      6459140,
+      1795724355121894652,
+      "d9f8905ea5969ba66305cda0dfa1f87c"
+    ],
+    "creative/manim-video/SKILL.md": [
+      1795182081933791560,
+      12157,
+      6459143,
+      1795724355122360844,
+      "2a646d0049f6bf974c854a92e0435289"
+    ],
+    "creative/p5js/SKILL.md": [
+      1795182081934626721,
+      27534,
+      6459163,
+      1795724355126354170,
+      "9fbb0f962c7608d35a14ffab5f067644"
+    ],
+    "creative/popular-web-designs/SKILL.md": [
+      1795182081935262306,
+      9869,
+      6459183,
+      1795724355129798217,
+      "d1273c5836c9c6becaddab897b514fe9"
+    ],
+    "creative/songwriting-and-ai-music/SKILL.md": [
+      1795182081937660746,
+      10963,
+      6459240,
+      1795724355153777659,
+      "01af829788c9bb87b71544d2ff3411e5"
+    ],
+    "autonomous-ai-agents/DESCRIPTION.md": [
+      1795182081928999880,
+      211,
+      6459249,
+      1795724355160032694,
+      "c60a15744ecd672feb6fcce626191da4"
+    ],
+    "autonomous-ai-agents/claude-code/SKILL.md": [
+      1795182081929340881,
+      35959,
+      6459244,
+      1795724355156038747,
+      "b5aa6bdb8484fcc04cee3beb4c63bc70"
+    ],
+    "autonomous-ai-agents/codex/SKILL.md": [
+      1795182081929340881,
+      5852,
+      6459246,
+      1795724355159291472,
+      "6616d33f09f2291ed866a74c51684074"
+    ],
+    "autonomous-ai-agents/computer-use/SKILL.md": [
+      1795182081929340881,
+      17989,
+      6459248,
+      1795724355159793121,
+      "a2e6fb37f6a6ef3c0dd7e1ffc2a91c53"
+    ],
+    "autonomous-ai-agents/opencode/SKILL.md": [
+      1795233133286267191,
+      7297,
+      6459251,
+      1795724355160477977,
+      "32e2695933160aca163d84328c64259d"
+    ],
+    "autonomous-ai-agents/hermes-agent/SKILL.md": [
+      1795182081929340881,
+      15952,
+      6459253,
+      1795724355161013560,
+      "f2c7ed73e7751efc654649add7bfd7f4"
+    ],
+    "apple/DESCRIPTION.md": [
+      1795182081928959233,
+      137,
+      6459287,
+      1795724355170156279,
+      "a0c16363f096c201d06a67ab424b3d9d"
+    ],
+    "apple/apple-notes/SKILL.md": [
+      1795182081928999880,
+      2394,
+      6459280,
+      1795724355169045979,
+      "3a5d206019095e0b633a53f575526401"
+    ],
+    "apple/apple-reminders/SKILL.md": [
+      1795182081928999880,
+      3606,
+      6459282,
+      1795724355169315609,
+      "6bf59594bfe7e4224d4136404a78f6de"
+    ],
+    "apple/findmy/SKILL.md": [
+      1795182081928999880,
+      3823,
+      6459284,
+      1795724355169678475,
+      "bee95f1a66807ae46c23be3bffc485d8"
+    ],
+    "apple/imessage/SKILL.md": [
+      1795182081928999880,
+      2442,
+      6459286,
+      1795724355169949067,
+      "7809fd098a78a6588535bb57cafb5d73"
+    ],
+    "agent-introspection-debugging/SKILL.md": [
+      1795233341398965525,
+      5627,
+      6459333,
+      1795724355184914313,
+      "a583595774472c9e21fc6c007a8c53c3"
+    ],
+    "agent-self-evaluation/SKILL.md": [
+      1795233341461342874,
+      8303,
+      6459345,
+      1795724355187385589,
+      "a8e4ebf3cacb2450534d86f207a767ab"
+    ],
+    "agent-sort/SKILL.md": [
+      1795233341397965497,
+      5922,
+      6459347,
+      1795724355187705234,
+      "61f2fe48ed54591b13f490fa440e6740"
+    ],
+    "ai-regression-testing/SKILL.md": [
+      1795233341400365313,
+      11659,
+      6459349,
+      1795724355188049976,
+      "e9a50854fda90453c4778f91ed20a008"
+    ],
+    "architecture-decision-records/SKILL.md": [
+      1795233341466967410,
+      7182,
+      6459351,
+      1795724355188341278,
+      "8042940330b83d45e625b3f3c1f8ef3e"
+    ],
+    "brownfield-retrospective/SKILL.md": [
+      1795233341467967438,
+      11440,
+      6459353,
+      1795724355189004162,
+      "5a55c3ef34f5a0d2039cb79049060263"
+    ],
+    "browser-qa/SKILL.md": [
+      1795233341469253454,
+      4101,
+      6459355,
+      1795724355189333094,
+      "fc9220c97eb8434da47ec97915154a14"
+    ],
+    "ck/SKILL.md": [
+      1795233341470242425,
+      5862,
+      6459368,
+      1795724355191996744,
+      "a0d6a2cdb8da5920ca0d05cd4f5e1007"
+    ],
+    "click-path-audit/SKILL.md": [
+      1795233341478205627,
+      7975,
+      6459370,
+      1795724355192709874,
+      "d3f1e800601f21a371eb3bde0fc10d68"
+    ],
+    "code-tour/SKILL.md": [
+      1795233341403230195,
+      8030,
+      6459372,
+      1795724355192989623,
+      "bd8798e132d812cb0f29e60b1a396412"
+    ],
+    "codebase-onboarding/SKILL.md": [
+      1795233341479132295,
+      8235,
+      6459374,
+      1795724355193263681,
+      "88d9f13c25bace2ea6133a62bf6ec33a"
+    ],
+    "codehealth-mcp/SKILL.md": [
+      1795233341480058783,
+      7463,
+      6459376,
+      1795724355193581353,
+      "ce72fc7fa130c58f37ed547cede10856"
+    ],
+    "config-gc/SKILL.md": [
+      1795233341480928283,
+      7942,
+      6459378,
+      1795724355193838679,
+      "e6990a43d28e91e6e271a73eda047ae8"
+    ],
+    "configure-ecc/SKILL.md": [
+      1795233341401240507,
+      7979,
+      6459380,
+      1795724355194067092,
+      "4b57dc00c5da7132323894f92d73f0c0"
+    ],
+    "context-budget/SKILL.md": [
+      1795233341480967798,
+      6225,
+      6459382,
+      1795724355194299692,
+      "d1b4165313fcb696ab687b79916fad4b"
+    ],
+    "continuous-learning-v2/SKILL.md": [
+      1795233341405965719,
+      14461,
+      6459398,
+      1795724355196862260,
+      "612b0aafbcf068309996cbd15a6014f7"
+    ],
+    "continuous-learning/SKILL.md": [
+      1795233341404083824,
+      6128,
+      6459401,
+      1795724355197258550,
+      "170f8e9f455b9b19cad68f1fa189e542"
+    ],
+    "conventional-commit-review/SKILL.md": [
+      1795233341497163065,
+      4647,
+      6459405,
+      1795724355197750371,
+      "47a5b0e59066f7a57ca614950e737512"
+    ],
+    "council-multi-model/SKILL.md": [
+      1795233341420215560,
+      5987,
+      6459409,
+      1795724355198355847,
+      "160ff305e071a1b0b1538b206fb31a07"
+    ],
+    "council/SKILL.md": [
+      1795233341419278333,
+      6358,
+      6459411,
+      1795724355198633111,
+      "d9c4655bed0f84913dc9fe42c43c3e51"
+    ],
+    "deepseek-harness-setup/SKILL.md": [
+      1795233341402331221,
+      3717,
+      6459413,
+      1795724355198913321,
+      "8cbdcd00988d43a544fd6c4f80b9cbf0"
+    ],
+    "delivery-gate/SKILL.md": [
+      1795233341481967826,
+      6129,
+      6459417,
+      1795724355200113242,
+      "54c45b66abee9af179cd6969d6a4a100"
+    ],
+    "dev-team/SKILL.md": [
+      1795233341422126052,
+      8318,
+      6459419,
+      1795724355200555218,
+      "0fff0912bed41fafd56e40004920c167"
+    ],
+    "e2e-testing/SKILL.md": [
+      1795233341423136353,
+      8170,
+      6459421,
+      1795724355200879091,
+      "7cf8317841a6033cce3d4bb0ae8ebf36"
+    ],
+    "ecc-guide/SKILL.md": [
+      1795233341483967881,
+      5713,
+      6459423,
+      1795724355201180311,
+      "9b5901c5d4f6e847e4e846a2092317bf"
+    ],
+    "ecc-recipes/SKILL.md": [
+      1795233341485265806,
+      6451,
+      6459425,
+      1795724355201463256,
+      "20630905de0b03c1e6e3098cbdb5d79e"
+    ],
+    "error-handling/SKILL.md": [
+      1795233341424107914,
+      10984,
+      6459427,
+      1795724355201653246,
+      "32e0c6c3ebe939b7bb4b5e5a06433cf6"
+    ],
+    "eval-harness/SKILL.md": [
+      1795233341425109522,
+      8738,
+      6459429,
+      1795724355201892388,
+      "013e8f21c52364c56de49e898b261583"
+    ],
+    "finance/excel-author/SKILL.md": [
+      1795233197570666473,
+      11057,
+      6459434,
+      1795724355202606459,
+      "11c43847fd3d5ca161b8c973c0707b76"
+    ],
+    "git-workflow/SKILL.md": [
+      1795233341496333353,
+      15308,
+      6459436,
+      1795724355202884315,
+      "71c3fc0e38e7685cfd81ed1100a46fd0"
+    ],
+    "growth-log/SKILL.md": [
+      1795233341486134361,
+      7034,
+      6459438,
+      1795724355203125101,
+      "a38f792548231079923c0c6e44354f63"
+    ],
+    "health/fitness-nutrition/SKILL.md": [
+      1795233208578814043,
+      9822,
+      6459446,
+      1795724355204429459,
+      "c9698cebf48947a3b3e889a08a7c3aaa"
+    ],
+    "hookify-rules/SKILL.md": [
+      1795233341425970020,
+      4801,
+      6459448,
+      1795724355204777567,
+      "a0f258b6d8001b68ec0bc11ecc8eaa5e"
+    ],
+    "inherit-legacy-style/SKILL.md": [
+      1795233341487325732,
+      8416,
+      6459450,
+      1795724355205020597,
+      "59231dd8e041ebbf65639f7abd19cdab"
+    ],
+    "intent-driven-development/SKILL.md": [
+      1795233341488393900,
+      20774,
+      6459452,
+      1795724355205242828,
+      "72fe8bb6f5c7321159e0220f51b3217b"
+    ],
+    "iterative-retrieval/SKILL.md": [
+      1795233341426860362,
+      6786,
+      6459454,
+      1795724355205475718,
+      "daf2355d75d3125f9677aa4543c3c178"
+    ],
+    "living-docs-governance/SKILL.md": [
+      1795233341489285476,
+      9042,
+      6459456,
+      1795724355205742884,
+      "eb175eb8a90bec0b945fb106cbf6caef"
+    ],
+    "loop-design-check/SKILL.md": [
+      1795233341490178003,
+      11941,
+      6459458,
+      1795724355206236217,
+      "ae9562ca5ddd1213f3eaff83938d1006"
+    ],
+    "mcp/mcporter/SKILL.md": [
+      1795233161046250272,
+      3080,
+      6459461,
+      1795724355206625353,
+      "8cc8cd5e3a7f14bc65b8cadbce4153ce"
+    ],
+    "mlops/inference/DESCRIPTION.md": [
+      1795233214968533242,
+      161,
+      6459480,
+      1795724355209546521,
+      "8d1c86eb713db536af0c5808b0b6ee7f"
+    ],
+    "mlops/inference/llama-cpp/SKILL.md": [
+      1795233214968792796,
+      8880,
+      6459472,
+      1795724355208165377,
+      "528314737055dc7a5b5087f375ba85c5"
+    ],
+    "mlops/inference/serving-llms-vllm/SKILL.md": [
+      1795233214968679834,
+      9335,
+      6459479,
+      1795724355209319160,
+      "4078be167d9bae3b9dbb4b6310ec1d66"
+    ],
+    "mlops/models/DESCRIPTION.md": [
+      1795233211519563333,
+      253,
+      6459487,
+      1795724355210799622,
+      "37fb4eab6c7e9544e125663c5070fe55"
+    ],
+    "mlops/models/segment-anything-model/SKILL.md": [
+      1795233211519692919,
+      13358,
+      6459486,
+      1795724355210546483,
+      "0331c5e2d8f80b4e3883a134d32bf8a2"
+    ],
+    "mlops/peft/SKILL.md": [
+      1795233218053219943,
+      11997,
+      6459492,
+      1795724355211481542,
+      "6de0e6f5bd40995feaec64a6b3d624c8"
+    ],
+    "plan-canvas/SKILL.md": [
+      1795233341426966301,
+      8676,
+      6459494,
+      1795724355211822497,
+      "9e4d30b86c81cb4f7518043fac842aee"
+    ],
+    "plankton-code-quality/SKILL.md": [
+      1795233341428966356,
+      12896,
+      6459496,
+      1795724355212107246,
+      "d3cecc5e58adbdf7ea77646cb4972636"
+    ],
+    "product-lens/SKILL.md": [
+      1795233341490982626,
+      3373,
+      6459498,
+      1795724355212374842,
+      "9548d2d1a1506fe450ab1ec4f8563c1b"
+    ],
+    "production-audit/SKILL.md": [
+      1795233341429966384,
+      7727,
+      6459500,
+      1795724355212636918,
+      "4e4d2be0658bc885d88cb97573bc1314"
+    ],
+    "repo-scan/SKILL.md": [
+      1795233341491858493,
+      7242,
+      6459502,
+      1795724355213278783,
+      "039f01fb4ab1148dc7cbaaa32988a3c8"
+    ],
+    "rules-distill/SKILL.md": [
+      1795233341491968103,
+      9586,
+      6459507,
+      1795724355215211119,
+      "2ca1694a745f88d1dc7c3206b77a9b66"
+    ],
+    "santa-method/SKILL.md": [
+      1795233341495313706,
+      12991,
+      6459509,
+      1795724355215484556,
+      "d02d741bf163e6df382438b53d7e827f"
+    ],
+    "security/oss-forensics/SKILL.md": [
+      1795233205665059589,
+      20511,
+      6459522,
+      1795724355217253092,
+      "abd50701e602dfba83c34c7269aa99e3"
+    ],
+    "security/sherlock/SKILL.md": [
+      1795233200202701842,
+      6021,
+      6459524,
+      1795724355217573198,
+      "3a7b7f536c0893f8912a2607a3942b5b"
+    ],
+    "security/web-pentest/SKILL.md": [
+      1795233202827370938,
+      13153,
+      6459537,
+      1795724355219501567,
+      "28e77df662a8fbfaff021e3fc1a8215a"
+    ],
+    "skill-comply/SKILL.md": [
+      1795233341431396114,
+      3865,
+      6459565,
+      1795724355225232010,
+      "1f996efa1ed2b33aebcd23f9a75d162e"
+    ],
+    "skill-host-compat/SKILL.md": [
+      1795233341448966911,
+      3788,
+      6459568,
+      1795724355225776851,
+      "2395b77794e4a56db35ef4f12c9ce2d3"
+    ],
+    "skill-scout/SKILL.md": [
+      1795233341450298609,
+      4486,
+      6459570,
+      1795724355226120952,
+      "4714797bbde17fb2368a00d049558e8b"
+    ],
+    "skill-stocktake/SKILL.md": [
+      1795233341451205320,
+      12389,
+      6459576,
+      1795724355227410091,
+      "7df988e5556bbfd9a2e56a409eb5a86a"
+    ],
+    "story-lifecycle/SKILL.md": [
+      1795233341455393997,
+      17744,
+      6459580,
+      1795724355228158848,
+      "2e3a35a45d35a877c9c022992950ffb6"
+    ],
+    "strategic-compact/SKILL.md": [
+      1795233341457233802,
+      9805,
+      6459582,
+      1795724355228463404,
+      "945ce3d0d71e0f433f8d42223a4af8c5"
+    ],
+    "tdd-workflow/SKILL.md": [
+      1795233341458293809,
+      23172,
+      6459584,
+      1795724355229379137,
+      "045ae7d3054e96c49ffeaea65aadb557"
+    ],
+    "ui-canvas/SKILL.md": [
+      1795233341427966329,
+      12227,
+      6459586,
+      1795724355229814130,
+      "2a77cd30ef9b56bc86e81660b57df5cd"
+    ],
+    "unified-memory/SKILL.md": [
+      1795233341396965470,
+      7871,
+      6459588,
+      1795724355230263139,
+      "4d9b7db74e1ebed8fc5069ad2091418d"
+    ],
+    "verification-loop/SKILL.md": [
+      1795233341459141494,
+      3972,
+      6459590,
+      1795724355230762043,
+      "b2a0e03863c769761cbd4e9b0dbc8532"
+    ],
+    "web-development/publish-site/SKILL.md": [
+      1795233150276120741,
+      8652,
+      6459593,
+      1795724355231394700,
+      "f1da5eef3bf0be385283e1126f9cfd26"
+    ],
+    "windows-desktop-e2e/SKILL.md": [
+      1795233341460280076,
+      30577,
+      6459595,
+      1795724355231792032,
+      "764c305db37c736ef8f2247c61123c32"
+    ]
+  },
+  "skills": [
+    {
+      "skill_name": "agent-introspection-debugging",
+      "category": "agent-introspection-debugging",
+      "frontmatter_name": "agent-introspection-debugging",
+      "rel": "agent-introspection-debugging/SKILL.md",
+      "description": "Structured self-debugging workflow for AI agent failures...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "agent-self-evaluation",
+      "category": "agent-self-evaluation",
+      "frontmatter_name": "agent-self-evaluation",
+      "rel": "agent-self-evaluation/SKILL.md",
+      "description": "Use after completing any non-trivial task. The agent...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "agent-sort",
+      "category": "agent-sort",
+      "frontmatter_name": "agent-sort",
+      "rel": "agent-sort/SKILL.md",
+      "description": "Build an evidence-backed ECC install plan for a specific...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ai-regression-testing",
+      "category": "ai-regression-testing",
+      "frontmatter_name": "ai-regression-testing",
+      "rel": "ai-regression-testing/SKILL.md",
+      "description": "Regression testing strategies for AI-assisted...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "apple-notes",
+      "category": "apple",
+      "frontmatter_name": "apple-notes",
+      "rel": "apple/apple-notes/SKILL.md",
+      "description": "Manage Apple Notes via memo CLI: create, search, edit.",
+      "platforms": [
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "apple-reminders",
+      "category": "apple",
+      "frontmatter_name": "apple-reminders",
+      "rel": "apple/apple-reminders/SKILL.md",
+      "description": "Apple Reminders via remindctl: add, list, complete.",
+      "platforms": [
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "findmy",
+      "category": "apple",
+      "frontmatter_name": "findmy",
+      "rel": "apple/findmy/SKILL.md",
+      "description": "Track Apple devices/AirTags via FindMy.app on macOS.",
+      "platforms": [
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "imessage",
+      "category": "apple",
+      "frontmatter_name": "imessage",
+      "rel": "apple/imessage/SKILL.md",
+      "description": "Send and receive iMessages/SMS via the imsg CLI on macOS.",
+      "platforms": [
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "architecture-decision-records",
+      "category": "architecture-decision-records",
+      "frontmatter_name": "architecture-decision-records",
+      "rel": "architecture-decision-records/SKILL.md",
+      "description": "Capture architectural decisions as numbered ADR markdown...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "claude-code",
+      "category": "autonomous-ai-agents",
+      "frontmatter_name": "claude-code",
+      "rel": "autonomous-ai-agents/claude-code/SKILL.md",
+      "description": "Delegate coding to Claude Code CLI (features, PRs).",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "codex",
+      "category": "autonomous-ai-agents",
+      "frontmatter_name": "codex",
+      "rel": "autonomous-ai-agents/codex/SKILL.md",
+      "description": "Delegate coding to OpenAI Codex CLI (features, PRs).",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "computer-use",
+      "category": "autonomous-ai-agents",
+      "frontmatter_name": "computer-use",
+      "rel": "autonomous-ai-agents/computer-use/SKILL.md",
+      "description": "Drive the desktop background-first; escalate on signal.",
+      "platforms": [
+        "macos",
+        "windows",
+        "linux"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "hermes-agent",
+      "category": "autonomous-ai-agents",
+      "frontmatter_name": "hermes-agent",
+      "rel": "autonomous-ai-agents/hermes-agent/SKILL.md",
+      "description": "Use, configure, theme, extend, and orchestrate Hermes Agent.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "opencode",
+      "category": "autonomous-ai-agents",
+      "frontmatter_name": "opencode",
+      "rel": "autonomous-ai-agents/opencode/SKILL.md",
+      "description": "Delegate coding to OpenCode CLI (features, PR review).",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "brownfield-retrospective",
+      "category": "brownfield-retrospective",
+      "frontmatter_name": "brownfield-retrospective",
+      "rel": "brownfield-retrospective/SKILL.md",
+      "description": "Run the ECC engineering process retroactively against an...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "browser-qa",
+      "category": "browser-qa",
+      "frontmatter_name": "browser-qa",
+      "rel": "browser-qa/SKILL.md",
+      "description": "Run automated post-deploy UI verification with a browser...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ck",
+      "category": "ck",
+      "frontmatter_name": "ck",
+      "rel": "ck/SKILL.md",
+      "description": "Persistent per-project memory for Claude Code (Context...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "click-path-audit",
+      "category": "click-path-audit",
+      "frontmatter_name": "click-path-audit",
+      "rel": "click-path-audit/SKILL.md",
+      "description": "Trace every user-facing button/touchpoint through its...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "code-tour",
+      "category": "code-tour",
+      "frontmatter_name": "code-tour",
+      "rel": "code-tour/SKILL.md",
+      "description": "Create CodeTour `.tour` files — persona-targeted...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "codebase-onboarding",
+      "category": "codebase-onboarding",
+      "frontmatter_name": "codebase-onboarding",
+      "rel": "codebase-onboarding/SKILL.md",
+      "description": "Analyze an unfamiliar codebase and generate a structured...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "codehealth-mcp",
+      "category": "codehealth-mcp",
+      "frontmatter_name": "codehealth-mcp",
+      "rel": "codehealth-mcp/SKILL.md",
+      "description": "Real-time structural Code Health via CodeScene MCP...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "config-gc",
+      "category": "config-gc",
+      "frontmatter_name": "config-gc",
+      "rel": "config-gc/SKILL.md",
+      "description": "Garbage collection for your Claude Code configuration...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "configure-ecc",
+      "category": "configure-ecc",
+      "frontmatter_name": "configure-ecc",
+      "rel": "configure-ecc/SKILL.md",
+      "description": "Run the conversational ECC setup wizard inside the...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "context-budget",
+      "category": "context-budget",
+      "frontmatter_name": "context-budget",
+      "rel": "context-budget/SKILL.md",
+      "description": "Routes live context checks to the native Codex or Claude...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "continuous-learning-v2",
+      "category": "continuous-learning-v2",
+      "frontmatter_name": "continuous-learning-v2",
+      "rel": "continuous-learning-v2/SKILL.md",
+      "description": "Instinct-based learning system that observes sessions via...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "continuous-learning",
+      "category": "continuous-learning",
+      "frontmatter_name": "continuous-learning",
+      "rel": "continuous-learning/SKILL.md",
+      "description": "[DEPRECATED - use continuous-learning-v2] Legacy v1...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "conventional-commit-review",
+      "category": "conventional-commit-review",
+      "frontmatter_name": "conventional-commit-review",
+      "rel": "conventional-commit-review/SKILL.md",
+      "description": "Reviews staged changes and drafts a Conventional...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "council-multi-model",
+      "category": "council-multi-model",
+      "frontmatter_name": "council-multi-model",
+      "rel": "council-multi-model/SKILL.md",
+      "description": "Add one optional external Codex critique after the...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "council",
+      "category": "council",
+      "frontmatter_name": "council",
+      "rel": "council/SKILL.md",
+      "description": "Convene a four-voice council for ambiguous decisions...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "architecture-diagram",
+      "category": "creative",
+      "frontmatter_name": "architecture-diagram",
+      "rel": "creative/architecture-diagram/SKILL.md",
+      "description": "Dark-themed SVG architecture/cloud/infra diagrams as HTML.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ascii-video",
+      "category": "creative",
+      "frontmatter_name": "ascii-video",
+      "rel": "creative/ascii-video/SKILL.md",
+      "description": "ASCII video: convert video/audio to colored ASCII MP4/GIF.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "baoyu-infographic",
+      "category": "creative",
+      "frontmatter_name": "baoyu-infographic",
+      "rel": "creative/baoyu-infographic/SKILL.md",
+      "description": "Infographics: 21 layouts x 21 styles (信息图, 可视化).",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "claude-design",
+      "category": "creative",
+      "frontmatter_name": "claude-design",
+      "rel": "creative/claude-design/SKILL.md",
+      "description": "Design one-off HTML artifacts (landing, deck, prototype).",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "humanizer",
+      "category": "creative",
+      "frontmatter_name": "humanizer",
+      "rel": "creative/humanizer/SKILL.md",
+      "description": "Humanize text: strip AI-isms and add real voice.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "manim-video",
+      "category": "creative",
+      "frontmatter_name": "manim-video",
+      "rel": "creative/manim-video/SKILL.md",
+      "description": "Manim CE animations: 3Blue1Brown math/algo videos.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "p5js",
+      "category": "creative",
+      "frontmatter_name": "p5js",
+      "rel": "creative/p5js/SKILL.md",
+      "description": "p5.js sketches: gen art, shaders, interactive, 3D.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "popular-web-designs",
+      "category": "creative",
+      "frontmatter_name": "popular-web-designs",
+      "rel": "creative/popular-web-designs/SKILL.md",
+      "description": "54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "songwriting-and-ai-music",
+      "category": "creative",
+      "frontmatter_name": "songwriting-and-ai-music",
+      "rel": "creative/songwriting-and-ai-music/SKILL.md",
+      "description": "Songwriting craft and Suno AI music prompts.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "deepseek-harness-setup",
+      "category": "deepseek-harness-setup",
+      "frontmatter_name": "deepseek-harness-setup",
+      "rel": "deepseek-harness-setup/SKILL.md",
+      "description": "Install and operate Everything Claude Code (ECC) on the...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "delivery-gate",
+      "category": "delivery-gate",
+      "frontmatter_name": "delivery-gate",
+      "rel": "delivery-gate/SKILL.md",
+      "description": "Stop hook that blocks Claude from finishing until quality...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "dev-team",
+      "category": "dev-team",
+      "frontmatter_name": "dev-team",
+      "rel": "dev-team/SKILL.md",
+      "description": "Simulate a collaborative dev team session where multiple...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "coding-orchestrator",
+      "category": "devops",
+      "frontmatter_name": "coding-orchestrator",
+      "rel": "devops/coding-orchestrator/SKILL.md",
+      "description": "Orchestrate Kilo Code and OpenCode coding sessions as...",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [
+          "terminal"
+        ],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "docker-management",
+      "category": "devops",
+      "frontmatter_name": "docker-management",
+      "rel": "devops/docker-management/SKILL.md",
+      "description": "Manage Docker containers, images, volumes, and Compose.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [
+          "terminal"
+        ],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "pinggy-tunnel",
+      "category": "devops",
+      "frontmatter_name": "pinggy-tunnel",
+      "rel": "devops/pinggy-tunnel/SKILL.md",
+      "description": "Zero-install localhost tunnels over SSH via Pinggy.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "sdlc-review",
+      "category": "devops",
+      "frontmatter_name": "sdlc-review",
+      "rel": "devops/sdlc-review/SKILL.md",
+      "description": "Review Kanban handoffs and route verified outcomes.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [
+          "kanban"
+        ],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "watchers",
+      "category": "devops",
+      "frontmatter_name": "watchers",
+      "rel": "devops/watchers/SKILL.md",
+      "description": "Poll RSS, JSON APIs, and GitHub with watermark dedup.",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [
+          "terminal"
+        ],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "e2e-testing",
+      "category": "e2e-testing",
+      "frontmatter_name": "e2e-testing",
+      "rel": "e2e-testing/SKILL.md",
+      "description": "Playwright E2E testing patterns, Page Object Model...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ecc-guide",
+      "category": "ecc-guide",
+      "frontmatter_name": "ecc-guide",
+      "rel": "ecc-guide/SKILL.md",
+      "description": "Answer questions about ECC by reading the live repo...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ecc-recipes",
+      "category": "ecc-recipes",
+      "frontmatter_name": "ecc-recipes",
+      "rel": "ecc-recipes/SKILL.md",
+      "description": "Map a described workflow to the right ECC command group...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "email-inbox-triage",
+      "category": "email",
+      "frontmatter_name": "email-inbox-triage",
+      "rel": "email/email-inbox-triage/SKILL.md",
+      "description": "Triage an inbox: prioritize threads, draft replies safely.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "himalaya",
+      "category": "email",
+      "frontmatter_name": "himalaya",
+      "rel": "email/himalaya/SKILL.md",
+      "description": "Himalaya CLI: IMAP/SMTP email from terminal.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "error-handling",
+      "category": "error-handling",
+      "frontmatter_name": "error-handling",
+      "rel": "error-handling/SKILL.md",
+      "description": "Patterns for robust error handling across TypeScript...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "eval-harness",
+      "category": "eval-harness",
+      "frontmatter_name": "eval-harness",
+      "rel": "eval-harness/SKILL.md",
+      "description": "Eval-driven development (EDD) framework for AI coding...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "excel-author",
+      "category": "finance",
+      "frontmatter_name": "excel-author",
+      "rel": "finance/excel-author/SKILL.md",
+      "description": "Build auditable financial workbooks headless via openpyxl.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "git-workflow",
+      "category": "git-workflow",
+      "frontmatter_name": "git-workflow",
+      "rel": "git-workflow/SKILL.md",
+      "description": "Git workflow patterns including branching strategies...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "growth-log",
+      "category": "growth-log",
+      "frontmatter_name": "growth-log",
+      "rel": "growth-log/SKILL.md",
+      "description": "Write growth log entries that extract reusable patterns...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "fitness-nutrition",
+      "category": "health",
+      "frontmatter_name": "fitness-nutrition",
+      "rel": "health/fitness-nutrition/SKILL.md",
+      "description": "Workout planning, macros, and body metrics via wger/USDA.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "hookify-rules",
+      "category": "hookify-rules",
+      "frontmatter_name": "hookify-rules",
+      "rel": "hookify-rules/SKILL.md",
+      "description": "Create and configure hookify rules — markdown files with...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "inherit-legacy-style",
+      "category": "inherit-legacy-style",
+      "frontmatter_name": "inherit-legacy-style",
+      "rel": "inherit-legacy-style/SKILL.md",
+      "description": "Prevent AI style drift on legacy projects by scanning the...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "intent-driven-development",
+      "category": "intent-driven-development",
+      "frontmatter_name": "intent-driven-development",
+      "rel": "intent-driven-development/SKILL.md",
+      "description": "Turn ambiguous or high-impact product and engineering...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "iterative-retrieval",
+      "category": "iterative-retrieval",
+      "frontmatter_name": "iterative-retrieval",
+      "rel": "iterative-retrieval/SKILL.md",
+      "description": "Pattern for progressively refining context retrieval to...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "living-docs-governance",
+      "category": "living-docs-governance",
+      "frontmatter_name": "living-docs-governance",
+      "rel": "living-docs-governance/SKILL.md",
+      "description": "Keep a long-lived project's documentation from rotting by...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "loop-design-check",
+      "category": "loop-design-check",
+      "frontmatter_name": "loop-design-check",
+      "rel": "loop-design-check/SKILL.md",
+      "description": "Design a goal-oriented agent loop or review one for...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "mcporter",
+      "category": "mcp",
+      "frontmatter_name": "mcporter",
+      "rel": "mcp/mcporter/SKILL.md",
+      "description": "List, auth, and call MCP servers/tools from the terminal.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "gif-search",
+      "category": "media",
+      "frontmatter_name": "gif-search",
+      "rel": "media/gif-search/SKILL.md",
+      "description": "Search/download GIFs from Tenor via curl + jq.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "songsee",
+      "category": "media",
+      "frontmatter_name": "songsee",
+      "rel": "media/songsee/SKILL.md",
+      "description": "Audio spectrograms/features (mel, chroma, MFCC) via CLI.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "youtube-content",
+      "category": "media",
+      "frontmatter_name": "youtube-content",
+      "rel": "media/youtube-content/SKILL.md",
+      "description": "YouTube transcripts to summaries, threads, blogs.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "llama-cpp",
+      "category": "mlops/inference",
+      "frontmatter_name": "llama-cpp",
+      "rel": "mlops/inference/llama-cpp/SKILL.md",
+      "description": "llama.cpp local GGUF inference + HF Hub model discovery.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "serving-llms-vllm",
+      "category": "mlops/inference",
+      "frontmatter_name": "serving-llms-vllm",
+      "rel": "mlops/inference/serving-llms-vllm/SKILL.md",
+      "description": "vLLM: high-throughput LLM serving, OpenAI API, quantization.",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "segment-anything-model",
+      "category": "mlops/models",
+      "frontmatter_name": "segment-anything-model",
+      "rel": "mlops/models/segment-anything-model/SKILL.md",
+      "description": "SAM: zero-shot image segmentation via points, boxes, masks.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "peft",
+      "category": "mlops",
+      "frontmatter_name": "peft",
+      "rel": "mlops/peft/SKILL.md",
+      "description": "Fine-tune large LLMs with LoRA on limited GPU memory.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "obsidian",
+      "category": "note-taking",
+      "frontmatter_name": "obsidian",
+      "rel": "note-taking/obsidian/SKILL.md",
+      "description": "Read, search, create, and edit notes in the Obsidian vault.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "plan-canvas",
+      "category": "plan-canvas",
+      "frontmatter_name": "plan-canvas",
+      "rel": "plan-canvas/SKILL.md",
+      "description": "Open plans and HTML artifacts in a local browser canvas...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "plankton-code-quality",
+      "category": "plankton-code-quality",
+      "frontmatter_name": "plankton-code-quality",
+      "rel": "plankton-code-quality/SKILL.md",
+      "description": "Write-time code quality enforcement using Plankton...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "product-lens",
+      "category": "product-lens",
+      "frontmatter_name": "product-lens",
+      "rel": "product-lens/SKILL.md",
+      "description": "Validate the why before building through four product...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "production-audit",
+      "category": "production-audit",
+      "frontmatter_name": "production-audit",
+      "rel": "production-audit/SKILL.md",
+      "description": "Local-evidence production readiness audit for shipped...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "decision-questionnaire",
+      "category": "productivity",
+      "frontmatter_name": "decision-questionnaire",
+      "rel": "productivity/decision-questionnaire/SKILL.md",
+      "description": "Turn an unanswerable decision into a questionnaire doc.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "document-to-action-items",
+      "category": "productivity",
+      "frontmatter_name": "document-to-action-items",
+      "rel": "productivity/document-to-action-items/SKILL.md",
+      "description": "Extract cited obligations, deadlines, tasks from documents.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "google-workspace",
+      "category": "productivity",
+      "frontmatter_name": "google-workspace",
+      "rel": "productivity/google-workspace/SKILL.md",
+      "description": "Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "here-now",
+      "category": "productivity",
+      "frontmatter_name": "here-now",
+      "rel": "productivity/here-now/SKILL.md",
+      "description": "Publish sites to {slug}.here.now and store files in Drives.",
+      "platforms": [
+        "macos",
+        "linux"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [
+          "terminal"
+        ],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "live-dashboard",
+      "category": "productivity",
+      "frontmatter_name": "live-dashboard",
+      "rel": "productivity/live-dashboard/SKILL.md",
+      "description": "Build self-updating dashboards from live sources.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "maps",
+      "category": "productivity",
+      "frontmatter_name": "maps",
+      "rel": "productivity/maps/SKILL.md",
+      "description": "Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [
+          "terminal"
+        ],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "meeting-action-items",
+      "category": "productivity",
+      "frontmatter_name": "meeting-action-items",
+      "rel": "productivity/meeting-action-items/SKILL.md",
+      "description": "Turn meeting notes into cited decisions, owners, tickets.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "microsoft-office",
+      "category": "productivity",
+      "frontmatter_name": "microsoft-office",
+      "rel": "productivity/microsoft-office/SKILL.md",
+      "description": "Create, read, and edit Word, PowerPoint, and Excel files.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "pdf",
+      "category": "productivity",
+      "frontmatter_name": "pdf",
+      "rel": "productivity/pdf/SKILL.md",
+      "description": "PDF files: create, read, merge, fill, OCR, edit text.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "product-price-monitor",
+      "category": "productivity",
+      "frontmatter_name": "product-price-monitor",
+      "rel": "productivity/product-price-monitor/SKILL.md",
+      "description": "Watch product, flight, or listing prices; alert on target.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "teams-meeting-pipeline",
+      "category": "productivity",
+      "frontmatter_name": "teams-meeting-pipeline",
+      "rel": "productivity/teams-meeting-pipeline/SKILL.md",
+      "description": "Teams meeting summaries, job replay, Graph subscriptions.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": [
+          "teams",
+          "cron"
+        ]
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "weekly-review-planning",
+      "category": "productivity",
+      "frontmatter_name": "weekly-review-planning",
+      "rel": "productivity/weekly-review-planning/SKILL.md",
+      "description": "Weekly reset: commitments, stalled work, next-week plan.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "repo-scan",
+      "category": "repo-scan",
+      "frontmatter_name": "repo-scan",
+      "rel": "repo-scan/SKILL.md",
+      "description": "Bootstrap pointer that installs the external repo-scan...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "arxiv",
+      "category": "research",
+      "frontmatter_name": "arxiv",
+      "rel": "research/arxiv/SKILL.md",
+      "description": "Search arXiv papers by keyword, author, category, or ID.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "blogwatcher",
+      "category": "research",
+      "frontmatter_name": "blogwatcher",
+      "rel": "research/blogwatcher/SKILL.md",
+      "description": "Monitor blogs and RSS/Atom feeds via blogwatcher-cli tool.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "competitor-news-monitor",
+      "category": "research",
+      "frontmatter_name": "competitor-news-monitor",
+      "rel": "research/competitor-news-monitor/SKILL.md",
+      "description": "Watch named companies for material news; cited digests.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "domain-intel",
+      "category": "research",
+      "frontmatter_name": "domain-intel",
+      "rel": "research/domain-intel/SKILL.md",
+      "description": "Passive recon of subdomains, SSL certs, WHOIS, and DNS.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "grounded-citations",
+      "category": "research",
+      "frontmatter_name": "grounded-citations",
+      "rel": "research/grounded-citations/SKILL.md",
+      "description": "Ground answers and documents in cited, verifiable sources.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "llm-wiki",
+      "category": "research",
+      "frontmatter_name": "llm-wiki",
+      "rel": "research/llm-wiki/SKILL.md",
+      "description": "Karpathy's LLM Wiki: build/query interlinked markdown KB.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "osint-investigation",
+      "category": "research",
+      "frontmatter_name": "osint-investigation",
+      "rel": "research/osint-investigation/SKILL.md",
+      "description": "Follow the money via public records and sanctions data.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "parallel-cli",
+      "category": "research",
+      "frontmatter_name": "parallel-cli",
+      "rel": "research/parallel-cli/SKILL.md",
+      "description": "Agent-native web search, deep research, and enrichment.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "rss-feeds",
+      "category": "research",
+      "frontmatter_name": "rss-feeds",
+      "rel": "research/rss-feeds/SKILL.md",
+      "description": "Read RSS, Atom, JSON feeds; discover feeds behind a page.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "scrapling",
+      "category": "research",
+      "frontmatter_name": "scrapling",
+      "rel": "research/scrapling/SKILL.md",
+      "description": "Scrape sites with stealth browsing and Cloudflare bypass.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "rules-distill",
+      "category": "rules-distill",
+      "frontmatter_name": "rules-distill",
+      "rel": "rules-distill/SKILL.md",
+      "description": "Scan skills to extract cross-cutting principles and...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "santa-method",
+      "category": "santa-method",
+      "frontmatter_name": "santa-method",
+      "rel": "santa-method/SKILL.md",
+      "description": "Multi-agent adversarial verification: two independent...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "oss-forensics",
+      "category": "security",
+      "frontmatter_name": "oss-forensics",
+      "rel": "security/oss-forensics/SKILL.md",
+      "description": "GitHub supply-chain forensics: recovery, IOCs, reporting.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "sherlock",
+      "category": "security",
+      "frontmatter_name": "sherlock",
+      "rel": "security/sherlock/SKILL.md",
+      "description": "Find accounts for a username across 400+ platforms.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "web-pentest",
+      "category": "security",
+      "frontmatter_name": "web-pentest",
+      "rel": "security/web-pentest/SKILL.md",
+      "description": "Authorized web pentest: recon, proof-based exploits, report.",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "skill-comply",
+      "category": "skill-comply",
+      "frontmatter_name": "skill-comply",
+      "rel": "skill-comply/SKILL.md",
+      "description": "Visualize whether skills, rules, and agent definitions...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "skill-host-compat",
+      "category": "skill-host-compat",
+      "frontmatter_name": "skill-host-compat",
+      "rel": "skill-host-compat/SKILL.md",
+      "description": "Lint ECC skills for Codex/Cursor-safe frontmatter and...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "skill-scout",
+      "category": "skill-scout",
+      "frontmatter_name": "skill-scout",
+      "rel": "skill-scout/SKILL.md",
+      "description": "Search existing local, marketplace, GitHub, and web skill...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "skill-stocktake",
+      "category": "skill-stocktake",
+      "frontmatter_name": "skill-stocktake",
+      "rel": "skill-stocktake/SKILL.md",
+      "description": "Use when auditing Claude skills and commands for quality...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "xurl",
+      "category": "social-media",
+      "frontmatter_name": "xurl",
+      "rel": "social-media/xurl/SKILL.md",
+      "description": "X/Twitter via xurl CLI: raw post search, posting, DM, media.",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ast-grep",
+      "category": "software-development",
+      "frontmatter_name": "ast-grep",
+      "rel": "software-development/ast-grep/SKILL.md",
+      "description": "AST-aware structural code search and rewrite via ast-grep.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "code-wiki",
+      "category": "software-development",
+      "frontmatter_name": "code-wiki",
+      "rel": "software-development/code-wiki/SKILL.md",
+      "description": "Generate wiki docs + Mermaid diagrams for any codebase.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "codebase-inspection",
+      "category": "software-development",
+      "frontmatter_name": "codebase-inspection",
+      "rel": "software-development/codebase-inspection/SKILL.md",
+      "description": "Inspect codebases w/ pygount: LOC, languages, ratios.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "dogfood",
+      "category": "software-development",
+      "frontmatter_name": "dogfood",
+      "rel": "software-development/dogfood/SKILL.md",
+      "description": "Exploratory QA of web apps: find bugs, evidence, reports.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "github",
+      "category": "software-development",
+      "frontmatter_name": "github",
+      "rel": "software-development/github/SKILL.md",
+      "description": "GitHub via gh CLI: PRs, issues, reviews, repos, auth.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "python-debugpy",
+      "category": "software-development",
+      "frontmatter_name": "python-debugpy",
+      "rel": "software-development/python-debugpy/SKILL.md",
+      "description": "Debug Python: pdb REPL + debugpy remote (DAP).",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "requesting-code-review",
+      "category": "software-development",
+      "frontmatter_name": "requesting-code-review",
+      "rel": "software-development/requesting-code-review/SKILL.md",
+      "description": "Pre-commit review: security scan, quality gates, auto-fix.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "rest-graphql-debug",
+      "category": "software-development",
+      "frontmatter_name": "rest-graphql-debug",
+      "rel": "software-development/rest-graphql-debug/SKILL.md",
+      "description": "Debug REST/GraphQL APIs: status codes, auth, schemas, repro.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "simplify-code",
+      "category": "software-development",
+      "frontmatter_name": "simplify-code",
+      "rel": "software-development/simplify-code/SKILL.md",
+      "description": "Parallel 4-agent cleanup of recent code changes.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "spike",
+      "category": "software-development",
+      "frontmatter_name": "spike",
+      "rel": "software-development/spike/SKILL.md",
+      "description": "Throwaway experiments to validate an idea before build.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "subagent-driven-development",
+      "category": "software-development",
+      "frontmatter_name": "subagent-driven-development",
+      "rel": "software-development/subagent-driven-development/SKILL.md",
+      "description": "Execute plans via delegate_task subagents (2-stage review).",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "systematic-debugging",
+      "category": "software-development",
+      "frontmatter_name": "systematic-debugging",
+      "rel": "software-development/systematic-debugging/SKILL.md",
+      "description": "4-phase root cause debugging: understand bugs before fixing.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "test-driven-development",
+      "category": "software-development",
+      "frontmatter_name": "test-driven-development",
+      "rel": "software-development/test-driven-development/SKILL.md",
+      "description": "TDD: enforce RED-GREEN-REFACTOR, tests before code.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "story-lifecycle",
+      "category": "story-lifecycle",
+      "frontmatter_name": "story-lifecycle",
+      "rel": "story-lifecycle/SKILL.md",
+      "description": "Manage a file-based epic → story → sprint development...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "strategic-compact",
+      "category": "strategic-compact",
+      "frontmatter_name": "strategic-compact",
+      "rel": "strategic-compact/SKILL.md",
+      "description": "Suggests manual context compaction at logical intervals...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "tdd-workflow",
+      "category": "tdd-workflow",
+      "frontmatter_name": "tdd-workflow",
+      "rel": "tdd-workflow/SKILL.md",
+      "description": "Test-driven development workflow: write a failing test...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "ui-canvas",
+      "category": "ui-canvas",
+      "frontmatter_name": "ui-canvas",
+      "rel": "ui-canvas/SKILL.md",
+      "description": "Preview a UI component mockup in a local browser canvas...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "unified-memory",
+      "category": "unified-memory",
+      "frontmatter_name": "unified-memory",
+      "rel": "unified-memory/SKILL.md",
+      "description": "Share durable, inspectable context and handoffs between...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "verification-loop",
+      "category": "verification-loop",
+      "frontmatter_name": "verification-loop",
+      "rel": "verification-loop/SKILL.md",
+      "description": "Run a six-phase verification of a Claude Code session's...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "publish-site",
+      "category": "web-development",
+      "frontmatter_name": "publish-site",
+      "rel": "web-development/publish-site/SKILL.md",
+      "description": "Versioned site deploys to GitHub/Cloudflare/Netlify Pages.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "blocked-page-recovery",
+      "category": "web",
+      "frontmatter_name": "blocked-page-recovery",
+      "rel": "web/blocked-page-recovery/SKILL.md",
+      "description": "Use when a fetch fails: 403/429, paywall, WAF, bot wall.",
+      "platforms": [
+        "linux",
+        "macos",
+        "windows"
+      ],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    },
+    {
+      "skill_name": "windows-desktop-e2e",
+      "category": "windows-desktop-e2e",
+      "frontmatter_name": "windows-desktop-e2e",
+      "rel": "windows-desktop-e2e/SKILL.md",
+      "description": "E2E testing for Windows native desktop apps (WPF...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": [],
+        "session_platforms": []
+      },
+      "requires_apps": []
+    }
+  ]
+}
