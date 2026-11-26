@@ -226,6 +226,29 @@ def _pick_input_device() -> object:
     return None
 
 
+def _media_playing() -> bool:
+    """True si otra aplicación (no JARVIS) está reproduciendo audio ahora mismo.
+
+    Con los altavoces sonando, el micrófono solo capta el vídeo/música y Vosk
+    acaba inventando «jarvis». En ese caso el wake se pausa; el disparo manual
+    (Super+J) sigue funcionando.
+    """
+    try:
+        out = subprocess.run(
+            ["pactl", "list", "sink-inputs"],
+            capture_output=True, text=True, timeout=2,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return False
+    for block in out.split("Sink Input #")[1:]:
+        if "Corked: no" not in block:
+            continue
+        if 'application.name = "paplay"' in block:
+            continue
+        return True
+    return False
+
+
 def _build_engine():
     log.info("cargando detector español Vosk…")
     return _VoskWake()
@@ -598,6 +621,8 @@ def main() -> int:
     else:
         log.info("wake automático desactivado; use Super+J")
     last_wake = 0.0
+    media_playing = False
+    media_check_at = 0.0
     floor_hist: deque[float] = deque(maxlen=40)
     input_device = _pick_input_device()
     if input_device is not None:
@@ -610,6 +635,17 @@ def main() -> int:
                 frame = data[:, 0]
                 floor_hist.append(_rms(frame))
                 floor = float(np.median(floor_hist)) if len(floor_hist) >= 10 else 400.0
+                now = time.monotonic()
+                if now >= media_check_at:
+                    was_playing = media_playing
+                    media_playing = _media_playing()
+                    media_check_at = now + 2.0
+                    if media_playing != was_playing:
+                        log.info("audio de fondo %s; wake %s",
+                                 "detectado" if media_playing else "terminado",
+                                 "en pausa" if media_playing else "activo")
+                    if media_playing and not was_playing:
+                        engine.reset()
                 if _trigger:
                     _trigger = False
                     log.info("activación manual (Super+J)")
@@ -621,7 +657,7 @@ def main() -> int:
                     engine.reset()
                     log.info("escuchando «%s»…", WAKE_PHRASE)
                     continue
-                if WAKE_ENABLED and engine.process(frame):
+                if WAKE_ENABLED and not media_playing and engine.process(frame):
                     now = time.monotonic()
                     if now - last_wake < WAKE_COOLDOWN:
                         continue
