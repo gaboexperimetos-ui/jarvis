@@ -50,7 +50,7 @@ RATE = os.environ.get("JARVIS_RATE", "-10%")
 PITCH = os.environ.get("JARVIS_PITCH", "-2Hz")
 BASE_URL = os.environ.get("JARVIS_BASE_URL", "http://127.0.0.1:8004/v1").rstrip("/")
 MODEL = os.environ.get("JARVIS_MODEL", "deepseek-v4pro")
-MAX_ANSWER_CHARS = 800
+MAX_ANSWER_CHARS = 280
 
 TTS_DIR = Path(os.environ.get(
     "JARVIS_TTS_DIR",
@@ -126,12 +126,13 @@ SYSTEM_PROMPT = (
     "Eres JARVIS, el asistente personal de Gabo. Hablas español de España y le "
     "tratas siempre de usted, con un tono breve, cálido y directo, como un mayordomo "
     "competente. Tus respuestas se leen en voz alta: no uses markdown, listas, "
-    "viñetas, emojis ni símbolos raros. Responde en una o dos frases, salvo que le "
-    "pidan explícitamente más detalle. Si no sabes algo o te falta un dato, dilo con "
-    "naturalidad en lugar de inventarlo. No tienes acceso a internet ni a datos en "
-    "tiempo real: la única referencia temporal fiable es la fecha y hora del equipo que "
-    "se te indica abajo. No calcules ni inventes la hora de otras ciudades: si te la "
-    "preguntan y no la tienes, dilo con naturalidad."
+    "viñetas, emojis ni símbolos raros. Responde en UNA sola frase corta, de treinta "
+    "palabras como máximo, salvo que le pidan explícitamente más detalle. Ve al "
+    "grano: no repitas la pregunta ni añadas preámbulos. Si no sabes algo o te falta "
+    "un dato, dilo con naturalidad en lugar de inventarlo. No tienes acceso a "
+    "internet ni a datos en tiempo real: la única referencia temporal fiable es la "
+    "fecha y hora del equipo que se te indica abajo. No calcules ni inventes la hora "
+    "de otras ciudades: si te la preguntan y no la tienes, dilo con naturalidad."
 )
 
 log = logging.getLogger("jarvis-voice")
@@ -290,7 +291,7 @@ def _beep() -> None:
 def _record(stream, floor: float) -> np.ndarray | None:
     speech_thr = max(floor * 2.0, 500.0)
     silence_thr = max(floor * 1.5, 350.0)
-    silence_needed = int(1.2 * SAMPLE_RATE / FRAME)
+    silence_needed = int(0.8 * SAMPLE_RATE / FRAME)
     max_frames = int(20 * SAMPLE_RATE / FRAME)
     onset_deadline = time.monotonic() + 6.0
     frames: list[np.ndarray] = []
@@ -328,7 +329,10 @@ def _write_wav(audio: np.ndarray, path: Path) -> None:
 
 
 def _transcribe(model: WhisperModel, wav_path: Path) -> str:
-    segments, _ = model.transcribe(str(wav_path), language="es", vad_filter=True, beam_size=1)
+    segments, _ = model.transcribe(
+        str(wav_path), language="es", vad_filter=False, beam_size=1,
+        condition_on_previous_text=False,
+    )
     return " ".join(seg.text.strip() for seg in segments).strip()
 
 
@@ -407,7 +411,7 @@ def _ask(text: str) -> str:
             {"role": "system", "content": system},
             {"role": "user", "content": text},
         ],
-        "max_tokens": 220,
+        "max_tokens": 110,
         "temperature": 0.4,
     }
     req = urllib.request.Request(
@@ -455,6 +459,7 @@ def _build_tts():
 
 def _speak_local(text: str, workdir: Path) -> None:
     global _tts
+    t_gen = time.monotonic()
     if _tts is None:
         log.info("cargando voz local Miro…")
         _tts = _build_tts()
@@ -477,6 +482,7 @@ def _speak_local(text: str, workdir: Path) -> None:
         w.setsampwidth(2)
         w.setframerate(audio.sample_rate)
         w.writeframes((pcm * 32767).astype(np.int16).tobytes())
+    log.info("síntesis de voz: %.2fs", time.monotonic() - t_gen)
     _play_wav(wav)
 
 
@@ -505,6 +511,7 @@ def _speak(text: str, workdir: Path) -> None:
 
 
 def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) -> None:
+    t0 = time.monotonic()
     _beep()
     flush_until = time.monotonic() + 0.25
     while time.monotonic() < flush_until:
@@ -513,15 +520,20 @@ def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) 
     if audio is None:
         log.info("no se detectó voz tras la activación")
         return
+    t1 = time.monotonic()
     wav = workdir / "utterance.wav"
     _write_wav(audio, wav)
     text = _transcribe(whisper, wav)
+    t2 = time.monotonic()
     if not text:
         log.info("transcripción vacía")
         return
     log.info("usted: %s", text)
     answer = _respond(text)
+    t3 = time.monotonic()
     log.info("jarvis: %s", answer)
+    log.info("tiempos: grabación %.2fs · STT %.2fs · modelo %.2fs",
+             t1 - t0, t2 - t1, t3 - t2)
     try:
         _speak(answer, workdir)
     except Exception as exc:
