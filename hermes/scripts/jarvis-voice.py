@@ -212,18 +212,29 @@ def _is_wake_text(text: str) -> bool:
 
 
 def _pick_input_device() -> object:
-    """Devuelve el índice del dispositivo de captura o `None` para el
-    predeterminado. Evita el `default` de ALSA (hw directo), que con PipeWire
-    provoca un bucle de xrun y una fuga de RAM; prefiere `pipewire`/`pulse`."""
+    """Devuelve el NOMBRE del dispositivo de captura o `None` para el
+    predeterminado.
+
+    Se usa el nombre y no el índice: al recrear nodos de PipeWire (p. ej. al
+    cambiar el perfil de la tarjeta de audio) los índices cambian y un índice
+    fijo acaba abriendo un PCM equivocado, que entra en bucle de xrun y filtra
+    RAM hasta agotar la máquina. Sounddevice resuelve el nombre al abrir el
+    stream. Se evita el `default` crudo de ALSA por el mismo motivo; se
+    prefieren los PCM `pipewire`/`pulse`, que sí pasan por el mezclador."""
     if INPUT_DEVICE:
         return int(INPUT_DEVICE) if INPUT_DEVICE.isdigit() else INPUT_DEVICE
     try:
-        for i, d in enumerate(sd.query_devices()):
-            if d.get("max_input_channels", 0) <= 0:
-                continue
-            name = (d.get("name") or "").lower()
-            if name in ("pipewire", "pulse"):
-                return i
+        names = [
+            (d.get("name") or "").strip().lower()
+            for d in sd.query_devices()
+            if d.get("max_input_channels", 0) > 0
+        ]
+        for want in ("pipewire", "pulse"):
+            if want in names:
+                return want
+        for n in names:
+            if "pipewire" in n or "pulse" in n:
+                return n
     except Exception as exc:
         log.warning("no se pudo listar dispositivos de audio: %s", exc)
     return None
