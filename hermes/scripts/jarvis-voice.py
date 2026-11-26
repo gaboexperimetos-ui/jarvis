@@ -19,6 +19,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unicodedata
 import urllib.request
@@ -50,7 +51,7 @@ RATE = os.environ.get("JARVIS_RATE", "-10%")
 PITCH = os.environ.get("JARVIS_PITCH", "-2Hz")
 BASE_URL = os.environ.get("JARVIS_BASE_URL", "http://127.0.0.1:8004/v1").rstrip("/")
 MODEL = os.environ.get("JARVIS_MODEL", "deepseek-v4pro")
-MAX_ANSWER_CHARS = 280
+MAX_ANSWER_CHARS = 200
 
 TTS_DIR = Path(os.environ.get(
     "JARVIS_TTS_DIR",
@@ -69,7 +70,7 @@ WAKE_GRAMMAR = json.dumps(["hey jarvis", "[unk]"])
 _WAKE_RE = re.compile(r"^(?:(?:hey|ey|ei|hei)\s+)?(?:jarvis|yarvis|yarbis|jarbis)$")
 WAKE_MIN_CONF = float(os.environ.get("JARVIS_WAKE_MIN_CONF", "0.7"))
 WAKE_COOLDOWN = float(os.environ.get("JARVIS_WAKE_COOLDOWN", "3.0"))
-WAKE_ENABLED = os.environ.get("JARVIS_WAKE_ENABLED", "1").lower() not in ("0", "false", "no", "off")
+WAKE_ENABLED = os.environ.get("JARVIS_WAKE_ENABLED", "0").lower() not in ("0", "false", "no", "off")
 
 _DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 _MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
@@ -140,6 +141,7 @@ _running = True
 _trigger = False
 _beep_path: Path | None = None
 _tts = None
+_tts_lock = threading.Lock()
 
 
 def _setup_logging() -> None:
@@ -411,7 +413,7 @@ def _ask(text: str) -> str:
             {"role": "system", "content": system},
             {"role": "user", "content": text},
         ],
-        "max_tokens": 110,
+        "max_tokens": 80,
         "temperature": 0.4,
     }
     req = urllib.request.Request(
@@ -457,17 +459,25 @@ def _build_tts():
     return sherpa_onnx.OfflineTts(cfg)
 
 
-def _speak_local(text: str, workdir: Path) -> None:
+def _ensure_tts():
     global _tts
-    t_gen = time.monotonic()
-    if _tts is None:
-        log.info("cargando voz local Miro…")
-        _tts = _build_tts()
+    if _tts is not None:
+        return _tts
+    with _tts_lock:
+        if _tts is None:
+            log.info("cargando voz local Miro…")
+            _tts = _build_tts()
+    return _tts
+
+
+def _synth_wav_local(text: str, out_wav: Path) -> float:
+    t0 = time.monotonic()
+    tts = _ensure_tts()
     gen = sherpa_onnx.GenerationConfig()
     gen.sid = 0
     gen.speed = TTS_SPEED
     gen.silence_scale = 0.25
-    audio = _tts.generate(text, gen)
+    audio = tts.generate(text, gen)
     if len(audio.samples) == 0:
         raise RuntimeError("la voz local no generó audio")
     pcm = np.clip(np.asarray(audio.samples, dtype=np.float32), -1, 1)
@@ -476,13 +486,18 @@ def _speak_local(text: str, workdir: Path) -> None:
     peak = float(np.max(np.abs(pcm))) if pcm.size else 0.0
     if 0.0 < peak < 0.95:
         pcm = pcm * (0.95 / peak)
-    wav = workdir / "answer.wav"
-    with wave.open(str(wav), "wb") as w:
+    with wave.open(str(out_wav), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
         w.setframerate(audio.sample_rate)
         w.writeframes((pcm * 32767).astype(np.int16).tobytes())
-    log.info("síntesis de voz: %.2fs", time.monotonic() - t_gen)
+    return time.monotonic() - t0
+
+
+def _speak_local(text: str, workdir: Path) -> None:
+    wav = workdir / "answer.wav"
+    dt = _synth_wav_local(text, wav)
+    log.info("síntesis de voz: %.2fs", dt)
     _play_wav(wav)
 
 
@@ -510,6 +525,109 @@ def _speak(text: str, workdir: Path) -> None:
     _speak_edge(clean, workdir)
 
 
+def _warm_tts() -> None:
+    try:
+        _ensure_tts()
+        log.info("voz local lista")
+    except Exception as exc:
+        log.warning("no se pudo precargar la voz local: %s", exc)
+
+
+_SENT_SPLIT = re.compile(r"(?<=[.!?…])\s+")
+
+
+def _ask_stream(text: str):
+    """Pide la respuesta al router en streaming y devuelve los trozos según llegan."""
+    system = f"{SYSTEM_PROMPT}\n\nFecha y hora actuales en el equipo: {_now_text()}."
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": text},
+        ],
+        "max_tokens": 80,
+        "temperature": 0.4,
+        "stream": True,
+    }
+    req = urllib.request.Request(
+        f"{BASE_URL}/chat/completions",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        for raw in resp:
+            line = raw.decode("utf-8", "replace").strip()
+            if not line or not line.startswith("data:"):
+                continue
+            chunk = line[5:].strip()
+            if chunk == "[DONE]":
+                break
+            try:
+                obj = json.loads(chunk)
+                delta = obj["choices"][0]["delta"].get("content")
+            except (json.JSONDecodeError, KeyError, IndexError, AttributeError):
+                continue
+            if delta:
+                yield delta
+
+
+def _say_chunk(sentence: str, workdir: Path, idx: int) -> None:
+    wav = workdir / f"answer_{idx}.wav"
+    dt = _synth_wav_local(sentence, wav)
+    log.info("frase %d sintetizada en %.2fs", idx + 1, dt)
+    _play_wav(wav)
+
+
+def _speak_stream(text: str, workdir: Path) -> str:
+    """Habla mientras el modelo genera: sintetiza y reproduce frase a frase."""
+    t0 = time.monotonic()
+    buf = ""
+    full = ""
+    idx = 0
+    first_at: float | None = None
+    try:
+        for delta in _ask_stream(text):
+            buf += delta
+            full += delta
+            while True:
+                m = _SENT_SPLIT.search(buf)
+                if not m:
+                    break
+                sentence = buf[:m.start()].strip()
+                buf = buf[m.end():]
+                if not sentence:
+                    continue
+                if first_at is None:
+                    first_at = time.monotonic() - t0
+                _say_chunk(sentence, workdir, idx)
+                idx += 1
+            # Frase muy larga sin puntuación: no esperar al final.
+            if len(buf) > 160:
+                cut = buf.rfind(" ", 0, 160)
+                cut = cut if cut > 0 else 160
+                sentence, buf = buf[:cut].strip(), buf[cut:].lstrip()
+                if sentence:
+                    if first_at is None:
+                        first_at = time.monotonic() - t0
+                    _say_chunk(sentence, workdir, idx)
+                    idx += 1
+            if len(full) >= MAX_ANSWER_CHARS:
+                break
+    except Exception:
+        if idx == 0:
+            raise
+        log.exception("streaming interrumpido")
+    tail = _clean_for_speech(buf)
+    if tail:
+        if first_at is None:
+            first_at = time.monotonic() - t0
+        _say_chunk(tail, workdir, idx)
+    if first_at is not None:
+        log.info("primer audio en %.2fs", first_at)
+    return _clean_for_speech(full)
+
+
 def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) -> None:
     t0 = time.monotonic()
     _beep()
@@ -529,15 +647,24 @@ def _handle(stream, floor: float, engine, whisper: WhisperModel, workdir: Path) 
         log.info("transcripción vacía")
         return
     log.info("usted: %s", text)
-    answer = _respond(text)
-    t3 = time.monotonic()
-    log.info("jarvis: %s", answer)
-    log.info("tiempos: grabación %.2fs · STT %.2fs · modelo %.2fs",
-             t1 - t0, t2 - t1, t3 - t2)
-    try:
-        _speak(answer, workdir)
-    except Exception as exc:
-        log.warning("TTS falló: %s", exc)
+    fixed = _deterministic_answer(text)
+    if fixed:
+        log.info("jarvis: %s", fixed)
+        try:
+            _speak_local(fixed, workdir)
+        except Exception as exc:
+            log.warning("voz local falló (%s); usando Edge", exc)
+            _speak_edge(fixed, workdir)
+    else:
+        try:
+            answer = _speak_stream(text, workdir)
+        except Exception as exc:
+            log.warning("streaming falló (%s); respuesta completa", exc)
+            answer = _ask(text)
+            _speak(answer, workdir)
+        log.info("jarvis: %s", answer)
+    log.info("tiempos: grabación %.2fs · STT %.2fs · modelo+voz %.2fs",
+             t1 - t0, t2 - t1, time.monotonic() - t2)
 
 
 def _selftest(engine, whisper: WhisperModel, workdir: Path) -> int:
@@ -619,14 +746,19 @@ def main() -> int:
 
     log.info("cargando oído (faster-whisper base)…")
     whisper = WhisperModel("base", device="cpu", compute_type="int8")
-    log.info("cargando detector «%s»…", WAKE_PHRASE)
-    engine = _build_engine()
+    engine = None
+    if WAKE_ENABLED or "--selftest" in sys.argv:
+        log.info("cargando detector «%s»…", WAKE_PHRASE)
+        engine = _build_engine()
 
     if "--selftest" in sys.argv:
         try:
             return _selftest(engine, whisper, workdir)
         finally:
-            engine.close()
+            if engine is not None:
+                engine.close()
+
+    threading.Thread(target=_warm_tts, daemon=True).start()
 
     if WAKE_ENABLED:
         log.info("escuchando «%s»…", WAKE_PHRASE)
@@ -656,17 +788,19 @@ def main() -> int:
                         log.info("audio de fondo %s; wake %s",
                                  "detectado" if media_playing else "terminado",
                                  "en pausa" if media_playing else "activo")
-                    if media_playing and not was_playing:
+                    if media_playing and not was_playing and engine is not None:
                         engine.reset()
                 if _trigger:
                     _trigger = False
                     log.info("activación manual (Super+J)")
-                    engine.reset()
+                    if engine is not None:
+                        engine.reset()
                     try:
                         _handle(stream, floor, engine, whisper, workdir)
                     except Exception as exc:
                         log.exception("error atendiendo la petición: %s", exc)
-                    engine.reset()
+                    if engine is not None:
+                        engine.reset()
                     log.info("escuchando «%s»…", WAKE_PHRASE)
                     continue
                 if WAKE_ENABLED and not media_playing and engine.process(frame):
@@ -675,15 +809,18 @@ def main() -> int:
                         continue
                     last_wake = now
                     log.info("«%s» detectado", WAKE_PHRASE)
-                    engine.reset()
+                    if engine is not None:
+                        engine.reset()
                     try:
                         _handle(stream, floor, engine, whisper, workdir)
                     except Exception as exc:
                         log.exception("error atendiendo la petición: %s", exc)
-                    engine.reset()
+                    if engine is not None:
+                        engine.reset()
                     log.info("escuchando «%s»…", WAKE_PHRASE)
     finally:
-        engine.close()
+        if engine is not None:
+            engine.close()
         log.info("detenido")
     return 0
 
