@@ -1,9 +1,10 @@
 {
   "version": 1,
   "generation": "463b8e44d04ddb95",
-  "revision": 5,
+  "revision": 6,
   "values": {
     "hermes.desktop.showAllProfiles": "false",
-    "hermes.desktop.model-presets": "{\"openrouter::baidu/ernie-5.5-flash-preview:free\":{\"effort\":\"minimal\"}}"
+    "hermes.desktop.model-presets": "{\"openrouter::baidu/ernie-5.5-flash-preview:free\":{\"effort\":\"minimal\"}}",
+    "hermes.desktop.collapsed-providers": "[\"openrouter\"]"
   }
 }

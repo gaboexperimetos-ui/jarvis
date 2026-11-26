@@ -71,6 +71,7 @@ plugins:
   enabled:
     - escalado-local
     - whatsapp-triage
+    - vault-memory
   # Margen para que el plugin de escalado consulte al modelo local y devuelva
   # su respuesta antes de que el hook se abandone (segundos).
   hook_callback_timeout: 200

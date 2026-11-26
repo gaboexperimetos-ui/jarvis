@@ -1,0 +1,6 @@
+name: vault-memory
+version: 1.0.0
+description: "Memoria del Segundo Cerebro como herramienta: busca en el vault y en las fuentes indexadas (SQLite FTS5, incremental, con citas de nota y ruta). Inspirado en la memoria de OpenJarvis, sin dependencias nuevas."
+author: "gabo"
+provides_tools:
+  - vault_search
