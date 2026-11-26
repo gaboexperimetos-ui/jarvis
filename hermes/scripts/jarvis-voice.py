@@ -139,6 +139,7 @@ SYSTEM_PROMPT = (
 log = logging.getLogger("jarvis-voice")
 _running = True
 _trigger = False
+_last_frame_at = 0.0
 _beep_path: Path | None = None
 _tts = None
 _tts_lock = threading.Lock()
@@ -742,8 +743,22 @@ def _on_trigger(_signum, _frame) -> None:
     _trigger = True
 
 
+def _frame_watchdog() -> None:
+    """Fuerza la salida si el stream deja de entregar frames.
+
+    PortAudio puede quedarse atascado dentro de un bucle de xrun sin lanzar
+    excepción; entonces `stream.read` no vuelve y el proceso queda vivo para
+    siempre. Al salir, systemd reinicia el servicio con los límites del unit.
+    """
+    while _running:
+        time.sleep(5)
+        if _last_frame_at and time.monotonic() - _last_frame_at > 20:
+            log.error("sin frames de audio en 20 s; reinicio forzado")
+            os._exit(1)
+
+
 def main() -> int:
-    global _beep_path, _trigger
+    global _beep_path, _trigger, _last_frame_at
     _setup_logging()
     signal.signal(signal.SIGTERM, _on_signal)
     signal.signal(signal.SIGINT, _on_signal)
@@ -784,61 +799,77 @@ def main() -> int:
     input_device = _pick_input_device()
     if input_device is not None:
         log.info("captura por dispositivo %s", input_device)
-    try:
-        with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="int16",
-                            blocksize=FRAME, device=input_device) as stream:
-            while _running:
-                data, _ = stream.read(FRAME)
-                frame = data[:, 0]
-                floor_hist.append(_rms(frame))
-                floor = float(np.median(floor_hist)) if len(floor_hist) >= 10 else 400.0
-                now = time.monotonic()
-                if WAKE_ENABLED and now >= media_check_at:
-                    was_playing = media_playing
-                    media_playing = _media_playing()
-                    media_check_at = now + 2.0
-                    if media_playing != was_playing:
-                        log.info("audio de fondo %s; wake %s",
-                                 "detectado" if media_playing else "terminado",
-                                 "en pausa" if media_playing else "activo")
-                    if media_playing and not was_playing and engine is not None:
-                        engine.reset()
-                if _trigger:
-                    _trigger = False
-                    log.info("activación manual (Super+J)")
-                    if engine is not None:
-                        engine.reset()
-                    try:
-                        _handle(stream, floor, engine, whisper, workdir)
-                    except Exception as exc:
-                        log.exception("error atendiendo la petición: %s", exc)
-                    if engine is not None:
-                        engine.reset()
-                    if WAKE_ENABLED:
-                        log.info("escuchando «%s»…", WAKE_PHRASE)
-                    else:
-                        log.info("listo; pulse Super+J para hablar")
-                    continue
-                if WAKE_ENABLED and not media_playing and engine.process(frame):
+    failures = 0
+    fatal = False
+    _last_frame_at = time.monotonic()
+    threading.Thread(target=_frame_watchdog, daemon=True).start()
+    while _running and not fatal:
+        try:
+            with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="int16",
+                                blocksize=FRAME, device=input_device) as stream:
+                if not stream.active:
+                    raise RuntimeError("el stream de captura no quedó activo")
+                failures = 0
+                _last_frame_at = time.monotonic()
+                while _running:
+                    data, _ = stream.read(FRAME)
+                    _last_frame_at = time.monotonic()
+                    frame = data[:, 0]
+                    floor_hist.append(_rms(frame))
+                    floor = float(np.median(floor_hist)) if len(floor_hist) >= 10 else 400.0
                     now = time.monotonic()
-                    if now - last_wake < WAKE_COOLDOWN:
+                    if WAKE_ENABLED and now >= media_check_at:
+                        was_playing = media_playing
+                        media_playing = _media_playing()
+                        media_check_at = now + 2.0
+                        if media_playing != was_playing:
+                            log.info("audio de fondo %s; wake %s",
+                                     "detectado" if media_playing else "terminado",
+                                     "en pausa" if media_playing else "activo")
+                        if media_playing and not was_playing and engine is not None:
+                            engine.reset()
+                    if _trigger:
+                        _trigger = False
+                        log.info("activación manual (Super+J)")
+                        if engine is not None:
+                            engine.reset()
+                        try:
+                            _handle(stream, floor, engine, whisper, workdir)
+                        except Exception as exc:
+                            log.exception("error atendiendo la petición: %s", exc)
+                        if engine is not None:
+                            engine.reset()
+                        if WAKE_ENABLED:
+                            log.info("escuchando «%s»…", WAKE_PHRASE)
+                        else:
+                            log.info("listo; pulse Super+J para hablar")
                         continue
-                    last_wake = now
-                    log.info("«%s» detectado", WAKE_PHRASE)
-                    if engine is not None:
-                        engine.reset()
-                    try:
-                        _handle(stream, floor, engine, whisper, workdir)
-                    except Exception as exc:
-                        log.exception("error atendiendo la petición: %s", exc)
-                    if engine is not None:
-                        engine.reset()
-                    log.info("escuchando «%s»…", WAKE_PHRASE)
-    finally:
-        if engine is not None:
-            engine.close()
-        log.info("detenido")
-    return 0
+                    if WAKE_ENABLED and not media_playing and engine.process(frame):
+                        now = time.monotonic()
+                        if now - last_wake < WAKE_COOLDOWN:
+                            continue
+                        last_wake = now
+                        log.info("«%s» detectado", WAKE_PHRASE)
+                        if engine is not None:
+                            engine.reset()
+                        try:
+                            _handle(stream, floor, engine, whisper, workdir)
+                        except Exception as exc:
+                            log.exception("error atendiendo la petición: %s", exc)
+                        if engine is not None:
+                            engine.reset()
+                        log.info("escuchando «%s»…", WAKE_PHRASE)
+        except Exception as exc:
+            failures += 1
+            log.error("captura de audio falló (%d/5): %s", failures, exc)
+            if failures >= 5:
+                fatal = True
+            elif _running:
+                time.sleep(min(2 ** failures, 10))
+    if engine is not None:
+        engine.close()
+    log.info("detenido")
+    return 1 if fatal else 0
 
 
 if __name__ == "__main__":
