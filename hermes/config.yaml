@@ -1463,7 +1463,17 @@ gateway:
   write_sessions_json: true
   multiplex_profiles: true
   auto_multiplex_migration: true
-  profile_routes: []
+  profile_routes:
+    # Grupo de 10mo B (colegio) -> perfil escolar aislado.
+    - name: 10mo-b
+      platform: whatsapp
+      chat_id: "120363413655061253@g.us"
+      profile: colegio
+    # Grupo de padres y madres de 10mo -> mismo perfil escolar.
+    - name: 10mo-padres
+      platform: whatsapp
+      chat_id: "593999781366-1513089963@g.us"
+      profile: colegio
   scale_to_zero:
     idle_timeout_minutes: 2
   restart_loop_guard:
@@ -1551,7 +1561,7 @@ gateway:
 #
 platform_toolsets:
   cli: [hermes-cli]
-  telegram: [hermes-telegram]
+  telegram: [hermes-telegram, mikareno, gmail, study-platform]
   discord: [hermes-discord]
   whatsapp: [hermes-whatsapp]
   slack: [hermes-slack]

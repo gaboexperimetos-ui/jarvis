@@ -1,0 +1,125 @@
+{
+  "bundle_hash": "sha256:b32ce0c0c0cc2e77b5100e930594b2f711cba850524a6266011bd626943e411e",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/mlops/models",
+  "trust_level": "builtin",
+  "verdict": "safe",
+  "findings": [
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/SKILL.md",
+      "line": 49,
+      "match": "pip install git+https://github.com/facebookresearch/segment-anything.git",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/SKILL.md",
+      "line": 52,
+      "match": "pip install opencv-python pycocotools matplotlib",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/SKILL.md",
+      "line": 55,
+      "match": "pip install transformers",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/advanced-usage.md",
+      "line": 10,
+      "match": "pip install git+https://github.com/facebookresearch/segment-anything-2.git",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/advanced-usage.md",
+      "line": 52,
+      "match": "pip install groundingdino-py",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/advanced-usage.md",
+      "line": 53,
+      "match": "pip install git+https://github.com/facebookresearch/segment-anything.git",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/troubleshooting.md",
+      "line": 17,
+      "match": "pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/troubleshooting.md",
+      "line": 31,
+      "match": "pip install git+https://github.com/facebookresearch/segment-anything.git",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/troubleshooting.md",
+      "line": 36,
+      "match": "pip install -e .",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/troubleshooting.md",
+      "line": 49,
+      "match": "pip install opencv-python pycocotools matplotlib onnxruntime onnx",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/troubleshooting.md",
+      "line": 52,
+      "match": "pip install pycocotools-windows",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "git_clone",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "segment-anything-model/references/troubleshooting.md",
+      "line": 34,
+      "match": "git clone https://github.com/facebookresearch/segment-anything.git",
+      "description": "clones a git repository at runtime"
+    }
+  ],
+  "rules": [
+    "git_clone",
+    "unpinned_pip_install"
+  ],
+  "scanned_at": "2026-11-21T03:53:31.694027+00:00",
+  "summary": "models: safe \u2014 12 finding(s) in supply_chain",
+  "fresh": true
+}

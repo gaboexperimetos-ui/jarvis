@@ -1,0 +1,13 @@
+{
+  "bundle_hash": "sha256:e4228c4386499c28025489d6ab8933b349957a09fdcf7f76aa757701d3948709",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/research/blogwatcher",
+  "trust_level": "builtin",
+  "verdict": "safe",
+  "findings": [],
+  "rules": [],
+  "scanned_at": "2026-11-21T03:52:52.079464+00:00",
+  "summary": "blogwatcher: clean scan, no threats detected",
+  "fresh": true
+}

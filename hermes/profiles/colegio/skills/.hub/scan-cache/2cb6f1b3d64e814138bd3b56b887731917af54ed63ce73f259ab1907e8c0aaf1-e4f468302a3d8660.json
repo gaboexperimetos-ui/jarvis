@@ -1,0 +1,13 @@
+{
+  "bundle_hash": "sha256:2cb6f1b3d64e814138bd3b56b887731917af54ed63ce73f259ab1907e8c0aaf1",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/media/songsee",
+  "trust_level": "builtin",
+  "verdict": "safe",
+  "findings": [],
+  "rules": [],
+  "scanned_at": "2026-11-21T03:53:14.486017+00:00",
+  "summary": "songsee: clean scan, no threats detected",
+  "fresh": true
+}

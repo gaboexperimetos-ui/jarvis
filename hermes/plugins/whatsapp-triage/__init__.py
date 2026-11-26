@@ -33,10 +33,13 @@ from typing import Any, Optional
 logger = logging.getLogger(__name__)
 
 HERMES_HOME = Path(os.environ.get("HERMES_HOME") or (Path.home() / ".hermes"))
+# Un perfil (``~/.hermes/profiles/<nombre>``) comparte la configuración raíz del
+# dueño: el .env con los canales y el log canónico del inbox viven en la raíz.
+ROOT_HOME = HERMES_HOME.parents[1] if HERMES_HOME.parent.name == "profiles" else HERMES_HOME
 ENV_PATH = HERMES_HOME / ".env"
-LOG_DIR = HERMES_HOME / "logs"
+ROOT_ENV_PATH = ROOT_HOME / ".env"
+LOG_DIR = ROOT_HOME / "logs"
 LOG_PATH = LOG_DIR / "whatsapp-inbox.jsonl"
-
 DEFAULT_TRIGGER = "!Hermes"
 NOVA_DEFAULT_URL = "http://127.0.0.1:3100/mcp"
 EXTRA_ENV_PATHS = (Path("/home/gabo/proyectos/styp/.env"),)
@@ -67,7 +70,7 @@ def _read_setting(name: str, default: str = "") -> str:
     value = os.environ.get(name)
     if value:
         return value.strip()
-    for path in (ENV_PATH, *EXTRA_ENV_PATHS):
+    for path in (ENV_PATH, ROOT_ENV_PATH, *EXTRA_ENV_PATHS):
         try:
             for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
                 line = line.strip()

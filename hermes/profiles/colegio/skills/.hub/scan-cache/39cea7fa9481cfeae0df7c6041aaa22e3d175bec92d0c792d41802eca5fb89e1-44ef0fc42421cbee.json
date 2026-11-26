@@ -1,0 +1,45 @@
+{
+  "bundle_hash": "sha256:39cea7fa9481cfeae0df7c6041aaa22e3d175bec92d0c792d41802eca5fb89e1",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/research/llm-wiki",
+  "trust_level": "builtin",
+  "verdict": "caution",
+  "findings": [
+    {
+      "pattern_id": "systemd_service",
+      "severity": "medium",
+      "category": "persistence",
+      "file": "SKILL.md",
+      "line": 451,
+      "match": "# ~/.config/systemd/user/obsidian-wiki-sync.service",
+      "description": "references or enables systemd service"
+    },
+    {
+      "pattern_id": "unpinned_npm_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 430,
+      "match": "npm install -g obsidian-headless",
+      "description": "npm install without version pinning"
+    },
+    {
+      "pattern_id": "sudo_usage",
+      "severity": "high",
+      "category": "privilege_escalation",
+      "file": "SKILL.md",
+      "line": 471,
+      "match": "sudo loginctl enable-linger $USER",
+      "description": "uses sudo (privilege escalation)"
+    }
+  ],
+  "rules": [
+    "sudo_usage",
+    "systemd_service",
+    "unpinned_npm_install"
+  ],
+  "scanned_at": "2026-11-21T03:53:09.257163+00:00",
+  "summary": "llm-wiki: caution \u2014 3 finding(s) in persistence, privilege_escalation, supply_chain",
+  "fresh": true
+}

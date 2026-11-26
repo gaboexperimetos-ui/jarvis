@@ -1,0 +1,32 @@
+# MEMORY.md — notas del agente sobre este entorno
+
+## Máquina (verificada 2026-11-23)
+- Host `asus-tuf`, usuario `gabo`, Linux. Workspace `/home/gabo`.
+- GPU RTX 3060 Laptop 6 GB; RAM 14 GB (no cargar dos modelos grandes a la vez).
+- Router llama.cpp local en `127.0.0.1:8004` (modelo `deepseek-v4pro`, alias `chat`).
+- Zona horaria America/Lima (UTC-5). No suspende.
+
+## Proyectos en disco (`/home/gabo`)
+- `proyectos/styp` — NOVA: centro de control Zig, servicio `study-platform` en :3100. BD `data/app.db` (fuente de verdad). Espejo `.md` en `notes/`.
+- `SegundoCerebro` — vault Obsidian (notas personales, no borrar sin permiso).
+- Repos GitHub `gaboexperimetos-ui`: automaticaion-bida, CyberHex, mikareno-mcp.
+
+## Servicios systemd (usuario)
+- `hermes-gateway` (el agente), `study-platform` (NOVA :3100).
+- `mikareno-mcp`, `genoffice-mcp`, `freellmapi`, etc. Todos `enabled` + `Linger=yes`.
+
+## Herramientas del agente (MCP, verificadas)
+- `mikareno` (33 tools): notas, tareas, calendario, mensajes, asistencia, perfil.
+- `study-platform` (33 tools): `search_notes`, `get_note`, `create_note`, `note_update`, `note_delete`, `calendar_add`, `calendar_list`; URL MCP `127.0.0.1:3100/mcp`.
+- Terminal local: acceso a disco, servicios, red, git.
+- STT audio: Groq `whisper-large-v3-turbo` (0 €). TTS: `es-EC-LuisNeural`.
+
+## Cerebro y automatización (2026-11-23)
+- Cerebro: local `deepseek-v4pro` (:8004, sin censura, privado). Papel: preguntas sensibles y código ligero; NO tareas pesadas ni cadenas largas de tools. Cloud solo de respaldo si el local falla, nunca para datos sensibles.
+- Automatización: scripts deterministas + timers systemd. `wa-10mo-hourly.timer` resume chats de 10mo cada hora; el plugin `whatsapp-triage` manda lo importante a NOVA (:3100) y a Telegram (DM 8684041897).
+- Arreglos: `mcp-google-slides` con `DOTENV_CONFIG_QUIET=true` (su banner rompía el JSON-RPC); plugin triage corregido (URL 3917→3100, tags como array, clave `STUDY_PLATFORM_MCP_KEY`).
+
+## Convenciones
+- Responder en español, de usted, breve. No repetir el rollo.
+- Verificar el estado real de la máquina antes de afirmar nada.
+- No escribir a terceros sin pedido explícito.

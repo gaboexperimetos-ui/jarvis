@@ -1,0 +1,54 @@
+{
+  "bundle_hash": "sha256:845ae48c5611c924cc09d9b243741e29ac168671d54d9c6827f89efb0344d3c6",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/research/parallel-cli",
+  "trust_level": "builtin",
+  "verdict": "dangerous",
+  "findings": [
+    {
+      "pattern_id": "curl_pipe_shell",
+      "severity": "critical",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 67,
+      "match": "curl -fsSL https://parallel.ai/install.sh | bash",
+      "description": "curl piped to shell (download-and-execute)"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 61,
+      "match": "pip install \"parallel-web-tools[cli]\"",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 379,
+      "match": "pip install --upgrade parallel-web-tools",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "unpinned_npm_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 55,
+      "match": "npm install -g parallel-web-cli",
+      "description": "npm install without version pinning"
+    }
+  ],
+  "rules": [
+    "curl_pipe_shell",
+    "unpinned_npm_install",
+    "unpinned_pip_install"
+  ],
+  "scanned_at": "2026-11-21T03:53:06.564256+00:00",
+  "summary": "parallel-cli: dangerous \u2014 4 finding(s) in supply_chain",
+  "fresh": true
+}

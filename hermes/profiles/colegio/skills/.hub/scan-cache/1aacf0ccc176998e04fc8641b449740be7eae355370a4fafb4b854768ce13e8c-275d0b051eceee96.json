@@ -1,0 +1,63 @@
+{
+  "bundle_hash": "sha256:1aacf0ccc176998e04fc8641b449740be7eae355370a4fafb4b854768ce13e8c",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/software-development/python-debugpy",
+  "trust_level": "builtin",
+  "verdict": "caution",
+  "findings": [
+    {
+      "pattern_id": "hardcoded_ip_port",
+      "severity": "medium",
+      "category": "network",
+      "file": "SKILL.md",
+      "line": 183,
+      "match": ".venv/bin/python -m debugpy --listen 127.0.0.1:5678 --wait-for-client your_script.py arg1",
+      "description": "hardcoded IP address with port"
+    },
+    {
+      "pattern_id": "hardcoded_ip_port",
+      "severity": "medium",
+      "category": "network",
+      "file": "SKILL.md",
+      "line": 189,
+      "match": ".venv/bin/python -m debugpy --listen 127.0.0.1:5678 --wait-for-client -m your.module",
+      "description": "hardcoded IP address with port"
+    },
+    {
+      "pattern_id": "hardcoded_ip_port",
+      "severity": "medium",
+      "category": "network",
+      "file": "SKILL.md",
+      "line": 197,
+      "match": ".venv/bin/python -m debugpy --listen 127.0.0.1:5678 --pid <pid>",
+      "description": "hardcoded IP address with port"
+    },
+    {
+      "pattern_id": "unpinned_pip_install",
+      "severity": "medium",
+      "category": "supply_chain",
+      "file": "SKILL.md",
+      "line": 271,
+      "match": "in-place pip install into the selected application generation.",
+      "description": "pip install without version pinning"
+    },
+    {
+      "pattern_id": "sudo_usage",
+      "severity": "high",
+      "category": "privilege_escalation",
+      "file": "SKILL.md",
+      "line": 203,
+      "match": "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope",
+      "description": "uses sudo (privilege escalation)"
+    }
+  ],
+  "rules": [
+    "hardcoded_ip_port",
+    "sudo_usage",
+    "unpinned_pip_install"
+  ],
+  "scanned_at": "2026-11-21T03:52:24.630353+00:00",
+  "summary": "python-debugpy: caution \u2014 5 finding(s) in network, privilege_escalation, supply_chain",
+  "fresh": true
+}

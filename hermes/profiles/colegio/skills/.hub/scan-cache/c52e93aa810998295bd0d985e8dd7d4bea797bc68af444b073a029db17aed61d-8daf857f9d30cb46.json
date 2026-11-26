@@ -1,0 +1,52 @@
+{
+  "bundle_hash": "sha256:c52e93aa810998295bd0d985e8dd7d4bea797bc68af444b073a029db17aed61d",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/media/gif-search",
+  "trust_level": "builtin",
+  "verdict": "dangerous",
+  "findings": [
+    {
+      "pattern_id": "env_exfil_curl",
+      "severity": "critical",
+      "category": "exfiltration",
+      "file": "SKILL.md",
+      "line": 43,
+      "match": "curl -s \"https://tenor.googleapis.com/v2/search?q=thumbs+up&limit=5&key=${TENOR_API_KEY}\" | jq -r '.results[].media_f...",
+      "description": "curl command interpolating secret environment variable"
+    },
+    {
+      "pattern_id": "env_exfil_curl",
+      "severity": "critical",
+      "category": "exfiltration",
+      "file": "SKILL.md",
+      "line": 46,
+      "match": "curl -s \"https://tenor.googleapis.com/v2/search?q=nice+work&limit=3&key=${TENOR_API_KEY}\" | jq -r '.results[].media_f...",
+      "description": "curl command interpolating secret environment variable"
+    },
+    {
+      "pattern_id": "env_exfil_curl",
+      "severity": "critical",
+      "category": "exfiltration",
+      "file": "SKILL.md",
+      "line": 53,
+      "match": "URL=$(curl -s \"https://tenor.googleapis.com/v2/search?q=celebration&limit=1&key=${TENOR_API_KEY}\" | jq -r '.results[0...",
+      "description": "curl command interpolating secret environment variable"
+    },
+    {
+      "pattern_id": "env_exfil_curl",
+      "severity": "critical",
+      "category": "exfiltration",
+      "file": "SKILL.md",
+      "line": 60,
+      "match": "curl -s \"https://tenor.googleapis.com/v2/search?q=cat&limit=3&key=${TENOR_API_KEY}\" | jq '.results[] | {title: .title...",
+      "description": "curl command interpolating secret environment variable"
+    }
+  ],
+  "rules": [
+    "env_exfil_curl"
+  ],
+  "scanned_at": "2026-11-21T03:53:11.873076+00:00",
+  "summary": "gif-search: dangerous \u2014 4 finding(s) in exfiltration",
+  "fresh": true
+}

@@ -1,0 +1,43 @@
+{
+  "bundle_hash": "sha256:8afbff5a6d69b6a3d491d10eb832a8e718e184a2b2d8947c00b7b5a06eb4e18b",
+  "scanner_version": "skills-guard-v16",
+  "source": "official",
+  "source_url": "official/research/osint-investigation",
+  "trust_level": "builtin",
+  "verdict": "safe",
+  "findings": [
+    {
+      "pattern_id": "python_environ_get_secret",
+      "severity": "medium",
+      "category": "exfiltration",
+      "file": "scripts/fetch_courtlistener.py",
+      "line": 130,
+      "match": "p.add_argument(\"--token\", default=os.environ.get(\"COURTLISTENER_TOKEN\"))",
+      "description": "reads secret via os.environ.get() (normal API-key access; informational)"
+    },
+    {
+      "pattern_id": "python_environ_get_secret",
+      "severity": "medium",
+      "category": "exfiltration",
+      "file": "scripts/fetch_senate_ld.py",
+      "line": 127,
+      "match": "p.add_argument(\"--token\", default=os.environ.get(\"SENATE_LDA_TOKEN\"))",
+      "description": "reads secret via os.environ.get() (normal API-key access; informational)"
+    },
+    {
+      "pattern_id": "python_environ_get_secret",
+      "severity": "medium",
+      "category": "exfiltration",
+      "file": "scripts/fetch_opencorporates.py",
+      "line": 176,
+      "match": "p.add_argument(\"--token\", default=os.environ.get(\"OPENCORPORATES_API_TOKEN\"))",
+      "description": "reads secret via os.environ.get() (normal API-key access; informational)"
+    }
+  ],
+  "rules": [
+    "python_environ_get_secret"
+  ],
+  "scanned_at": "2026-11-21T03:53:01.319875+00:00",
+  "summary": "osint-investigation: safe \u2014 3 finding(s) in exfiltration",
+  "fresh": true
+}
