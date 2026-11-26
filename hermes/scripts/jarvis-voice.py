@@ -572,6 +572,22 @@ def _ask_stream(text: str):
                 yield delta
 
 
+def _take_chunk(buf: str) -> tuple[str, str]:
+    """Separa un trozo hablable: frase completa o, si es larga, hasta una coma."""
+    m = _SENT_SPLIT.search(buf)
+    if m:
+        return buf[:m.start()].strip(), buf[m.end():]
+    if len(buf) >= 60:
+        cut = max(buf.rfind(","), buf.rfind(";"), buf.rfind(":"))
+        if cut > 0:
+            return buf[:cut + 1].strip(), buf[cut + 1:].lstrip()
+    if len(buf) > 120:
+        cut = buf.rfind(" ", 0, 120)
+        cut = cut if cut > 0 else 120
+        return buf[:cut].strip(), buf[cut:].lstrip()
+    return "", buf
+
+
 def _say_chunk(sentence: str, workdir: Path, idx: int) -> None:
     wav = workdir / f"answer_{idx}.wav"
     dt = _synth_wav_local(sentence, wav)
@@ -591,27 +607,13 @@ def _speak_stream(text: str, workdir: Path) -> str:
             buf += delta
             full += delta
             while True:
-                m = _SENT_SPLIT.search(buf)
-                if not m:
-                    break
-                sentence = buf[:m.start()].strip()
-                buf = buf[m.end():]
+                sentence, buf = _take_chunk(buf)
                 if not sentence:
-                    continue
+                    break
                 if first_at is None:
                     first_at = time.monotonic() - t0
                 _say_chunk(sentence, workdir, idx)
                 idx += 1
-            # Frase muy larga sin puntuación: no esperar al final.
-            if len(buf) > 160:
-                cut = buf.rfind(" ", 0, 160)
-                cut = cut if cut > 0 else 160
-                sentence, buf = buf[:cut].strip(), buf[cut:].lstrip()
-                if sentence:
-                    if first_at is None:
-                        first_at = time.monotonic() - t0
-                    _say_chunk(sentence, workdir, idx)
-                    idx += 1
             if len(full) >= MAX_ANSWER_CHARS:
                 break
     except Exception:
@@ -780,7 +782,7 @@ def main() -> int:
                 floor_hist.append(_rms(frame))
                 floor = float(np.median(floor_hist)) if len(floor_hist) >= 10 else 400.0
                 now = time.monotonic()
-                if now >= media_check_at:
+                if WAKE_ENABLED and now >= media_check_at:
                     was_playing = media_playing
                     media_playing = _media_playing()
                     media_check_at = now + 2.0
@@ -801,7 +803,10 @@ def main() -> int:
                         log.exception("error atendiendo la petición: %s", exc)
                     if engine is not None:
                         engine.reset()
-                    log.info("escuchando «%s»…", WAKE_PHRASE)
+                    if WAKE_ENABLED:
+                        log.info("escuchando «%s»…", WAKE_PHRASE)
+                    else:
+                        log.info("listo; pulse Super+J para hablar")
                     continue
                 if WAKE_ENABLED and not media_playing and engine.process(frame):
                     now = time.monotonic()
