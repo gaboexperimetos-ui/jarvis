@@ -1,1 +1,1 @@
-{"pid": 88185, "kind": "hermes-gateway", "argv": ["/home/gabo/.hermes/hermes-agent/hermes_cli/main.py", "gateway", "run"], "start_time": 228114, "hermes_home": "/home/gabo/.hermes/profiles/colegio", "pidns": "4026531836"}
+{"pid": 967, "kind": "hermes-gateway", "argv": ["/home/gabo/.hermes/hermes-agent/hermes_cli/main.py", "gateway", "run"], "start_time": 839, "hermes_home": "/home/gabo/.hermes/profiles/colegio", "pidns": "4026531836"}
