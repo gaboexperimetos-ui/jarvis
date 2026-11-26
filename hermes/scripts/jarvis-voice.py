@@ -63,8 +63,13 @@ VOSK_DIR = Path(os.environ.get(
     "JARVIS_VOSK_DIR",
     str(HERMES_HOME / "cache" / "vosk" / "vosk-model-small-es-0.42"),
 ))
-WAKE_GRAMMAR = json.dumps(["hey jarvis", "jarvis", "[unk]"])
-_WAKE_RE = re.compile(r"\b(jarvis|yarvis|yarbis|jarbis)\b")
+# Solo la frase completa. Con «jarvis» suelta en la gramática, Vosk forzaba esa
+# palabra ante cualquier voz (YouTube, conversaciones) y se activaba sola.
+WAKE_GRAMMAR = json.dumps(["hey jarvis", "[unk]"])
+_WAKE_RE = re.compile(r"^(?:(?:hey|ey|ei|hei)\s+)?(?:jarvis|yarvis|yarbis|jarbis)$")
+WAKE_MIN_CONF = float(os.environ.get("JARVIS_WAKE_MIN_CONF", "0.7"))
+WAKE_COOLDOWN = float(os.environ.get("JARVIS_WAKE_COOLDOWN", "3.0"))
+WAKE_ENABLED = os.environ.get("JARVIS_WAKE_ENABLED", "1").lower() not in ("0", "false", "no", "off")
 
 _DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 _MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
@@ -176,14 +181,20 @@ class _VoskWake:
 
     def process(self, frame: np.ndarray) -> bool:
         pcm = np.ascontiguousarray(frame, dtype=np.int16).tobytes()
-        if self._rec.AcceptWaveform(pcm):
-            text = json.loads(self._rec.Result()).get("text", "")
-        else:
-            text = json.loads(self._rec.PartialResult()).get("partial", "")
-        if _is_wake_text(text):
-            self.reset()
-            return True
-        return False
+        # Solo resultados FINALES: los parciales hacían saltar «jarvis» a media
+        # palabra con cualquier ruido de fondo.
+        if not self._rec.AcceptWaveform(pcm):
+            return False
+        data = json.loads(self._rec.Result())
+        text = data.get("text", "")
+        if not _is_wake_text(text):
+            return False
+        confs = [float(w["conf"]) for w in (data.get("result") or []) if "conf" in w]
+        if confs and min(confs) < WAKE_MIN_CONF:
+            log.debug("«%s» descartado por baja confianza (%.2f)", text, min(confs))
+            return False
+        self.reset()
+        return True
 
     def reset(self) -> None:
         self._rec = self._new_rec()
@@ -194,7 +205,7 @@ class _VoskWake:
 
 
 def _is_wake_text(text: str) -> bool:
-    return bool(_WAKE_RE.search(_norm(text)))
+    return bool(_WAKE_RE.search(" ".join(_norm(text).split())))
 
 
 def _pick_input_device() -> object:
@@ -432,6 +443,11 @@ def _speak_local(text: str, workdir: Path) -> None:
     if len(audio.samples) == 0:
         raise RuntimeError("la voz local no generó audio")
     pcm = np.clip(np.asarray(audio.samples, dtype=np.float32), -1, 1)
+    # La voz Miro sale baja: normaliza al máximo sin recortar para que se oiga
+    # sobre el audio de fondo (YouTube, etc.).
+    peak = float(np.max(np.abs(pcm))) if pcm.size else 0.0
+    if 0.0 < peak < 0.95:
+        pcm = pcm * (0.95 / peak)
     wav = workdir / "answer.wav"
     with wave.open(str(wav), "wb") as w:
         w.setnchannels(1)
@@ -577,7 +593,11 @@ def main() -> int:
         finally:
             engine.close()
 
-    log.info("escuchando «%s»…", WAKE_PHRASE)
+    if WAKE_ENABLED:
+        log.info("escuchando «%s»…", WAKE_PHRASE)
+    else:
+        log.info("wake automático desactivado; use Super+J")
+    last_wake = 0.0
     floor_hist: deque[float] = deque(maxlen=40)
     input_device = _pick_input_device()
     if input_device is not None:
@@ -601,7 +621,11 @@ def main() -> int:
                     engine.reset()
                     log.info("escuchando «%s»…", WAKE_PHRASE)
                     continue
-                if engine.process(frame):
+                if WAKE_ENABLED and engine.process(frame):
+                    now = time.monotonic()
+                    if now - last_wake < WAKE_COOLDOWN:
+                        continue
+                    last_wake = now
                     log.info("«%s» detectado", WAKE_PHRASE)
                     engine.reset()
                     try:
