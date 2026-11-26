@@ -39,6 +39,11 @@ HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
 
 SAMPLE_RATE = 16000
 FRAME = 1280
+# Dispositivo de captura. El `default` de ALSA va directo al hardware y, con
+# PipeWire de por medio, entra en un bucle de xrun que dispara el uso de RAM.
+# Se prefiere el host de PipeWire/Pulse por nombre; si no está, se respeta
+# `JARVIS_INPUT_DEVICE` y, en último caso, el `default`.
+INPUT_DEVICE = os.environ.get("JARVIS_INPUT_DEVICE", "")
 WAKE_PHRASE = os.environ.get("JARVIS_WAKE", "hey jarvis")
 VOICE = os.environ.get("JARVIS_VOICE", "es-ES-AlvaroNeural")
 RATE = os.environ.get("JARVIS_RATE", "-10%")
@@ -190,6 +195,24 @@ class _VoskWake:
 
 def _is_wake_text(text: str) -> bool:
     return bool(_WAKE_RE.search(_norm(text)))
+
+
+def _pick_input_device() -> object:
+    """Devuelve el índice del dispositivo de captura o `None` para el
+    predeterminado. Evita el `default` de ALSA (hw directo), que con PipeWire
+    provoca un bucle de xrun y una fuga de RAM; prefiere `pipewire`/`pulse`."""
+    if INPUT_DEVICE:
+        return int(INPUT_DEVICE) if INPUT_DEVICE.isdigit() else INPUT_DEVICE
+    try:
+        for i, d in enumerate(sd.query_devices()):
+            if d.get("max_input_channels", 0) <= 0:
+                continue
+            name = (d.get("name") or "").lower()
+            if name in ("pipewire", "pulse"):
+                return i
+    except Exception as exc:
+        log.warning("no se pudo listar dispositivos de audio: %s", exc)
+    return None
 
 
 def _build_engine():
@@ -556,9 +579,12 @@ def main() -> int:
 
     log.info("escuchando «%s»…", WAKE_PHRASE)
     floor_hist: deque[float] = deque(maxlen=40)
+    input_device = _pick_input_device()
+    if input_device is not None:
+        log.info("captura por dispositivo %s", input_device)
     try:
         with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="int16",
-                            blocksize=FRAME) as stream:
+                            blocksize=FRAME, device=input_device) as stream:
             while _running:
                 data, _ = stream.read(FRAME)
                 frame = data[:, 0]
