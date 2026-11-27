@@ -7,11 +7,11 @@ import { join } from "node:path"
 
 // Cuotas de las APIs gratis en la barra lateral.
 //
-//   OR    remanente real de OpenRouter (lo dice su API /key)
-//   Zen   mensajes gratis de OpenCode Zen usados hoy (el tope no es público)
-//   Warp  mensajes por el puente Unlimited (mismo tope, otra IP)
+//   OpenRouter  remanente real de OpenRouter (lo dice su API /key)
+//   OpenCode    mensajes gratis de OpenCode (Zen) usados hoy (el tope no es público)
+//   Kilo        mensajes de Kilo Code (kilofree) usados hoy (tampoco publica tope)
 //
-// Zen y Warp no exponen "cuántos quedan": el servidor solo responde 429
+// OpenCode y Kilo no exponen "cuántos quedan": el servidor solo responde 429
 // FreeUsageLimitError. Por eso se muestra el consumo de hoy y, cuando llega
 // el límite, la hora a la que se reinicia.
 
@@ -261,13 +261,13 @@ export default Plugin.define({
 
     function openRouterText() {
       const value = quota().openrouter
-      if (!value) return "OR …"
-      if (value.error) return `OR ? (${value.error})`
+      if (!value) return "OpenRouter …"
+      if (value.error) return `OpenRouter ? (${value.error})`
       const credits =
         typeof value.credits === "number" && value.credits < 1
           ? ` · $${value.credits.toFixed(2)}`
           : ""
-      return `OR ${value.remaining}/${value.limit}${credits}`
+      return `OpenRouter ${value.remaining}/${value.limit}${credits}`
     }
 
     function openRouterColor() {
@@ -283,8 +283,7 @@ export default Plugin.define({
       render: () => (
         <box flexDirection="column" flexShrink={0}>
           <text fg={openRouterColor()}>{openRouterText()}</text>
-          <text fg={bucketColor(quota().zen)}>{bucketText("Zen", quota().zen)}</text>
-          <text fg={bucketColor(quota().warp)}>{bucketText("Warp", quota().warp)}</text>
+          <text fg={bucketColor(quota().zen)}>{bucketText("OpenCode", quota().zen)}</text>
           <text fg={bucketColor(quota().kilo)}>{bucketText("Kilo", quota().kilo)}</text>
         </box>
       ),
@@ -300,12 +299,10 @@ export default Plugin.define({
           ? `OpenRouter saldo clave: $${value.openrouter.credits.toFixed(4)}`
           : "",
         "",
-        `OpenCode Zen hoy: ${value.zen.used} mensajes${value.zen.resetAt ? ` · límite hasta ${clock(value.zen.resetAt)} (${countdown(value.zen.resetAt)})` : ""}`,
-        `Unlimited hoy: ${value.warp.used} mensajes${value.warp.resetAt ? ` · límite hasta ${clock(value.warp.resetAt)} (${countdown(value.warp.resetAt)})` : ""}`,
+        `OpenCode (Zen) hoy: ${value.zen.used} mensajes${value.zen.resetAt ? ` · límite hasta ${clock(value.zen.resetAt)} (${countdown(value.zen.resetAt)})` : ""}`,
         `Kilo Code hoy: ${value.kilo.used} mensajes${value.kilo.resetAt ? ` · límite hasta ${clock(value.kilo.resetAt)} (${countdown(value.kilo.resetAt)})` : ""}`,
-        value.warpNote ? `Unlimited estado: ${value.warpNote}` : "",
         "",
-        "Zen, Warp y Kilo no publican el tope diario; solo avisan con 429 al llegar.",
+        "OpenCode y Kilo no publican el tope diario; solo avisan con 429 al llegar.",
         `Actualizado: ${value.at ? clock(value.at) : "—"}`,
       ].filter(Boolean)
       await context.ui.dialog.alert({ title: "Cuotas gratis", message: lines.join("\n") })
@@ -321,7 +318,7 @@ export default Plugin.define({
           commands: [
             {
               id: "quota-bar.show",
-              title: "Ver cuotas gratis (OpenRouter, Zen, Unlimited)",
+              title: "Ver cuotas gratis (OpenRouter, OpenCode, Kilo)",
               description: "Detalle de los usos gratis restantes de hoy",
               group: "Cuotas",
               palette: true,
