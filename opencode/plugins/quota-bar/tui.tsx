@@ -26,7 +26,7 @@ const DB_PATH = join(DATA_DIR, "opencode.db")
 const SERVICE_FILE = join(CONFIG_DIR, "service.json")
 const UNLIMITED_FILE = join(CONFIG_DIR, "unlimited.json")
 
-const LOCAL_EVERY_MS = 30_000
+const LOCAL_EVERY_MS = 5_000
 const OPENROUTER_EVERY_MS = 5 * 60_000
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -135,45 +135,57 @@ async function bucket(provider: string, resetAt: number | undefined, now: number
   return { used: Number(counted?.[0]?.n) || 0 }
 }
 
+// Agotamiento real de un proveedor gratis: mira su ÚLTIMO mensaje. Si fue un
+// error (finish='error'), está agotado. El reinicio es retryAfterMs si viene,
+// o 24 h desde el error (ventana diaria) cuando no lo trae (Warp y Kilo no dan
+// retryAfterMs). Si el último mensaje fue correcto, no está agotado.
+async function exhaustedReset(provider: string, now: number): Promise<number | undefined> {
+  const last = await rows(
+    `select time_created as ts, data as raw
+       from session_message
+      where type='assistant'
+        and json_extract(data,'$.model.providerID') = '${provider}'
+      order by time_created desc
+      limit 1`,
+  )
+  if (!last.length) return undefined
+  const row = last[0]
+  let msg: any
+  try {
+    msg = JSON.parse(row.raw)
+  } catch {
+    return undefined
+  }
+  if (msg?.finish !== "error") return undefined
+  const retry = Number(msg?.error?.retryAfterMs)
+  const base = Number(msg?.time?.completed ?? msg?.time?.created ?? row.ts)
+  if (!Number.isFinite(base)) return undefined
+  return retry > 0 ? base + retry : base + DAY_MS
+}
+
 async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "kilo" | "warpNote">> {
   const now = Date.now()
   let warpNote: string | undefined
 
-  // Reinicios conocidos: el 429 más reciente de cada proveedor.
-  const resets = new Map<string, number>()
-  const recent = await rows(
-    `select time_created as ts, data as raw
-       from session_message
-      where type='assistant'
-        and time_created >= ${now - 2 * DAY_MS}
-        and data like '%provider.free-limit%'
-      order by time_created desc
-      limit 40`,
-  )
-  for (const row of recent) {
-    let msg: any
-    try {
-      msg = JSON.parse(row.raw)
-    } catch {
-      continue
-    }
-    const provider = msg?.model?.providerID
-    if (provider !== "opencode" && provider !== "unlimited" && provider !== "kilofree") continue
-    if (resets.has(provider)) continue
-    const retry = Number(msg?.error?.retryAfterMs)
-    if (!Number.isFinite(retry) || retry <= 0) continue
-    const base = Number(msg?.time?.completed ?? msg?.time?.created ?? row.ts)
-    resets.set(provider, base + retry)
-  }
-
-  const zen = await bucket("opencode", resets.get("opencode"), now)
-  const warp = await bucket("unlimited", resets.get("unlimited"), now)
-  const kilo = await bucket("kilofree", resets.get("kilofree"), now)
+  // Reinicio por agotamiento (último mensaje de error) de cada proveedor.
+  const zenReset = await exhaustedReset("opencode", now)
+  let warpReset = await exhaustedReset("unlimited", now)
+  const kiloReset = await exhaustedReset("kilofree", now)
 
   const state = readJson(UNLIMITED_FILE)
   const ip = typeof state?.lastIp === "string" ? state.lastIp : ""
   const flag = typeof state?.lastBucket === "string" ? state.lastBucket : ""
+  // Warp: unlimited.json es la señal fiable; si está agotado y no hay reset
+  // por BD, usa la hora de la última rotación + 24 h.
+  if (flag === "exhausted" && !warpReset) {
+    const at = Number(state?.updatedAt ? Date.parse(state.updatedAt) : 0)
+    if (Number.isFinite(at) && at > 0) warpReset = at + DAY_MS
+  }
   if (flag && flag !== "ok") warpNote = [flag, ip].filter(Boolean).join(" · ") || flag
+
+  const zen = await bucket("opencode", zenReset, now)
+  const warp = await bucket("unlimited", warpReset, now)
+  const kilo = await bucket("kilofree", kiloReset, now)
 
   return { zen, warp, kilo, warpNote }
 }
