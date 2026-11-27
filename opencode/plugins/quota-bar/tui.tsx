@@ -276,7 +276,7 @@ export default Plugin.define({
     }
 
     const unregisterSidebar = context.ui.slot({
-      append: "sidebar.content",
+      prepend: "sidebar.content",
       render: () => (
         <box flexDirection="column" flexShrink={0}>
           <text fg={openRouterColor()}>{openRouterText()}</text>
