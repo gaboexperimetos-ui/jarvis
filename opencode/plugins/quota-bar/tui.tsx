@@ -9,9 +9,10 @@ import { join } from "node:path"
 //
 //   OpenRouter  remanente real de OpenRouter (lo dice su API /key)
 //   OpenCode    mensajes gratis de OpenCode (Zen) usados hoy (el tope no es público)
+//   Warp        mensajes del puente Unlimited (Warp) usados hoy (tampoco publica tope)
 //   Kilo        mensajes de Kilo Code (kilofree) usados hoy (tampoco publica tope)
 //
-// OpenCode y Kilo no exponen "cuántos quedan": el servidor solo responde 429
+// OpenCode, Warp y Kilo no exponen "cuántos quedan": el servidor solo responde 429
 // FreeUsageLimitError. Por eso se muestra el consumo de hoy y, cuando llega
 // el límite, la hora a la que se reinicia.
 
@@ -284,6 +285,7 @@ export default Plugin.define({
         <box flexDirection="column" flexShrink={0}>
           <text fg={openRouterColor()}>{openRouterText()}</text>
           <text fg={bucketColor(quota().zen)}>{bucketText("OpenCode", quota().zen)}</text>
+          <text fg={bucketColor(quota().warp)}>{bucketText("Warp", quota().warp)}</text>
           <text fg={bucketColor(quota().kilo)}>{bucketText("Kilo", quota().kilo)}</text>
         </box>
       ),
@@ -300,9 +302,11 @@ export default Plugin.define({
           : "",
         "",
         `OpenCode (Zen) hoy: ${value.zen.used} mensajes${value.zen.resetAt ? ` · límite hasta ${clock(value.zen.resetAt)} (${countdown(value.zen.resetAt)})` : ""}`,
+        `Warp (Unlimited) hoy: ${value.warp.used} mensajes${value.warp.resetAt ? ` · límite hasta ${clock(value.warp.resetAt)} (${countdown(value.warp.resetAt)})` : ""}`,
         `Kilo Code hoy: ${value.kilo.used} mensajes${value.kilo.resetAt ? ` · límite hasta ${clock(value.kilo.resetAt)} (${countdown(value.kilo.resetAt)})` : ""}`,
+        value.warpNote ? `Warp estado: ${value.warpNote}` : "",
         "",
-        "OpenCode y Kilo no publican el tope diario; solo avisan con 429 al llegar.",
+        "OpenCode, Warp y Kilo no publican el tope diario; solo avisan con 429 al llegar.",
         `Actualizado: ${value.at ? clock(value.at) : "—"}`,
       ].filter(Boolean)
       await context.ui.dialog.alert({ title: "Cuotas gratis", message: lines.join("\n") })
@@ -318,7 +322,7 @@ export default Plugin.define({
           commands: [
             {
               id: "quota-bar.show",
-              title: "Ver cuotas gratis (OpenRouter, OpenCode, Kilo)",
+              title: "Ver cuotas gratis (OpenRouter, OpenCode, Warp, Kilo)",
               description: "Detalle de los usos gratis restantes de hoy",
               group: "Cuotas",
               palette: true,
