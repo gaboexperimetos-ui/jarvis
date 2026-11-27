@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "unlimited/deepseek-v4.1-flash-free",
+  "model": "freellmapi/fusion",
   "provider": {
     "unlimited": {
       "npm": "@ai-sdk/openai-compatible",
