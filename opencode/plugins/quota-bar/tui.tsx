@@ -26,8 +26,12 @@ const DB_PATH = join(DATA_DIR, "opencode.db")
 const SERVICE_FILE = join(CONFIG_DIR, "service.json")
 const UNLIMITED_FILE = join(CONFIG_DIR, "unlimited.json")
 
-const LOCAL_EVERY_MS = 5_000
+// El reloj se repinta cada segundo; la BD y la red van por su cuenta para que
+// ninguna petición lenta congele la cuenta atrás.
+const TICK_MS = 1_000
+const DB_EVERY_MS = 3_000
 const OPENROUTER_EVERY_MS = 5 * 60_000
+const OPENROUTER_TIMEOUT_MS = 8_000
 const DAY_MS = 24 * 60 * 60 * 1000
 
 type OrQuota = {
@@ -52,44 +56,44 @@ type Quota = {
   warpNote?: string
 }
 
-let DatabaseCtor: any = undefined
+let connection: any = undefined
 
+// Conexión única de solo lectura, reutilizada en cada consulta.
 async function sqlite(): Promise<any> {
-  if (DatabaseCtor !== undefined) return DatabaseCtor
+  if (connection !== undefined) return connection
   try {
     const mod: any = await import("bun:sqlite")
-    DatabaseCtor = mod.Database ?? null
+    const Database = mod.Database
+    connection = Database ? new Database(DB_PATH, { readonly: true }) : null
+    // El TUI escribe en la misma BD: esperar el lock en vez de devolver vacío.
+    if (connection) connection.run("pragma busy_timeout = 2000")
   } catch {
-    DatabaseCtor = null
+    connection = null
   }
-  return DatabaseCtor
+  return connection
 }
 
 // Devuelve filas como objetos. Usa bun:sqlite y cae al CLI sqlite3.
+// Los errores suben: quien llama conserva el último valor bueno.
 async function rows(sql: string): Promise<any[]> {
-  const Database = await sqlite()
-  if (Database) {
+  const db = await sqlite()
+  if (db) {
     try {
-      const db = new Database(DB_PATH, { readonly: true })
-      try {
-        return db.query(sql).all()
-      } finally {
-        db.close()
-      }
+      return db.query(sql).all()
     } catch {
-      // sigue con el CLI
+      // conexión muerta (BD reemplazada, esquema cambiado): se reabre luego
+      try {
+        db.close()
+      } catch {}
+      connection = undefined
     }
   }
-  try {
-    const out = execFileSync("sqlite3", ["-json", DB_PATH, sql], {
-      encoding: "utf8",
-      timeout: 5_000,
-      maxBuffer: 8 * 1024 * 1024,
-    }).trim()
-    return out ? JSON.parse(out) : []
-  } catch {
-    return []
-  }
+  const out = execFileSync("sqlite3", ["-json", DB_PATH, sql], {
+    encoding: "utf8",
+    timeout: 5_000,
+    maxBuffer: 8 * 1024 * 1024,
+  }).trim()
+  return out ? JSON.parse(out) : []
 }
 
 function readJson(file: string): any {
@@ -107,10 +111,8 @@ function openRouterKey(): string | undefined {
   return typeof key === "string" ? key : undefined
 }
 
-// La ventana gratis de Zen dura 24 h desde la primera petición, así que no
-// coincide con el día local. Se reconstruye desde el último reinicio conocido
-// (los 429 traen retryAfterMs) y, si no hay ninguno, desde la primera petición
-// de las últimas 24 h.
+// Cuenta solo las respuestas que el proveedor aceptó: un 429 o un error de red
+// no consume cuota, y contarlos inflaba el número.
 async function bucket(provider: string, resetAt: number | undefined, now: number): Promise<Bucket> {
   if (resetAt && resetAt > now) return { used: 0, resetAt }
 
@@ -120,7 +122,8 @@ async function bucket(provider: string, resetAt: number | undefined, now: number
        from session_message
       where type='assistant'
         and json_extract(data,'$.model.providerID') = '${provider}'
-        and time_created > ${floor}`,
+        and time_created > ${floor}
+        and coalesce(json_extract(data,'$.finish'),'') <> 'error'`,
   )
   const start = Number(first?.[0]?.t)
   if (!Number.isFinite(start)) return { used: 0 }
@@ -130,7 +133,8 @@ async function bucket(provider: string, resetAt: number | undefined, now: number
        from session_message
       where type='assistant'
         and json_extract(data,'$.model.providerID') = '${provider}'
-        and time_created >= ${start}`,
+        and time_created >= ${start}
+        and coalesce(json_extract(data,'$.finish'),'') <> 'error'`,
   )
   return { used: Number(counted?.[0]?.n) || 0 }
 }
@@ -183,9 +187,11 @@ async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "kilo" | "warpN
   }
   if (flag && flag !== "ok") warpNote = [flag, ip].filter(Boolean).join(" · ") || flag
 
-  const zen = await bucket("opencode", zenReset, now)
-  const warp = await bucket("unlimited", warpReset, now)
-  const kilo = await bucket("kilofree", kiloReset, now)
+  const [zen, warp, kilo] = await Promise.all([
+    bucket("opencode", zenReset, now),
+    bucket("unlimited", warpReset, now),
+    bucket("kilofree", kiloReset, now),
+  ])
 
   return { zen, warp, kilo, warpNote }
 }
@@ -194,8 +200,10 @@ async function readOpenRouter(): Promise<OrQuota> {
   const key = openRouterKey()
   if (!key) return { remaining: 0, limit: 0, used: 0, error: "sin clave" }
   try {
+    // Sin timeout, una petición colgada dejaba la barra congelada.
     const res = await fetch("https://openrouter.ai/api/v1/key", {
       headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(OPENROUTER_TIMEOUT_MS),
     })
     if (!res.ok) return { remaining: 0, limit: 0, used: 0, error: `HTTP ${res.status}` }
     const body: any = await res.json()
@@ -240,28 +248,58 @@ export default Plugin.define({
       warp: { used: 0 },
       kilo: { used: 0 },
     })
+    // Pulso del reloj: cada segundo fuerza el repintado de la cuenta atrás.
+    const [pulse, setPulse] = createSignal(0)
 
     let stopped = false
     let timer: any
-    let lastOpenRouter = 0
+    let dbBusy = false
+    let netBusy = false
+    let lastDb = 0
+    let lastNet = 0
 
-    async function refresh() {
-      if (stopped) return
+    async function refreshLocal(): Promise<void> {
+      if (stopped || dbBusy) return
+      dbBusy = true
       try {
         const local = await readLocal()
-        setQuota((current) => ({ ...current, ...local, at: Date.now() }))
+        if (!stopped) setQuota((current) => ({ ...current, ...local, at: Date.now() }))
       } catch {
-        // se conserva el último valor
+        // se conserva el último valor bueno
+      } finally {
+        dbBusy = false
       }
-      if (Date.now() - lastOpenRouter > OPENROUTER_EVERY_MS) {
-        lastOpenRouter = Date.now()
-        const openrouter = await readOpenRouter()
-        if (!stopped) setQuota((current) => ({ ...current, openrouter, at: Date.now() }))
-      }
-      if (!stopped) timer = setTimeout(refresh, LOCAL_EVERY_MS)
     }
 
-    void refresh()
+    async function refreshOpenRouter(): Promise<void> {
+      if (stopped || netBusy) return
+      netBusy = true
+      try {
+        const openrouter = await readOpenRouter()
+        if (!stopped) setQuota((current) => ({ ...current, openrouter, at: Date.now() }))
+      } finally {
+        netBusy = false
+      }
+    }
+
+    // El ciclo solo repinta y dispara trabajo en segundo plano: nunca espera
+    // a la BD ni a la red, así el reloj no se congela.
+    function tick() {
+      if (stopped) return
+      const now = Date.now()
+      setPulse(now)
+      if (now - lastDb >= DB_EVERY_MS) {
+        lastDb = now
+        void refreshLocal()
+      }
+      if (now - lastNet >= OPENROUTER_EVERY_MS) {
+        lastNet = now
+        void refreshOpenRouter()
+      }
+      timer = setTimeout(tick, TICK_MS)
+    }
+
+    tick()
 
     function bucketColor(bucket: Bucket) {
       return bucket.resetAt ? bad() : ok()
@@ -293,18 +331,21 @@ export default Plugin.define({
 
     const unregisterSidebar = context.ui.slot({
       prepend: "sidebar.content",
-      render: () => (
-        <box flexDirection="column" flexShrink={0}>
-          <text fg={openRouterColor()}>{openRouterText()}</text>
-          <text fg={bucketColor(quota().zen)}>{bucketText("OpenCode", quota().zen)}</text>
-          <text fg={bucketColor(quota().warp)}>{bucketText("Warp", quota().warp)}</text>
-          <text fg={bucketColor(quota().kilo)}>{bucketText("Kilo", quota().kilo)}</text>
-        </box>
-      ),
+      render: () => {
+        pulse() // dependencia: sin esto la cuenta atrás no avanza
+        return (
+          <box flexDirection="column" flexShrink={0}>
+            <text fg={openRouterColor()}>{openRouterText()}</text>
+            <text fg={bucketColor(quota().zen)}>{bucketText("OpenCode", quota().zen)}</text>
+            <text fg={bucketColor(quota().warp)}>{bucketText("Warp", quota().warp)}</text>
+            <text fg={bucketColor(quota().kilo)}>{bucketText("Kilo", quota().kilo)}</text>
+          </box>
+        )
+      },
     })
 
     async function showDetail() {
-      await refresh()
+      await Promise.all([refreshLocal(), refreshOpenRouter()])
       const value = quota()
       const lines = [
         `OpenRouter free: ${value.openrouter ? `${value.openrouter.remaining}/${value.openrouter.limit} (${value.openrouter.used} usadas)` : "sin datos"}`,
