@@ -47,6 +47,7 @@ type Quota = {
   openrouter?: OrQuota
   zen: Bucket
   warp: Bucket
+  kilo: Bucket
   warpNote?: string
 }
 
@@ -133,7 +134,7 @@ async function bucket(provider: string, resetAt: number | undefined, now: number
   return { used: Number(counted?.[0]?.n) || 0 }
 }
 
-async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "warpNote">> {
+async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "kilo" | "warpNote">> {
   const now = Date.now()
   let warpNote: string | undefined
 
@@ -156,7 +157,7 @@ async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "warpNote">> {
       continue
     }
     const provider = msg?.model?.providerID
-    if (provider !== "opencode" && provider !== "unlimited") continue
+    if (provider !== "opencode" && provider !== "unlimited" && provider !== "kilofree") continue
     if (resets.has(provider)) continue
     const retry = Number(msg?.error?.retryAfterMs)
     if (!Number.isFinite(retry) || retry <= 0) continue
@@ -166,13 +167,14 @@ async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "warpNote">> {
 
   const zen = await bucket("opencode", resets.get("opencode"), now)
   const warp = await bucket("unlimited", resets.get("unlimited"), now)
+  const kilo = await bucket("kilofree", resets.get("kilofree"), now)
 
   const state = readJson(UNLIMITED_FILE)
   const ip = typeof state?.lastIp === "string" ? state.lastIp : ""
   const flag = typeof state?.lastBucket === "string" ? state.lastBucket : ""
   if (flag && flag !== "ok") warpNote = [flag, ip].filter(Boolean).join(" · ") || flag
 
-  return { zen, warp, warpNote }
+  return { zen, warp, kilo, warpNote }
 }
 
 async function readOpenRouter(): Promise<OrQuota> {
@@ -223,6 +225,7 @@ export default Plugin.define({
       at: 0,
       zen: { used: 0 },
       warp: { used: 0 },
+      kilo: { used: 0 },
     })
 
     let stopped = false
@@ -282,6 +285,7 @@ export default Plugin.define({
           <text fg={openRouterColor()}>{openRouterText()}</text>
           <text fg={bucketColor(quota().zen)}>{bucketText("Zen", quota().zen)}</text>
           <text fg={bucketColor(quota().warp)}>{bucketText("Warp", quota().warp)}</text>
+          <text fg={bucketColor(quota().kilo)}>{bucketText("Kilo", quota().kilo)}</text>
         </box>
       ),
     })
@@ -298,9 +302,10 @@ export default Plugin.define({
         "",
         `OpenCode Zen hoy: ${value.zen.used} mensajes${value.zen.resetAt ? ` · límite hasta ${clock(value.zen.resetAt)} (${countdown(value.zen.resetAt)})` : ""}`,
         `Unlimited hoy: ${value.warp.used} mensajes${value.warp.resetAt ? ` · límite hasta ${clock(value.warp.resetAt)} (${countdown(value.warp.resetAt)})` : ""}`,
+        `Kilo Code hoy: ${value.kilo.used} mensajes${value.kilo.resetAt ? ` · límite hasta ${clock(value.kilo.resetAt)} (${countdown(value.kilo.resetAt)})` : ""}`,
         value.warpNote ? `Unlimited estado: ${value.warpNote}` : "",
         "",
-        "Zen y Warp no publican el tope diario; solo avisan con 429 al llegar.",
+        "Zen, Warp y Kilo no publican el tope diario; solo avisan con 429 al llegar.",
         `Actualizado: ${value.at ? clock(value.at) : "—"}`,
       ].filter(Boolean)
       await context.ui.dialog.alert({ title: "Cuotas gratis", message: lines.join("\n") })
