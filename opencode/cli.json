@@ -31,6 +31,9 @@
         "retryBaseMs": 20000,
         "retryMaxMs": 600000
       }
+    },
+    {
+      "package": "/home/gabo/.config/opencode/plugins/quota-bar"
     }
   ],
   "debug": {
