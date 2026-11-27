@@ -1,0 +1,10 @@
+{
+  "advice": {
+    "retention_days": 90,
+    "prunable": 0,
+    "total": 18,
+    "db_bytes": 1994752,
+    "reclaim_bytes": 0
+  },
+  "advice_at": 1795813478.4577482
+}
