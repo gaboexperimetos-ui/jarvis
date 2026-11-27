@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js"
 import { Plugin } from "@opencode/plugin/tui"
 import { execFileSync } from "node:child_process"
-import { existsSync, readFileSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
 
@@ -90,12 +90,6 @@ async function rows(sql: string): Promise<any[]> {
   }
 }
 
-function startOfToday(): number {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
-
 function readJson(file: string): any {
   try {
     return JSON.parse(readFileSync(file, "utf8"))
@@ -149,7 +143,7 @@ async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "warpNote">> {
     `select time_created as ts, data as raw
        from session_message
       where type='assistant'
-        and time_created >= ${now - 7 * DAY_MS}
+        and time_created >= ${now - 2 * DAY_MS}
         and data like '%provider.free-limit%'
       order by time_created desc
       limit 40`,
