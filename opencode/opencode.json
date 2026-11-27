@@ -1132,32 +1132,6 @@
           },
           "releaseDate": "2026-04-02"
         },
-        "inclusionai/ling-3.2-flash:free": {
-          "name": "inclusionAI: Ling 3.2 Flash (free)",
-          "capabilities": {
-            "tools": true,
-            "input": [
-              "text",
-              "image"
-            ],
-            "output": [
-              "text"
-            ],
-            "reasoning": {
-              "supported": true,
-              "toggle": true
-            }
-          },
-          "limit": {
-            "context": 1048576,
-            "output": 262144
-          },
-          "cost": {
-            "input": 0,
-            "output": 0
-          },
-          "releaseDate": "2026-11-13"
-        },
         "liquid/lfm-3-1.7b:free": {
           "name": "LiquidAI: LFM3-1.7B (free)",
           "capabilities": {
