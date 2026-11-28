@@ -87,7 +87,7 @@ model:
   # Cerebro LOCAL (llama.cpp, 0 EUR, privado). Verificado 2026-11-23: SI hace
   # function calling (tool_calls) y soporta el bucle tool->respuesta con streaming.
   # OpenRouter free queda como respaldo en fallback_providers.
-  default: "nvidia/nemotron-3-ultra-550b-a55b:free"
+  default: "baidu/ernie-5.5-flash-preview:free"
 
   # Inference provider selection:
   #   "auto"         - Auto-detect from credentials (default)
@@ -2004,11 +2004,39 @@ delegation:
   #         model: "claude-opus-5"
   #         reasoning_effort: "high"
   #         service_tier: "fast"              # optional: that task is refused when the route has no such tier
-  #         # fallback_providers:
-  - provider: "llamacpp"
-    model: "deepseek-v4pro"
-    base_url: http://127.0.0.1:8004/v1
+  #         # fallback_providers: [...]         # optional; absent = delegation.fallback_providers, [] = none
+  #     default: fast                         # optional: option for tasks that set none
+  #   profile_routes:                         # backend: profile_routes (advanced-delegation). A listed
+  #     profiles:                             # profile's subagents use ITS credentials, pool, SOUL.md and terminal policy.
+  #       - name: coder
+  #         description: "Writes and refactors code; runs tests."
+  max_iterations: 250                         # Max tool-calling turns per child (default: 250)
+  # max_concurrent_children: 10               # Max parallel child agents per batch (default: 10, floor: 1, no ceiling).
+                                              # WARNING: values above 10 multiply API cost linearly.
+  # max_spawn_depth: 1                        # Delegation tree depth cap (range: 1-3, default: 1 = flat).
+                                              # Raise to 2 to allow workers to spawn their own subagents.
+                                              # Requires role="orchestrator" on intermediate agents.
+  # orchestrator_enabled: true                # Kill switch for role="orchestrator" children (default: true).
+  # subagent_auto_approve: false              # When a subagent hits a dangerous-command approval prompt, auto-deny (default: false)
+                                              # or auto-approve "once" (true) instead of blocking on stdin.
+                                              # The parent TUI owns stdin, so blocking would deadlock; non-interactive resolution is required.
+                                              # Both choices emit a logger.warning audit line. Flip to true only for cron/batch pipelines.
+  # inherit_mcp_toolsets: true                # When explicit child toolsets are narrowed, also keep the parent's MCP toolsets (default: true). Set false for strict intersection.
+  # model: "google/gemini-3-flash-preview"    # Override model for subagents (empty = inherit parent)
+  # provider: "openrouter"                    # Override provider for subagents (empty = inherit parent)
+  #                                           # Resolves full credentials (base_url, api_key) automatically.
+  #                                           # Supported: openrouter, nous, zai, kimi-coding, minimax
+  #                                           # Cost tip: keep the parent on a frontier model and pin
+  #                                           # delegation.model to an inexpensive one — children carry the
+  #                                           # vast majority of tokens, so this is where spend is cut while
+  #                                           # planning quality stays with the frontier parent.
+  # fallback_providers:                       # Fallback chain for delegated children (same entry format as the
+  #   - provider: "openrouter"                # top-level list). Pinned children use only a declared child chain;
+  #     model: "deepseek/deepseek-chat"       # unpinned children inherit when unset. [] disables fallback (#65038).
 
+# =============================================================================
+# Display
+# =============================================================================
 display:
   # Use compact banner mode (hides the ASCII-art banner, shows a single line).
   #   true:  Compact single-line banner
@@ -2507,10 +2535,12 @@ updates:
 # Primario: nvidia/nemotron-3-ultra-550b-a55b:free (OpenRouter).
 # Fallback: el router llama.cpp local en 8004, si OpenRouter se agota o falla.
 fallback_providers:
-  - provider: "llamacpp"
-    model: "deepseek-v4pro"
-    base_url: http://127.0.0.1:8004/v1
+  - provider: "openrouter"
+    model: "nvidia/nemotron-3.5-super-vl:free"
+    base_url: "https://openrouter.ai/api/v1"
 
+# Servidor llama.cpp externo ya en marcha (router.ini) en :8004.
+# Permite que el cerebro local se detecte como "encendido" sin que Hermes lo gestione.
 local_runtime:
   detect_ports: [8004]
 approvals:
