@@ -1,13 +1,13 @@
 {
   "version": 1,
   "generation": "463b8e44d04ddb95",
-  "revision": 8,
+  "revision": 9,
   "values": {
     "hermes.desktop.showAllProfiles": "false",
     "hermes.desktop.model-presets": "{\"openrouter::baidu/ernie-5.5-flash-preview:free\":{\"effort\":\"minimal\"}}",
     "hermes.desktop.collapsed-providers": "[\"openrouter\"]",
-    "hermes.desktop.tips.last.v1": "skills",
-    "hermes.desktop.tips.shownAt.v1": "{\"new-session\":1795723730597,\"skills\":1795801341434}",
-    "hermes.desktop.tips.next.v1": "1795822941434"
+    "hermes.desktop.tips.last.v1": "messaging",
+    "hermes.desktop.tips.shownAt.v1": "{\"new-session\":1795723730597,\"skills\":1795801341434,\"messaging\":1795892333202}",
+    "hermes.desktop.tips.next.v1": "1795913933202"
   }
 }
