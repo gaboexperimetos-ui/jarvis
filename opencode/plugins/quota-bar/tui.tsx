@@ -139,11 +139,13 @@ async function bucket(provider: string, resetAt: number | undefined, now: number
   return { used: Number(counted?.[0]?.n) || 0 }
 }
 
-// Agotamiento real de un proveedor gratis: mira su ÚLTIMO mensaje. Si fue un
-// error (finish='error'), está agotado. El reinicio es retryAfterMs si viene,
-// o 24 h desde el error (ventana diaria) cuando no lo trae (Warp y Kilo no dan
-// retryAfterMs). Si el último mensaje fue correcto, no está agotado.
-async function exhaustedReset(provider: string, now: number): Promise<number | undefined> {
+// Ultimo mensaje de un proveedor: `reset` cuando esta agotado (fue error) y
+// `ok` cuando el ultimo fue correcto. Con `ok` no se puede pintar "limite"
+// aunque un fichero viejo diga lo contrario.
+async function lastMessage(
+  provider: string,
+  now: number,
+): Promise<{ reset?: number; ok: boolean }> {
   const last = await rows(
     `select time_created as ts, data as raw
        from session_message
@@ -152,19 +154,19 @@ async function exhaustedReset(provider: string, now: number): Promise<number | u
       order by time_created desc
       limit 1`,
   )
-  if (!last.length) return undefined
+  if (!last.length) return { ok: false }
   const row = last[0]
   let msg: any
   try {
     msg = JSON.parse(row.raw)
   } catch {
-    return undefined
+    return { ok: false }
   }
-  if (msg?.finish !== "error") return undefined
+  if (msg?.finish !== "error") return { ok: true }
   const retry = Number(msg?.error?.retryAfterMs)
   const base = Number(msg?.time?.completed ?? msg?.time?.created ?? row.ts)
-  if (!Number.isFinite(base)) return undefined
-  return retry > 0 ? base + retry : base + DAY_MS
+  if (!Number.isFinite(base)) return { ok: false }
+  return { reset: retry > 0 ? base + retry : base + DAY_MS, ok: false }
 }
 
 async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "kilo" | "warpNote">> {
@@ -172,16 +174,22 @@ async function readLocal(): Promise<Pick<Quota, "zen" | "warp" | "kilo" | "warpN
   let warpNote: string | undefined
 
   // Reinicio por agotamiento (último mensaje de error) de cada proveedor.
-  const zenReset = await exhaustedReset("opencode", now)
-  let warpReset = await exhaustedReset("unlimited", now)
-  const kiloReset = await exhaustedReset("kilofree", now)
+  const zenMsg = await lastMessage("opencode", now)
+  const warpMsg = await lastMessage("unlimited", now)
+  const kiloMsg = await lastMessage("kilofree", now)
+  const zenReset = zenMsg.reset
+  const warpLastOk = warpMsg.ok
+  let warpReset = warpMsg.reset
+  const kiloReset = kiloMsg.reset
 
   const state = readJson(UNLIMITED_FILE)
   const ip = typeof state?.lastIp === "string" ? state.lastIp : ""
   const flag = typeof state?.lastBucket === "string" ? state.lastBucket : ""
-  // Warp: unlimited.json es la señal fiable; si está agotado y no hay reset
-  // por BD, usa la hora de la última rotación + 24 h.
-  if (flag === "exhausted" && !warpReset) {
+  // unlimited.json ya no es fiable: el escudo actual escribe "affinity", no
+  // "lastBucket", asi que ese "exhausted" es de una version vieja y se queda
+  // clavado. Manda el ultimo mensaje en la BD (arriba): si no fue error, no hay
+  // limite. El fichero solo se cree cuando la BD no dice nada.
+  if (flag === "exhausted" && !warpReset && !warpLastOk) {
     const at = Number(state?.updatedAt ? Date.parse(state.updatedAt) : 0)
     if (Number.isFinite(at) && at > 0) warpReset = at + DAY_MS
   }
